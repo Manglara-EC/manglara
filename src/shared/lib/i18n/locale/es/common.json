@@ -1,0 +1,16 @@
+{
+  "actions": {
+    "login": "Iniciar sesión",
+    "verify": "Verificar"
+  },
+  "fields": {
+    "email": "Correo electrónico",
+    "name": "Nombre",
+    "password": "Contraseña",
+    "username": "Usuario"
+  },
+  "text": {
+    "doYouRemember": "¿Ya te acordaste?",
+    "orContinueWith": "O continúa con"
+  }
+}

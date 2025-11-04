@@ -1,0 +1,16 @@
+{
+  "actions": {
+    "login": "Sign in",
+    "verify": "Verify"
+  },
+  "fields": {
+    "email": "Email",
+    "name": "Name",
+    "password": "Password",
+    "username": "Username"
+  },
+  "text": {
+    "doYouRemember": "Remembered your credentials?",
+    "orContinueWith": "Or continue with"
+  }
+}

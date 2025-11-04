@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { REGEXP_ONLY_DIGITS } from "input-otp";
 import { LoaderIcon } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import { Button } from "@/shared/components/ui/button";
 import {
@@ -33,6 +34,9 @@ export function TwoFactorForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
+  const { t: tAuth } = useTranslation("auth");
+  const { t: tCommon } = useTranslation("common");
+
   const { form, onSubmit, isPending } = useTwoFactorForm();
 
   return (
@@ -40,12 +44,12 @@ export function TwoFactorForm({
       <Card className="bg-background border-none shadow-none">
         <CardHeader className="text-center">
           <CardTitle>
-            <TypographyH1>Autenticación de dos factores</TypographyH1>
+            <TypographyH1>{tAuth("twoFactor.title")}</TypographyH1>
           </CardTitle>
 
           <CardDescription>
             <TypographyP className="leading-normal">
-              Ingresa tu contraseña de un solo uso para continuar 🌴
+              {tAuth("twoFactor.description")}
             </TypographyP>
           </CardDescription>
         </CardHeader>
@@ -66,30 +70,13 @@ export function TwoFactorForm({
                         {...field}
                       >
                         <InputOTPGroup className="gap-2">
-                          <InputOTPSlot
-                            className="size-[3em] !rounded-lg text-lg"
-                            index={0}
-                          />
-                          <InputOTPSlot
-                            className="size-[3em] !rounded-lg text-lg"
-                            index={1}
-                          />
-                          <InputOTPSlot
-                            className="size-[3em] !rounded-lg text-lg"
-                            index={2}
-                          />
-                          <InputOTPSlot
-                            className="size-[3em] !rounded-lg text-lg"
-                            index={3}
-                          />
-                          <InputOTPSlot
-                            className="size-[3em] !rounded-lg text-lg"
-                            index={4}
-                          />
-                          <InputOTPSlot
-                            className="size-[3em] !rounded-lg text-lg"
-                            index={5}
-                          />
+                          {[...Array(6)].map((_, i) => (
+                            <InputOTPSlot
+                              key={i}
+                              className="size-[3em] !rounded-lg text-lg"
+                              index={i}
+                            />
+                          ))}
                         </InputOTPGroup>
                       </InputOTP>
                     </FormControl>
@@ -100,15 +87,15 @@ export function TwoFactorForm({
 
               <Button disabled={isPending} type="submit" className="w-full">
                 {isPending && <LoaderIcon className="animate-spin" />}
-                Verificar
+                {tCommon("actions.verify")}
               </Button>
             </form>
           </Form>
 
           <div className="text-center text-sm">
-            ¿No tienes acceso a tu aplicación de autenticación?{" "}
+            {tAuth("twoFactor.noAccess")}{" "}
             <Link href="/recovery" className="underline underline-offset-4">
-              Usar código de recuperación
+              {tAuth("twoFactor.useRecovery")}
             </Link>
           </div>
         </CardContent>

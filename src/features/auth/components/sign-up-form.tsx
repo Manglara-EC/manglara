@@ -8,6 +8,7 @@ import {
   MailIcon,
   User2Icon,
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import { Button } from "@/shared/components/ui/button";
 import {
@@ -36,6 +37,9 @@ export function SignUpForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
+  const { t: tAuth } = useTranslation("auth");
+  const { t: tCommon } = useTranslation("common");
+
   const { form, onSubmit, isPending, handleSignUpWithGoogle } = useSignUpForm();
 
   return (
@@ -43,12 +47,12 @@ export function SignUpForm({
       <Card className="bg-background border-none shadow-none">
         <CardHeader className="text-center">
           <CardTitle>
-            <TypographyH1>Regístrate</TypographyH1>
+            <TypographyH1>{tAuth("signUp.title")}</TypographyH1>
           </CardTitle>
 
           <CardDescription>
             <TypographyP className="leading-normal">
-              Bienvenido a Manglara 🌴
+              {tAuth("signUp.text.welcome")}
             </TypographyP>
           </CardDescription>
         </CardHeader>
@@ -76,7 +80,7 @@ export function SignUpForm({
 
           <div className="after:border-border relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t">
             <span className="bg-background text-muted-foreground relative z-10 px-2">
-              O continuar con
+              {tCommon("text.orContinueWith")}
             </span>
           </div>
 
@@ -88,27 +92,25 @@ export function SignUpForm({
                   name="name"
                   render={({ field, fieldState }) => (
                     <FormItem>
-                      <FormLabel>Nombre</FormLabel>
-
+                      <FormLabel>{tCommon("fields.name")}</FormLabel>
                       <div className="relative">
                         <FormControl>
                           <Input
-                            className="peer aria-invalid:text-destructive-foreground ps-9 shadow-none not-aria-invalid:border-none"
                             disabled={isPending}
                             placeholder={
                               fieldState.invalid ? undefined : "David Aragundy"
                             }
                             {...field}
+                            className="peer aria-invalid:text-destructive-foreground ps-9 shadow-none not-aria-invalid:border-none"
                           />
                         </FormControl>
-
                         <div
                           className={cn(
                             "text-muted-foreground/80 pointer-events-none absolute inset-y-0 start-0 flex items-center justify-center ps-3 peer-disabled:opacity-50",
                             fieldState.invalid && "text-destructive-foreground",
                             fieldState.isDirty &&
                               !fieldState.invalid &&
-                              "text-foreground",
+                              "text-foreground"
                           )}
                         >
                           <User2Icon size={16} aria-hidden="true" />
@@ -124,27 +126,25 @@ export function SignUpForm({
                   name="username"
                   render={({ field, fieldState }) => (
                     <FormItem>
-                      <FormLabel>Usuario</FormLabel>
-
+                      <FormLabel>{tCommon("fields.username")}</FormLabel>
                       <div className="relative">
                         <FormControl>
                           <Input
-                            className="peer aria-invalid:text-destructive-foreground ps-9 shadow-none not-aria-invalid:border-none"
                             disabled={isPending}
                             placeholder={
                               fieldState.invalid ? undefined : "davidaragundy"
                             }
                             {...field}
+                            className="peer aria-invalid:text-destructive-foreground ps-9 shadow-none not-aria-invalid:border-none"
                           />
                         </FormControl>
-
                         <div
                           className={cn(
                             "text-muted-foreground/80 pointer-events-none absolute inset-y-0 start-0 flex items-center justify-center ps-3 peer-disabled:opacity-50",
                             fieldState.invalid && "text-destructive-foreground",
                             fieldState.isDirty &&
                               !fieldState.invalid &&
-                              "text-foreground",
+                              "text-foreground"
                           )}
                         >
                           <AtSignIcon size={16} aria-hidden="true" />
@@ -161,30 +161,28 @@ export function SignUpForm({
                 name="email"
                 render={({ field, fieldState }) => (
                   <FormItem>
-                    <FormLabel>Correo electrónico</FormLabel>
-
+                    <FormLabel>{tCommon("fields.email")}</FormLabel>
                     <div className="relative">
                       <FormControl>
                         <Input
-                          className="peer aria-invalid:text-destructive-foreground ps-9 shadow-none not-aria-invalid:border-none"
                           type="email"
                           disabled={isPending}
                           placeholder={
                             fieldState.invalid
                               ? undefined
-                              : "david@aragundy.com"
+                              : "email@manglara.com"
                           }
                           {...field}
+                          className="peer aria-invalid:text-destructive-foreground ps-9 shadow-none not-aria-invalid:border-none"
                         />
                       </FormControl>
-
                       <div
                         className={cn(
                           "text-muted-foreground/80 pointer-events-none absolute inset-y-0 start-0 flex items-center justify-center ps-3 peer-disabled:opacity-50",
                           fieldState.invalid && "text-destructive-foreground",
                           fieldState.isDirty &&
                             !fieldState.invalid &&
-                            "text-foreground",
+                            "text-foreground"
                         )}
                       >
                         <MailIcon size={16} aria-hidden="true" />
@@ -200,36 +198,32 @@ export function SignUpForm({
                 name="password"
                 render={({ field, fieldState }) => (
                   <FormItem>
-                    <FormLabel>Contraseña</FormLabel>
-
+                    <FormLabel>{tCommon("fields.password")}</FormLabel>
                     <div className="relative">
                       <FormControl>
                         <Input
-                          className="peer aria-invalid:text-destructive-foreground ps-9 shadow-none not-aria-invalid:border-none"
-                          disabled={isPending}
                           type="password"
+                          disabled={isPending}
                           placeholder={
                             fieldState.invalid ? undefined : "••••••••"
                           }
                           {...field}
+                          className="peer aria-invalid:text-destructive-foreground ps-9 shadow-none not-aria-invalid:border-none"
                         />
                       </FormControl>
-
                       <div
                         className={cn(
                           "text-muted-foreground/80 pointer-events-none absolute inset-y-0 start-0 flex items-center justify-center ps-3 peer-disabled:opacity-50",
                           fieldState.invalid && "text-destructive-foreground",
                           fieldState.isDirty &&
                             !fieldState.invalid &&
-                            "text-foreground",
+                            "text-foreground"
                         )}
                       >
                         <LockIcon size={16} aria-hidden="true" />
                       </div>
                     </div>
-
                     <FormMessage />
-
                     {fieldState.isDirty && (
                       <PasswordStrengthIndicator password={field.value} />
                     )}
@@ -239,18 +233,18 @@ export function SignUpForm({
 
               <Button disabled={isPending} type="submit" className="w-full">
                 {isPending && <LoaderIcon className="animate-spin" />}
-                Regístrate
+                {tAuth("signUp.actions.submit")}
               </Button>
             </form>
           </Form>
 
           <div className="text-center text-sm">
-            ¿Ya tienes una cuenta?{" "}
+            {tAuth("signUp.text.alreadyHaveAccount")}{" "}
             <Link
               href="/sign-in"
               className="font-bold hover:underline hover:underline-offset-4"
             >
-              Iniciar sesión
+              {tCommon("actions.login")}
             </Link>
           </div>
         </CardContent>

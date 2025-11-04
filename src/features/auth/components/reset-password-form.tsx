@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { LoaderIcon, LockIcon } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import { Button } from "@/shared/components/ui/button";
 import {
@@ -30,6 +31,9 @@ export function ResetPasswordForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
+  const { t: tAuth } = useTranslation("auth");
+  const { t: tCommon } = useTranslation("common");
+
   const { form, onSubmit, isPending } = useResetPasswordForm();
 
   return (
@@ -37,12 +41,12 @@ export function ResetPasswordForm({
       <Card className="bg-background border-none shadow-none">
         <CardHeader className="text-center">
           <CardTitle>
-            <TypographyH1>Restablecer contraseña</TypographyH1>
+            <TypographyH1>{tAuth("resetPassword.title")}a</TypographyH1>
           </CardTitle>
 
           <CardDescription>
             <TypographyP className="leading-normal">
-              Ingresa tu nueva contraseña para restablecer tu cuenta 🌴
+              {tAuth("resetPassword.text.instructions")}
             </TypographyP>
           </CardDescription>
         </CardHeader>
@@ -55,7 +59,7 @@ export function ResetPasswordForm({
                 name="password"
                 render={({ field, fieldState }) => (
                   <FormItem>
-                    <FormLabel>Contraseña</FormLabel>
+                    <FormLabel>{tCommon("fields.password")}</FormLabel>
 
                     <div className="relative">
                       <FormControl>
@@ -76,7 +80,7 @@ export function ResetPasswordForm({
                           fieldState.invalid && "text-destructive-foreground",
                           fieldState.isDirty &&
                             !fieldState.invalid &&
-                            "text-foreground",
+                            "text-foreground"
                         )}
                       >
                         <LockIcon size={16} aria-hidden="true" />
@@ -97,7 +101,9 @@ export function ResetPasswordForm({
                 name="confirmPassword"
                 render={({ field, fieldState }) => (
                   <FormItem>
-                    <FormLabel>Confirmar contraseña</FormLabel>
+                    <FormLabel>
+                      {tAuth("resetPassword.fields.confirmPassword")}
+                    </FormLabel>
 
                     <div className="relative">
                       <FormControl>
@@ -118,7 +124,7 @@ export function ResetPasswordForm({
                           fieldState.invalid && "text-destructive-foreground",
                           fieldState.isDirty &&
                             !fieldState.invalid &&
-                            "text-foreground",
+                            "text-foreground"
                         )}
                       >
                         <LockIcon size={16} aria-hidden="true" />
@@ -132,15 +138,15 @@ export function ResetPasswordForm({
 
               <Button disabled={isPending} type="submit" className="w-full">
                 {isPending && <LoaderIcon className="animate-spin" />}
-                Restablecer contraseña
+                {tAuth("resetPassword.actions.submit")}
               </Button>
             </form>
           </Form>
 
           <div className="text-center text-sm">
-            ¿Ya te acordaste?{" "}
+            {tAuth("resetPassword.text.doYouRemember")}{" "}
             <Link href="/sign-in" className="underline underline-offset-4">
-              Iniciar sesión
+              {tCommon("actions.login")}
             </Link>
           </div>
         </CardContent>

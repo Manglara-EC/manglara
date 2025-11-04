@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { LoaderIcon, LockIcon, User2Icon } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import { Button } from "@/shared/components/ui/button";
 import {
@@ -17,10 +18,9 @@ import { cn } from "@/shared/utils/cn";
 
 import { useCredentialsForm } from "@/features/auth/hooks/use-credentials-form";
 
-import { useTranslation } from "react-i18next";
-
 export function CredentialsForm() {
-  const { t } = useTranslation("auth");
+  const { t: tAuth } = useTranslation("auth");
+  const { t: tCommon } = useTranslation("common");
 
   const { form, onSubmit, isPending } = useCredentialsForm();
 
@@ -35,7 +35,7 @@ export function CredentialsForm() {
           name="username"
           render={({ field, fieldState }) => (
             <FormItem>
-              <FormLabel>{t("form.fields.username")}</FormLabel>
+              <FormLabel>{tCommon("fields.username")}</FormLabel>
 
               <div className="relative">
                 <FormControl>
@@ -71,13 +71,13 @@ export function CredentialsForm() {
           render={({ field, fieldState }) => (
             <FormItem>
               <FormLabel>
-                {t("form.fields.password")}
+                {tCommon("fields.password")}
                 <Link
                   prefetch
                   href="/forgot-password"
                   className="text-foreground ml-auto text-xs underline-offset-4 hover:underline"
                 >
-                  {t("form.actions.forgotPassword")}
+                  {tAuth("login.actions.forgotPassword")}
                 </Link>
               </FormLabel>
 
@@ -112,7 +112,7 @@ export function CredentialsForm() {
 
         <Button disabled={isPending} type="submit">
           {isPending && <LoaderIcon className="animate-spin" />}
-          {t("form.actions.login")}
+          {tCommon("actions.login")}
         </Button>
       </form>
     </Form>
