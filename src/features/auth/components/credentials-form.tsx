@@ -17,7 +17,11 @@ import { cn } from "@/shared/utils/cn";
 
 import { useCredentialsForm } from "@/features/auth/hooks/use-credentials-form";
 
+import { useTranslation } from "react-i18next";
+
 export function CredentialsForm() {
+  const { t } = useTranslation("auth");
+
   const { form, onSubmit, isPending } = useCredentialsForm();
 
   return (
@@ -31,16 +35,14 @@ export function CredentialsForm() {
           name="username"
           render={({ field, fieldState }) => (
             <FormItem>
-              <FormLabel>Usuario</FormLabel>
+              <FormLabel>{t("form.fields.username")}</FormLabel>
 
               <div className="relative">
                 <FormControl>
                   <Input
                     className="peer aria-invalid:text-destructive-foreground ps-9 shadow-none not-aria-invalid:border-none"
                     disabled={isPending}
-                    placeholder={
-                      fieldState.invalid ? undefined : "davidaragundy"
-                    }
+                    placeholder={fieldState.invalid ? undefined : "manglara"}
                     {...field}
                   />
                 </FormControl>
@@ -51,7 +53,7 @@ export function CredentialsForm() {
                     fieldState.invalid && "text-destructive-foreground",
                     fieldState.isDirty &&
                       !fieldState.invalid &&
-                      "text-foreground",
+                      "text-foreground"
                   )}
                 >
                   <User2Icon size={16} aria-hidden="true" />
@@ -69,13 +71,13 @@ export function CredentialsForm() {
           render={({ field, fieldState }) => (
             <FormItem>
               <FormLabel>
-                Contraseña
+                {t("form.fields.password")}
                 <Link
                   prefetch
                   href="/forgot-password"
                   className="text-foreground ml-auto text-xs underline-offset-4 hover:underline"
                 >
-                  ¿Olvidaste tu contraseña?
+                  {t("form.actions.forgotPassword")}
                 </Link>
               </FormLabel>
 
@@ -96,7 +98,7 @@ export function CredentialsForm() {
                     fieldState.invalid && "text-destructive-foreground",
                     fieldState.isDirty &&
                       !fieldState.invalid &&
-                      "text-foreground",
+                      "text-foreground"
                   )}
                 >
                   <LockIcon size={16} aria-hidden="true" />
@@ -110,7 +112,7 @@ export function CredentialsForm() {
 
         <Button disabled={isPending} type="submit">
           {isPending && <LoaderIcon className="animate-spin" />}
-          Iniciar sesión
+          {t("form.actions.login")}
         </Button>
       </form>
     </Form>
