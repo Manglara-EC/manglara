@@ -1,5 +1,7 @@
 "use client";
 
+import { useTranslation } from "react-i18next";
+
 import { PaginationState } from "@tanstack/react-table";
 import {
   AtSignIcon,
@@ -44,6 +46,9 @@ export function UpdateUserForm({
   className,
   ...props
 }: Props) {
+  const { t: tAdmin } = useTranslation("admin");
+  const { t: tCommon } = useTranslation("common");
+
   const { form, onSubmit, isPending, updateUserDrawerCloseRef } =
     useUpdateUserForm({
       user,
@@ -76,7 +81,7 @@ export function UpdateUserForm({
               name="name"
               render={({ field, fieldState }) => (
                 <FormItem>
-                  <FormLabel>Nombre</FormLabel>
+                  <FormLabel>{tCommon("fields.name")}</FormLabel>
 
                   <div className="relative">
                     <FormControl>
@@ -96,7 +101,7 @@ export function UpdateUserForm({
                         fieldState.invalid && "text-destructive-foreground",
                         fieldState.isDirty &&
                           !fieldState.invalid &&
-                          "text-foreground",
+                          "text-foreground"
                       )}
                     >
                       <User2Icon size={16} aria-hidden="true" />
@@ -112,7 +117,7 @@ export function UpdateUserForm({
               name="username"
               render={({ field, fieldState }) => (
                 <FormItem>
-                  <FormLabel>Usuario</FormLabel>
+                  <FormLabel>{tCommon("fields.username")}</FormLabel>
 
                   <div className="relative">
                     <FormControl>
@@ -132,7 +137,7 @@ export function UpdateUserForm({
                         fieldState.invalid && "text-destructive-foreground",
                         fieldState.isDirty &&
                           !fieldState.invalid &&
-                          "text-foreground",
+                          "text-foreground"
                       )}
                     >
                       <AtSignIcon size={16} aria-hidden="true" />
@@ -148,7 +153,7 @@ export function UpdateUserForm({
               name="email"
               render={({ field, fieldState }) => (
                 <FormItem>
-                  <FormLabel>Correo electrónico</FormLabel>
+                  <FormLabel>{tCommon("fields.email")}</FormLabel>
 
                   <div className="relative">
                     <FormControl>
@@ -169,7 +174,7 @@ export function UpdateUserForm({
                         fieldState.invalid && "text-destructive-foreground",
                         fieldState.isDirty &&
                           !fieldState.invalid &&
-                          "text-foreground",
+                          "text-foreground"
                       )}
                     >
                       <MailIcon size={16} aria-hidden="true" />
@@ -185,7 +190,7 @@ export function UpdateUserForm({
               name="role"
               render={({ field, fieldState }) => (
                 <FormItem>
-                  <FormLabel>Rol</FormLabel>
+                  <FormLabel>{tAdmin("updateUserForm.fields.role")}</FormLabel>
 
                   <div className="relative">
                     <FormControl>
@@ -197,14 +202,22 @@ export function UpdateUserForm({
                         <SelectTrigger
                           className={cn(
                             "peer aria-invalid:text-destructive-foreground ps-9 shadow-none not-aria-invalid:border-none",
-                            fieldState.invalid && "aria-invalid:true",
+                            fieldState.invalid && "aria-invalid:true"
                           )}
                         >
-                          <SelectValue placeholder="Selecciona un rol" />
+                          <SelectValue
+                            placeholder={tAdmin(
+                              "updateUserForm.text.selectRole"
+                            )}
+                          />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="user">Usuario</SelectItem>
-                          <SelectItem value="admin">Administrador</SelectItem>
+                          <SelectItem value="user">
+                            {tAdmin("updateUserForm.text.user")}
+                          </SelectItem>
+                          <SelectItem value="admin">
+                            {tAdmin("updateUserForm.text.administrator")}
+                          </SelectItem>
                         </SelectContent>
                       </Select>
                     </FormControl>
@@ -215,7 +228,7 @@ export function UpdateUserForm({
                         fieldState.invalid && "text-destructive-foreground",
                         fieldState.isDirty &&
                           !fieldState.invalid &&
-                          "text-foreground",
+                          "text-foreground"
                       )}
                     >
                       <ShieldIcon size={16} aria-hidden="true" />
@@ -234,7 +247,7 @@ export function UpdateUserForm({
               ) : (
                 <SaveIcon />
               )}
-              Actualizar usuario
+              {tAdmin("updateUserForm.actions.updateUser")}
             </Button>
 
             <DrawerClose asChild>
@@ -243,7 +256,7 @@ export function UpdateUserForm({
                 variant="outline"
                 ref={updateUserDrawerCloseRef}
               >
-                Cancelar
+                {tCommon("text.cancel")}
               </Button>
             </DrawerClose>
           </div>

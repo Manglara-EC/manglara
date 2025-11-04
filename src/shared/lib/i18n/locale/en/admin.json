@@ -1,0 +1,113 @@
+{
+  "banUserDrawer": {
+    "description": "You are about to ban {{name}}",
+    "title": "Ban user"
+  },
+  "banUserForm": {
+    "actions": {
+      "banUser": "Ban user"
+    },
+    "fields": {
+      "duration": "Ban duration (seconds)",
+      "durationDescription": "Leave empty for a permanent ban",
+      "reason": "Ban reason",
+      "reasonPlaceholder": "Enter the reason for banning this user..."
+    }
+  },
+  "columns": {
+    "fields": {
+      "name": "Name",
+      "banned": "Banned",
+      "reason": "Reason",
+      "expires": "Expires",
+      "never": "Never",
+      "email": "Email",
+      "username": "Username",
+      "role": "Role",
+      "createdAt": "Created at",
+      "updatedAt": "Updated at"
+    },
+    "text": {
+      "emailNotVerified": "Email not verified"
+    }
+  },
+  "dataTable": {
+    "actions": {
+      "tryAgain": "Try again"
+    },
+    "text": {
+      "noUsersFound": "No users found on this page. 😢 Try changing the filters or go to the next page",
+      "somethingWentWrong": "Something went wrong 😢"
+    }
+  },
+  "dataTableColumnHeader": {
+    "actions": {
+      "hide": "Hide"
+    },
+    "text": {
+      "asc": "Asc",
+      "desc": "Desc"
+    }
+  },
+  "dataTableFacetedFilter": {
+    "actions": {
+      "clearFilters": "Clear filters"
+    },
+    "text": {
+      "noResults": "No results found.",
+      "selected": "{{count}} selected"
+    }
+  },
+  "dataTablePagination": {
+    "text": {
+      "goToFirstPage": "Go to first page",
+      "goToLastPage": "Go to last page",
+      "goToNextPage": "Go to next page",
+      "goToPreviousPage": "Go to previous page",
+      "pageOf": "Page {{current}} of {{total}}",
+      "rowsPerPage": "Rows per page"
+    }
+  },
+  "dataTableToolbar": {
+    "actions": {
+      "reset": "Reset"
+    },
+    "fields": {
+      "banned": "Banned",
+      "emailVerified": "Email verified",
+      "role": "Role"
+    },
+    "text": {
+      "administrator": "Administrator",
+      "banned": "Banned",
+      "filterUsers": "Filter users...",
+      "notBanned": "Not banned",
+      "notVerified": "Not verified",
+      "user": "User",
+      "verified": "Verified"
+    }
+  },
+  "dataTableViewOptions": {
+    "text": {
+      "toggleColumns": "Toggle columns",
+      "view": "View"
+    }
+  },
+  "updateUserDrawer": {
+    "description": "You are about to update {{name}}",
+    "title": "Update user"
+  },
+  "updateUserForm": {
+    "actions": {
+      "updateUser": "Update user"
+    },
+    "fields": {
+      "role": "Role"
+    },
+    "text": {
+      "administrator": "Administrator",
+      "selectRole": "Select a role",
+      "user": "User"
+    }
+  }
+}

@@ -1,0 +1,113 @@
+{
+  "banUserDrawer": {
+    "description": "Estás a punto de bloquear a {{name}}",
+    "title": "Bloquear usuario"
+  },
+  "banUserForm": {
+    "actions": {
+      "banUser": "Bloquear usuario"
+    },
+    "fields": {
+      "duration": "Duración del bloqueo (segundos)",
+      "durationDescription": "Dejar vacío para un bloqueo permanente",
+      "reason": "Motivo del bloqueo",
+      "reasonPlaceholder": "Ingresa el motivo para bloquear a este usuario..."
+    }
+  },
+  "columns": {
+    "fields": {
+      "name": "Nombre",
+      "banned": "Bloqueado",
+      "reason": "Motivo",
+      "expires": "Expira",
+      "never": "Nunca",
+      "email": "Correo electrónico",
+      "username": "Usuario",
+      "role": "Rol",
+      "createdAt": "Creado el",
+      "updatedAt": "Actualizado el"
+    },
+    "text": {
+      "emailNotVerified": "Correo electrónico no verificado"
+    }
+  },
+  "dataTable": {
+    "actions": {
+      "tryAgain": "Intentar de nuevo"
+    },
+    "text": {
+      "noUsersFound": "No se encontraron usuarios en esta página. 😢 Intenta cambiar los filtros o ir a la siguiente página",
+      "somethingWentWrong": "Algo salió mal 😢"
+    }
+  },
+  "dataTableColumnHeader": {
+    "actions": {
+      "hide": "Ocultar"
+    },
+    "text": {
+      "asc": "Asc",
+      "desc": "Desc"
+    }
+  },
+  "dataTableFacetedFilter": {
+    "actions": {
+      "clearFilters": "Limpiar filtros"
+    },
+    "text": {
+      "noResults": "No se encontraron resultados.",
+      "selected": "{{count}} seleccionado(s)"
+    }
+  },
+  "dataTablePagination": {
+    "text": {
+      "goToFirstPage": "Ir a la primera página",
+      "goToLastPage": "Ir a la última página",
+      "goToNextPage": "Ir a la siguiente página",
+      "goToPreviousPage": "Ir a la página anterior",
+      "pageOf": "Página {{current}} de {{total}}",
+      "rowsPerPage": "Filas por página"
+    }
+  },
+  "dataTableToolbar": {
+    "actions": {
+      "reset": "Reiniciar"
+    },
+    "fields": {
+      "banned": "Bloqueado",
+      "emailVerified": "Correo verificado",
+      "role": "Rol"
+    },
+    "text": {
+      "administrator": "Administrador",
+      "banned": "Bloqueado",
+      "filterUsers": "Filtrar usuarios...",
+      "notBanned": "No bloqueado",
+      "notVerified": "No verificado",
+      "user": "Usuario",
+      "verified": "Verificado"
+    }
+  },
+  "dataTableViewOptions": {
+    "text": {
+      "toggleColumns": "Mostrar/ocultar columnas",
+      "view": "Ver"
+    }
+  },
+  "updateUserDrawer": {
+    "description": "Estás a punto de actualizar a {{name}}",
+    "title": "Actualizar usuario"
+  },
+  "updateUserForm": {
+    "actions": {
+      "updateUser": "Actualizar usuario"
+    },
+    "fields": {
+      "role": "Rol"
+    },
+    "text": {
+      "administrator": "Administrador",
+      "selectRole": "Selecciona un rol",
+      "user": "Usuario"
+    }
+  }
+}

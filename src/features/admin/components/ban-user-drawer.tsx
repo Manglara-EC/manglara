@@ -1,6 +1,7 @@
 "use client";
 
 import { type RefObject } from "react";
+import { useTranslation } from "react-i18next";
 import { PaginationState } from "@tanstack/react-table";
 
 import {
@@ -26,16 +27,18 @@ export const BanUserDrawer = ({
   user,
   pagination,
 }: Props) => {
+  const { t: tAdmin } = useTranslation("admin");
+
   return (
     <Drawer direction="right">
       <DrawerTrigger ref={banUserDrawerTriggerRef} className="hidden" />
 
       <DrawerContent className="flex flex-col gap-4 p-6">
         <DrawerHeader>
-          <DrawerTitle>Bloquear usuario</DrawerTitle>
+          <DrawerTitle>{tAdmin("banUserDrawer.title")}</DrawerTitle>
 
           <DrawerDescription>
-            Estás a punto de bloquear a {user.name}
+            {tAdmin("banUserDrawer.description", { name: user.name })}
           </DrawerDescription>
         </DrawerHeader>
 

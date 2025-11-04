@@ -1,5 +1,7 @@
 "use client";
 
+import { useTranslation } from "react-i18next";
+
 import { Table } from "@tanstack/react-table";
 import { Settings2 } from "lucide-react";
 
@@ -20,6 +22,8 @@ interface DataTableViewOptionsProps<TData> {
 export function DataTableViewOptions<TData>({
   table,
 }: DataTableViewOptionsProps<TData>) {
+  const { t: tAdmin } = useTranslation("admin");
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -29,11 +33,13 @@ export function DataTableViewOptions<TData>({
           className="ml-auto hidden h-8 lg:flex"
         >
           <Settings2 />
-          Vista
+          {tAdmin("dataTableViewOptions.text.view")}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-[150px]">
-        <DropdownMenuLabel>Alternar columnas</DropdownMenuLabel>
+        <DropdownMenuLabel>
+          {tAdmin("dataTableViewOptions.text.toggleColumns")}
+        </DropdownMenuLabel>
         <DropdownMenuSeparator />
         {table
           .getAllColumns()
@@ -42,7 +48,7 @@ export function DataTableViewOptions<TData>({
               typeof column.accessorFn !== "undefined" &&
               column.getCanHide() &&
               column.id !== "banned" &&
-              column.id !== "emailVerified",
+              column.id !== "emailVerified"
           )
           .map((column) => {
             return (

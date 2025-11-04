@@ -2,6 +2,7 @@
 
 import { Table } from "@tanstack/react-table";
 import { X } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
@@ -16,13 +17,15 @@ interface DataTableToolbarProps<TData> {
 export function DataTableToolbar<TData>({
   table,
 }: DataTableToolbarProps<TData>) {
+  const { t: tAdmin } = useTranslation("admin");
+
   const isFiltered = table.getState().columnFilters.length > 0;
 
   return (
     <div className="flex items-center justify-between">
       <div className="flex flex-1 items-center space-x-2">
         <Input
-          placeholder="Filtrar usuarios..."
+          placeholder={tAdmin("dataTableToolbar.text.filterUsers")}
           value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
             table.getColumn("name")?.setFilterValue(event.target.value)
@@ -32,30 +35,42 @@ export function DataTableToolbar<TData>({
         {table.getColumn("role") && (
           <DataTableFacetedFilter
             column={table.getColumn("role")}
-            title="Rol"
+            title={tAdmin("dataTableToolbar.fields.role")}
             options={[
-              { label: "Administrador", value: "admin" },
-              { label: "Usuario", value: "user" },
+              {
+                label: tAdmin("dataTableToolbar.text.administrator"),
+                value: "admin",
+              },
+              { label: tAdmin("dataTableToolbar.text.user"), value: "user" },
             ]}
           />
         )}
         {table.getColumn("banned") && (
           <DataTableFacetedFilter
             column={table.getColumn("banned")}
-            title="Bloqueado"
+            title={tAdmin("dataTableToolbar.fields.banned")}
             options={[
-              { label: "Bloqueado", value: "true" },
-              { label: "No bloqueado", value: "false" },
+              { label: tAdmin("dataTableToolbar.text.banned"), value: "true" },
+              {
+                label: tAdmin("dataTableToolbar.text.notBanned"),
+                value: "false",
+              },
             ]}
           />
         )}
         {table.getColumn("emailVerified") && (
           <DataTableFacetedFilter
             column={table.getColumn("emailVerified")}
-            title="Correo verificado"
+            title={tAdmin("dataTableToolbar.fields.emailVerified")}
             options={[
-              { label: "Verificado", value: "true" },
-              { label: "No verificado", value: "false" },
+              {
+                label: tAdmin("dataTableToolbar.text.verified"),
+                value: "true",
+              },
+              {
+                label: tAdmin("dataTableToolbar.text.notVerified"),
+                value: "false",
+              },
             ]}
           />
         )}
@@ -65,7 +80,7 @@ export function DataTableToolbar<TData>({
             onClick={() => table.resetColumnFilters()}
             className="h-8 px-2 lg:px-3"
           >
-            Restablecer
+            {tAdmin("dataTableToolbar.actions.reset")}
             <X />
           </Button>
         )}

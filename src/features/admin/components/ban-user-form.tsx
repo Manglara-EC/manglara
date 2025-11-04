@@ -1,5 +1,7 @@
 "use client";
 
+import { useTranslation } from "react-i18next";
+
 import { PaginationState } from "@tanstack/react-table";
 import {
   CalendarIcon,
@@ -36,6 +38,9 @@ export function BanUserForm({
   className,
   ...props
 }: BanUserFormProps) {
+  const { t: tAdmin } = useTranslation("admin");
+  const { t: tCommon } = useTranslation("common");
+
   const { form, onSubmit, isPending, banUserDrawerCloseRef } = useBanUserForm({
     userId,
     pagination,
@@ -57,7 +62,7 @@ export function BanUserForm({
               name="banReason"
               render={({ field, fieldState }) => (
                 <FormItem>
-                  <FormLabel>Motivo del bloqueo</FormLabel>
+                  <FormLabel>{tAdmin("banUserForm.fields.reason")}</FormLabel>
 
                   <div className="relative flex">
                     <FormControl>
@@ -67,7 +72,7 @@ export function BanUserForm({
                         placeholder={
                           fieldState.invalid
                             ? undefined
-                            : "Ingresa el motivo para bloquear a este usuario..."
+                            : tAdmin("banUserForm.fields.reasonPlaceholder")
                         }
                         {...field}
                       />
@@ -79,7 +84,7 @@ export function BanUserForm({
                         fieldState.invalid && "text-destructive-foreground",
                         fieldState.isDirty &&
                           !fieldState.invalid &&
-                          "text-foreground",
+                          "text-foreground"
                       )}
                     >
                       <MessageSquareIcon size={16} aria-hidden="true" />
@@ -95,10 +100,9 @@ export function BanUserForm({
               name="banExpiresIn"
               render={({ field, fieldState }) => (
                 <FormItem>
-                  <FormLabel>Duración del bloqueo (segundos)</FormLabel>
-
+                  <FormLabel>{tAdmin("banUserForm.fields.duration")}</FormLabel>
                   <FormDescription>
-                    Dejar vacío para un bloqueo permanente
+                    {tAdmin("banUserForm.fields.durationDescription")}
                   </FormDescription>
 
                   <div className="relative w-full">
@@ -106,7 +110,7 @@ export function BanUserForm({
                       <Input
                         className="peer aria-invalid:text-destructive-foreground w-full ps-9 shadow-none not-aria-invalid:border-none"
                         type="number"
-                        min="1"
+                        min={1}
                         disabled={isPending}
                         placeholder={fieldState.invalid ? undefined : "60"}
                         {...field}
@@ -114,7 +118,7 @@ export function BanUserForm({
                           field.onChange(
                             e.target.value
                               ? parseInt(e.target.value)
-                              : undefined,
+                              : undefined
                           )
                         }
                         value={field.value || ""}
@@ -127,7 +131,7 @@ export function BanUserForm({
                         fieldState.invalid && "text-destructive-foreground",
                         fieldState.isDirty &&
                           !fieldState.invalid &&
-                          "text-foreground",
+                          "text-foreground"
                       )}
                     >
                       <CalendarIcon size={16} aria-hidden="true" />
@@ -151,7 +155,7 @@ export function BanUserForm({
               ) : (
                 <UserXIcon />
               )}
-              Bloquear usuario
+              {tAdmin("banUserForm.actions.banUser")}
             </Button>
 
             <DrawerClose asChild>
@@ -160,7 +164,7 @@ export function BanUserForm({
                 variant="outline"
                 ref={banUserDrawerCloseRef}
               >
-                Cancelar
+                {tCommon("text.cancel")}
               </Button>
             </DrawerClose>
           </div>

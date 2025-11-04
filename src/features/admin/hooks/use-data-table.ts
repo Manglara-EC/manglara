@@ -16,9 +16,11 @@ import {
 import { authClient } from "@/shared/lib/better-auth/client";
 import type { User } from "@/shared/types";
 
-import { columns } from "@/features/admin/components/columns";
+import { useAdminColumns } from "@/features/admin/components/columns";
 
 export const useDataTable = () => {
+  const columns = useAdminColumns();
+
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({
     banned: false,
     emailVerified: false,

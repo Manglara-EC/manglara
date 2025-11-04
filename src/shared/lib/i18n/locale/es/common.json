@@ -1,7 +1,12 @@
 {
   "actions": {
+    "ban": "Bloquear",
+    "delete": "Eliminar",
+    "edit": "Editar",
     "login": "Iniciar sesión",
-    "verify": "Verificar"
+    "openMenu": "Abrir menú",
+    "verify": "Verificar",
+    "unban": "Desbloquear"
   },
   "fields": {
     "email": "Correo electrónico",
@@ -11,6 +16,7 @@
   },
   "text": {
     "doYouRemember": "¿Ya te acordaste?",
+    "cancel": "Cancelar",
     "orContinueWith": "O continúa con"
   }
 }

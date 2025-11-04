@@ -1,7 +1,12 @@
 {
   "actions": {
+    "ban": "Ban",
+    "delete": "Delete",
+    "edit": "Edit",
     "login": "Sign in",
-    "verify": "Verify"
+    "openMenu": "Open menu",
+    "verify": "Verify",
+    "unban": "Unban"
   },
   "fields": {
     "email": "Email",
@@ -11,6 +16,7 @@
   },
   "text": {
     "doYouRemember": "Remembered your credentials?",
+    "cancel": "Cancel",
     "orContinueWith": "Or continue with"
   }
 }
