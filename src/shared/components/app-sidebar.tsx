@@ -7,6 +7,7 @@ import { NavLink } from "@/shared/components/nav-link";
 import { NavUser } from "@/shared/components/nav-user";
 import { useAppSidebar } from "@/shared/hooks/use-app-sidebar";
 import { NavUserSkeleton } from "@/shared/components/nav-user-skeleton";
+import { LanguageSwitcher } from "@/shared/components/language-switcher";
 import { Button } from "@/shared/components/ui/button";
 
 export const AppSidebar = () => {
@@ -21,7 +22,7 @@ export const AppSidebar = () => {
   } = useAppSidebar();
 
   return (
-    <div className="flex flex-col items-center gap-4 md:items-stretch">
+    <div className="flex h-full flex-col items-center gap-4 md:items-stretch">
       <TypographyLarge className="pl-2 text-center text-4xl font-extrabold">
         <TreePalmIcon className="size-10" />
       </TypographyLarge>
@@ -37,7 +38,11 @@ export const AppSidebar = () => {
         ))}
       </nav>
 
-      <div className="mt-auto max-w-60">
+      <div className="mt-auto max-w-60 px-2">
+        <LanguageSwitcher />
+      </div>
+
+      <div className="max-w-60 border-t pt-4">
         {isSessionLoading && <NavUserSkeleton />}
 
         {isSessionError && (

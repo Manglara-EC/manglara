@@ -1,8 +1,7 @@
 "use client";
 
 import "@/shared/lib/i18n/i18n";
-import { useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
+import { useLanguage } from "@/app/context/language-context";
 import Image from "next/image";
 
 const languages = [
@@ -11,23 +10,14 @@ const languages = [
 ];
 
 export function LanguageSwitcher() {
-  const {
-    i18n: { language, changeLanguage },
-  } = useTranslation();
-
-  const [currentLanguage, setCurrentLanguage] = useState(language || "es");
-
-  useEffect(() => {
-    if (language) setCurrentLanguage(language);
-  }, [language]);
+  const { language, setLanguage } = useLanguage();
 
   const toggleLanguage = () => {
-    const newLang = currentLanguage === "es" ? "en" : "es";
-    setCurrentLanguage(newLang);
-    changeLanguage(newLang);
+    const newLang = language === "es" ? "en" : "es";
+    setLanguage(newLang);
   };
 
-  const currentLang = languages.find((l) => l.code === currentLanguage)!;
+  const currentLang = languages.find((l) => l.code === language)!;
 
   return (
     <button
