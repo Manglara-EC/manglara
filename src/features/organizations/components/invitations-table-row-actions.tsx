@@ -1,4 +1,5 @@
 "use client";
+import { useTranslation } from "react-i18next";
 
 import { Row } from "@tanstack/react-table";
 import { CircleXIcon, LoaderIcon, MoreHorizontal } from "lucide-react";
@@ -21,6 +22,9 @@ interface InvitationsTableRowActionsProps {
 export function InvitationsTableRowActions({
   row,
 }: InvitationsTableRowActionsProps) {
+  const { t: tCommon } = useTranslation("common");
+  const { t: tOrganization } = useTranslation("organization");
+
   const { isCancelInvitationPending, handleCancelInvitation } =
     useInvitationsTableRowActions({
       invitation: row.original,
@@ -35,7 +39,7 @@ export function InvitationsTableRowActions({
             className="data-[state=open]:bg-muted flex h-8 w-8 p-0"
           >
             <MoreHorizontal />
-            <span className="sr-only">Abrir menú</span>
+            <span className="sr-only">{tCommon("actions.openMenu")}</span>
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-[160px]">
@@ -50,7 +54,9 @@ export function InvitationsTableRowActions({
               ) : (
                 <CircleXIcon />
               )}
-              Cancelar invitación
+              {tOrganization(
+                "invitationsTableRowActions.actions.cancelInvitation"
+              )}
             </DropdownMenuItem>
           )}
         </DropdownMenuContent>

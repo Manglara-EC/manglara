@@ -1,4 +1,5 @@
 "use client";
+import { useTranslation } from "react-i18next";
 
 import { PaginationState, Row } from "@tanstack/react-table";
 import { LoaderIcon, MoreHorizontal, TrashIcon } from "lucide-react";
@@ -24,6 +25,9 @@ export function MembersTableRowActions({
   row,
   pagination,
 }: MembersTableRowActionsProps) {
+  const { t: tCommon } = useTranslation("common");
+  const { t: tOrganization } = useTranslation("organization");
+
   const { isRemoveMemberPending, handleRemoveMember } =
     useMembersTableRowActions({
       member: row.original,
@@ -39,7 +43,7 @@ export function MembersTableRowActions({
             className="data-[state=open]:bg-muted flex h-8 w-8 p-0"
           >
             <MoreHorizontal />
-            <span className="sr-only">Abrir menú</span>
+            <span className="sr-only">{tCommon("actions.openMenu")}</span>
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-[160px]">
@@ -54,7 +58,7 @@ export function MembersTableRowActions({
               ) : (
                 <TrashIcon />
               )}
-              Quitar miembro
+              {tOrganization("membersTableRowActions.actions.removeMember")}
             </DropdownMenuItem>
           )}
         </DropdownMenuContent>

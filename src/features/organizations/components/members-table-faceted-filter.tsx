@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { Column } from "@tanstack/react-table";
 import { Check, PlusCircle } from "lucide-react";
 
@@ -35,6 +37,8 @@ export function MembersTableFacetedFilter<TData, TValue>({
   title,
   options,
 }: MembersTableFacetedFilterProps<TData, TValue>) {
+  const { t: tOrganization } = useTranslation("organization");
+
   const facets = column?.getFacetedUniqueValues();
   const selectedValues = new Set(column?.getFilterValue() as string[]);
 
@@ -59,7 +63,9 @@ export function MembersTableFacetedFilter<TData, TValue>({
                     variant="secondary"
                     className="rounded-sm px-1 font-normal"
                   >
-                    {selectedValues.size} seleccionados
+                    {tOrganization("membersTableFacetedFilter.text.selected", {
+                      count: selectedValues.size,
+                    })}
                   </Badge>
                 ) : (
                   options
@@ -83,7 +89,9 @@ export function MembersTableFacetedFilter<TData, TValue>({
         <Command>
           <CommandInput placeholder={title} />
           <CommandList>
-            <CommandEmpty>No se encontraron resultados.</CommandEmpty>
+            <CommandEmpty>
+              {tOrganization("membersTableFacetedFilter.text.noResults")}
+            </CommandEmpty>
             <CommandGroup>
               {options.map((option) => {
                 const isSelected = selectedValues.has(option.value);
@@ -98,7 +106,7 @@ export function MembersTableFacetedFilter<TData, TValue>({
                       }
                       const filterValues = Array.from(selectedValues);
                       column?.setFilterValue(
-                        filterValues.length ? filterValues : undefined,
+                        filterValues.length ? filterValues : undefined
                       );
                     }}
                   >
@@ -107,7 +115,7 @@ export function MembersTableFacetedFilter<TData, TValue>({
                         "border-primary mr-2 flex h-4 w-4 items-center justify-center rounded-sm border",
                         isSelected
                           ? "bg-primary text-primary-foreground"
-                          : "opacity-50 [&_svg]:invisible",
+                          : "opacity-50 [&_svg]:invisible"
                       )}
                     >
                       <Check />
@@ -133,7 +141,9 @@ export function MembersTableFacetedFilter<TData, TValue>({
                     onSelect={() => column?.setFilterValue(undefined)}
                     className="justify-center text-center"
                   >
-                    Limpiar filtros
+                    {tOrganization(
+                      "membersTableFacetedFilter.actions.clearFilters"
+                    )}
                   </CommandItem>
                 </CommandGroup>
               </>

@@ -1,5 +1,7 @@
 "use client";
 
+import { useTranslation } from "react-i18next";
+
 import { PlusIcon } from "lucide-react";
 
 import { TypographyH4 } from "@/shared/components/ui/typography";
@@ -15,6 +17,8 @@ interface Props {
 }
 
 export const OrganizationInvitations = ({ organizationId }: Props) => {
+  const { t: tOrganization } = useTranslation("organization");
+
   const { total, handleSendInvitation, dialogTriggerRef } =
     useOrganizationInvitations({
       organizationId,
@@ -23,11 +27,15 @@ export const OrganizationInvitations = ({ organizationId }: Props) => {
   return (
     <div className="space-y-8 pb-8">
       <div className="flex items-center justify-between">
-        <TypographyH4>Invitaciones ({total})</TypographyH4>
+        <TypographyH4>
+          {tOrganization("organizationInvitations.text.invitations", {
+            count: total,
+          })}
+        </TypographyH4>
 
         <Button onClick={handleSendInvitation}>
           <PlusIcon className="size-4" />
-          Invitar miembro
+          {tOrganization("organizationInvitations.actions.inviteMember")}
         </Button>
       </div>
 

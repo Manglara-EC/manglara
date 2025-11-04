@@ -1,4 +1,5 @@
 "use client";
+import { useTranslation } from "react-i18next";
 
 import { Table } from "@tanstack/react-table";
 import { X } from "lucide-react";
@@ -16,13 +17,15 @@ interface MembersTableToolbarProps<TData> {
 export function MembersTableToolbar<TData>({
   table,
 }: MembersTableToolbarProps<TData>) {
+  const { t: tOrganization } = useTranslation("organization");
+
   const isFiltered = table.getState().columnFilters.length > 0;
 
   return (
     <div className="flex items-center justify-between">
       <div className="flex flex-1 items-center space-x-2">
         <Input
-          placeholder="Filtrar miembros..."
+          placeholder={tOrganization("membersTableToolbar.text.filterMembers")}
           value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
             table.getColumn("name")?.setFilterValue(event.target.value)
@@ -32,10 +35,16 @@ export function MembersTableToolbar<TData>({
         {table.getColumn("role") && (
           <MembersTableFacetedFilter
             column={table.getColumn("role")}
-            title="Rol"
+            title={tOrganization("membersTableToolbar.fields.role")}
             options={[
-              { label: "Dueño", value: "owner" },
-              { label: "Miembro", value: "member" },
+              {
+                label: tOrganization("membersTableToolbar.text.owner"),
+                value: "owner",
+              },
+              {
+                label: tOrganization("membersTableToolbar.text.member"),
+                value: "member",
+              },
             ]}
           />
         )}
@@ -45,7 +54,7 @@ export function MembersTableToolbar<TData>({
             onClick={() => table.resetColumnFilters()}
             className="h-8 px-2 lg:px-3"
           >
-            Restablecer
+            {tOrganization("membersTableToolbar.actions.reset")}
             <X />
           </Button>
         )}

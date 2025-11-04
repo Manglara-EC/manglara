@@ -1,5 +1,7 @@
 "use client";
 
+import { useTranslation } from "react-i18next";
+
 import {
   Dialog,
   DialogContent,
@@ -20,17 +22,20 @@ export function SendOrganizationInvitationDialog({
   dialogTriggerRef,
   organizationId,
 }: Props) {
+  const { t: tOrganization } = useTranslation("organization");
+
   return (
     <Dialog>
       <DialogTrigger ref={dialogTriggerRef} />
 
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Enviar invitación</DialogTitle>
+          <DialogTitle>
+            {tOrganization("sendOrganizationInvitationDialog.title")}
+          </DialogTitle>
 
           <DialogDescription>
-            Envía una invitación a un usuario de Manglara para que se una a la
-            organización.
+            {tOrganization("sendOrganizationInvitationDialog.description")}
           </DialogDescription>
         </DialogHeader>
 

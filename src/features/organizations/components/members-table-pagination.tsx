@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { Table } from "@tanstack/react-table";
 import {
   ChevronLeft,
@@ -23,11 +25,15 @@ interface MembersTablePaginationProps {
 }
 
 export function MembersTablePagination({ table }: MembersTablePaginationProps) {
+  const { t: tOrganization } = useTranslation("organization");
+
   return (
     <div className="flex items-center justify-end px-2">
       <div className="flex items-center space-x-6 lg:space-x-8">
         <div className="flex items-center space-x-2">
-          <p className="text-sm font-medium">Filas por página</p>
+          <p className="text-sm font-medium">
+            {tOrganization("membersTablePagination.text.rowsPerPage")}
+          </p>
           <Select
             value={table.getState().pagination.pageSize.toString()}
             onValueChange={(value) => {
@@ -47,7 +53,9 @@ export function MembersTablePagination({ table }: MembersTablePaginationProps) {
           </Select>
         </div>
         <div className="flex w-[100px] items-center justify-center text-sm font-medium">
-          Página {table.getState().pagination.pageIndex + 1} de{" "}
+          {tOrganization("membersTablePagination.text.page")}{" "}
+          {table.getState().pagination.pageIndex + 1}{" "}
+          {tOrganization("membersTablePagination.text.of")}{" "}
           {table.getPageCount() === 0 ? (
             <Skeleton className="ml-1 size-5 rounded-full" />
           ) : (
@@ -61,7 +69,9 @@ export function MembersTablePagination({ table }: MembersTablePaginationProps) {
             onClick={() => table.firstPage()}
             disabled={!table.getCanPreviousPage()}
           >
-            <span className="sr-only">Ir a la primera página</span>
+            <span className="sr-only">
+              {tOrganization("membersTablePagination.text.goToFirstPage")}
+            </span>
             <ChevronsLeft />
           </Button>
           <Button
@@ -70,7 +80,9 @@ export function MembersTablePagination({ table }: MembersTablePaginationProps) {
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
           >
-            <span className="sr-only">Ir a la página anterior</span>
+            <span className="sr-only">
+              {tOrganization("membersTablePagination.text.goToPreviousPage")}
+            </span>
             <ChevronLeft />
           </Button>
           <Button
@@ -79,7 +91,9 @@ export function MembersTablePagination({ table }: MembersTablePaginationProps) {
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
           >
-            <span className="sr-only">Ir a la página siguiente</span>
+            <span className="sr-only">
+              {tOrganization("membersTablePagination.text.goToNextPage")}
+            </span>
             <ChevronRight />
           </Button>
           <Button
@@ -88,7 +102,9 @@ export function MembersTablePagination({ table }: MembersTablePaginationProps) {
             onClick={() => table.lastPage()}
             disabled={!table.getCanNextPage()}
           >
-            <span className="sr-only">Ir a la última página</span>
+            <span className="sr-only">
+              {tOrganization("membersTablePagination.text.goToLastPage")}
+            </span>
             <ChevronsRight />
           </Button>
         </div>

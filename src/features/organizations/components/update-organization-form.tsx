@@ -1,5 +1,7 @@
 "use client";
 
+import { useTranslation } from "react-i18next";
+
 import { BuildingIcon, HashIcon, LoaderIcon } from "lucide-react";
 import slugify from "slugify";
 
@@ -26,6 +28,9 @@ interface Props {
 }
 
 export function UpdateOrganizationForm({ organization }: Props) {
+  const { t: tCommon } = useTranslation("common");
+  const { t: tOrganization } = useTranslation("organization");
+
   const { form, onSubmit, isPending, dialogCloseRef } =
     useUpdateOrganizationForm({ organization });
 
@@ -40,7 +45,7 @@ export function UpdateOrganizationForm({ organization }: Props) {
           name="name"
           render={({ field, fieldState }) => (
             <FormItem>
-              <FormLabel>Nombre</FormLabel>
+              <FormLabel>{tCommon("fields.name")}</FormLabel>
 
               <div className="relative">
                 <FormControl>
@@ -58,7 +63,7 @@ export function UpdateOrganizationForm({ organization }: Props) {
                     fieldState.invalid && "text-destructive-foreground",
                     fieldState.isDirty &&
                       !fieldState.invalid &&
-                      "text-foreground",
+                      "text-foreground"
                   )}
                 >
                   <BuildingIcon size={16} aria-hidden="true" />
@@ -75,9 +80,11 @@ export function UpdateOrganizationForm({ organization }: Props) {
           name="slug"
           render={({ field, fieldState }) => (
             <FormItem>
-              <FormLabel>Slug</FormLabel>
+              <FormLabel>
+                {tOrganization("updateOrganizationForm.fields.slug")}
+              </FormLabel>
               <FormDescription>
-                El slug es la URL de la organización.
+                {tOrganization("updateOrganizationForm.text.slugDescription")}
               </FormDescription>
 
               <div className="relative">
@@ -97,7 +104,7 @@ export function UpdateOrganizationForm({ organization }: Props) {
                     fieldState.invalid && "text-destructive-foreground",
                     fieldState.isDirty &&
                       !fieldState.invalid &&
-                      "text-foreground",
+                      "text-foreground"
                   )}
                 >
                   <HashIcon size={16} aria-hidden="true" />
@@ -106,7 +113,9 @@ export function UpdateOrganizationForm({ organization }: Props) {
 
               {fieldState.isDirty && !fieldState.invalid && (
                 <TypographySmall className="text-muted-foreground mt-2 ml-2">
-                  <b>El resultado será:</b>{" "}
+                  <b>
+                    {tOrganization("updateOrganizationForm.text.resultWillBe")}
+                  </b>{" "}
                   {slugify(field.value, {
                     lower: true,
                     strict: true,
@@ -123,13 +132,13 @@ export function UpdateOrganizationForm({ organization }: Props) {
         <DialogFooter>
           <DialogClose asChild ref={dialogCloseRef}>
             <Button type="button" variant="outline">
-              Cancelar
+              {tCommon("text.cancel")}
             </Button>
           </DialogClose>
 
           <Button disabled={isPending} type="submit">
             {isPending && <LoaderIcon className="animate-spin" />}
-            Actualizar organización
+            {tOrganization("updateOrganizationForm.actions.updateOrganization")}
           </Button>
         </DialogFooter>
       </form>

@@ -1,4 +1,5 @@
 "use client";
+import { useTranslation } from "react-i18next";
 
 import { Table } from "@tanstack/react-table";
 import { Settings2 } from "lucide-react";
@@ -20,6 +21,8 @@ interface MembersTableViewOptionsProps<TData> {
 export function MembersTableViewOptions<TData>({
   table,
 }: MembersTableViewOptionsProps<TData>) {
+  const { t: tOrganization } = useTranslation("organization");
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -29,11 +32,13 @@ export function MembersTableViewOptions<TData>({
           className="ml-auto hidden h-8 lg:flex"
         >
           <Settings2 />
-          Vista
+          {tOrganization("membersTableViewOptions.text.view")}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-[150px]">
-        <DropdownMenuLabel>Alternar columnas</DropdownMenuLabel>
+        <DropdownMenuLabel>
+          {tOrganization("membersTableViewOptions.text.toggleColumns")}
+        </DropdownMenuLabel>
         <DropdownMenuSeparator />
         {table
           .getAllColumns()
@@ -42,7 +47,7 @@ export function MembersTableViewOptions<TData>({
               typeof column.accessorFn !== "undefined" &&
               column.getCanHide() &&
               column.id !== "banned" &&
-              column.id !== "emailVerified",
+              column.id !== "emailVerified"
           )
           .map((column) => {
             return (

@@ -1,5 +1,7 @@
 "use client";
 
+import { useTranslation } from "react-i18next";
+
 import { ColumnDef } from "@tanstack/react-table";
 import { UserRoundCogIcon, UserRoundIcon } from "lucide-react";
 import { format, formatDistanceToNow } from "date-fns";
@@ -17,22 +19,17 @@ import { MembersTableRowActions } from "@/features/organizations/components/memb
 import type { OrganizationMember } from "@/features/organizations/types";
 
 export const columns: ColumnDef<OrganizationMember>[] = [
-  // {
-  //   accessorKey: "id",
-  //   header: ({ column }) => (
-  //     <MembersTableColumnHeader column={column} title="Id" />
-  //   ),
-  //   cell: ({ row }) => (
-  //     <div className="ml-2.5 flex space-x-2">
-  //       <span className="w-fit font-medium">{row.getValue("id")}</span>
-  //     </div>
-  //   ),
-  // },
   {
     accessorKey: "name",
-    header: ({ column }) => (
-      <MembersTableColumnHeader column={column} title="Nombre" />
-    ),
+    header: ({ column }) => {
+      const { t: tCommon } = useTranslation("common");
+      return (
+        <MembersTableColumnHeader
+          column={column}
+          title={tCommon("fields.name")}
+        />
+      );
+    },
     cell: ({ row }) => {
       return (
         <div className="ml-2.5 flex items-center gap-2">
@@ -43,9 +40,15 @@ export const columns: ColumnDef<OrganizationMember>[] = [
   },
   {
     accessorKey: "email",
-    header: ({ column }) => (
-      <MembersTableColumnHeader column={column} title="Correo electrónico" />
-    ),
+    header: ({ column }) => {
+      const { t: tCommon } = useTranslation("common");
+      return (
+        <MembersTableColumnHeader
+          column={column}
+          title={tCommon("fields.email")}
+        />
+      );
+    },
     cell: ({ row }) => {
       return (
         <div className="ml-2.5 flex items-center gap-2">
@@ -56,10 +59,17 @@ export const columns: ColumnDef<OrganizationMember>[] = [
   },
   {
     accessorKey: "role",
-    header: ({ column }) => (
-      <MembersTableColumnHeader column={column} title="Rol" />
-    ),
+    header: ({ column }) => {
+      const { t: tOrganization } = useTranslation("organization");
+      return (
+        <MembersTableColumnHeader
+          column={column}
+          title={tOrganization("membersTableColumns.fields.role")}
+        />
+      );
+    },
     cell: ({ row }) => {
+      const { t: tOrganization } = useTranslation("organization");
       const role = row.original.role;
       const isOwner = role === "owner";
 
@@ -67,7 +77,9 @@ export const columns: ColumnDef<OrganizationMember>[] = [
         <div className="ml-2.5 flex space-x-2">
           <Badge variant={isOwner ? "default" : "secondary"}>
             {isOwner ? <UserRoundCogIcon /> : <UserRoundIcon />}
-            {role}
+            {isOwner
+              ? tOrganization("membersTableColumns.text.owner")
+              : tOrganization("membersTableColumns.text.member")}
           </Badge>
         </div>
       );
@@ -75,9 +87,15 @@ export const columns: ColumnDef<OrganizationMember>[] = [
   },
   {
     accessorKey: "createdAt",
-    header: ({ column }) => (
-      <MembersTableColumnHeader column={column} title="Miembro desde" />
-    ),
+    header: ({ column }) => {
+      const { t: tOrganization } = useTranslation("organization");
+      return (
+        <MembersTableColumnHeader
+          column={column}
+          title={tOrganization("membersTableColumns.fields.memberSince")}
+        />
+      );
+    },
     cell: ({ row }) => {
       return (
         <div className="ml-2.5 flex space-x-2">

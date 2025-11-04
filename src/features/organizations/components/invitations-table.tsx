@@ -1,5 +1,7 @@
 "use client";
 
+import { useTranslation } from "react-i18next";
+
 import { flexRender } from "@tanstack/react-table";
 import { LoaderIcon } from "lucide-react";
 
@@ -25,6 +27,8 @@ interface Props {
 }
 
 export function InvitationsTable({ organizationId }: Props) {
+  const { t: tOrganization } = useTranslation("organization");
+
   const { table, isSuccess, isLoading, isError, refetch, isRefetching } =
     useInvitationsTable({ organizationId });
 
@@ -45,7 +49,7 @@ export function InvitationsTable({ organizationId }: Props) {
                           ? null
                           : flexRender(
                               header.column.columnDef.header,
-                              header.getContext(),
+                              header.getContext()
                             )}
                       </TableHead>
                     );
@@ -72,7 +76,9 @@ export function InvitationsTable({ organizationId }: Props) {
                 <TableRow>
                   <TableCell colSpan={columns.length} className="h-24">
                     <div className="flex flex-col items-center justify-center gap-2">
-                      Algo salió mal 😢
+                      {tOrganization(
+                        "invitationsTable.text.somethingWentWrong"
+                      )}
                       <Button
                         variant="outline"
                         onClick={() => refetch()}
@@ -82,7 +88,7 @@ export function InvitationsTable({ organizationId }: Props) {
                         {isRefetching && (
                           <LoaderIcon className="animate-spin" />
                         )}
-                        Intentar de nuevo
+                        {tOrganization("invitationsTable.actions.tryAgain")}
                       </Button>
                     </div>
                   </TableCell>
@@ -97,7 +103,7 @@ export function InvitationsTable({ organizationId }: Props) {
                       <TableCell key={cell.id}>
                         {flexRender(
                           cell.column.columnDef.cell,
-                          cell.getContext(),
+                          cell.getContext()
                         )}
                       </TableCell>
                     ))}
@@ -110,7 +116,7 @@ export function InvitationsTable({ organizationId }: Props) {
                     colSpan={columns.length}
                     className="h-24 text-center"
                   >
-                    No se encontraron invitaciones 😢
+                    {tOrganization("invitationsTable.text.noInvitationsFound")}
                   </TableCell>
                 </TableRow>
               )}

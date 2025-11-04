@@ -1,5 +1,7 @@
 "use client";
 
+import { useTranslation } from "react-i18next";
+
 import { ColumnDef } from "@tanstack/react-table";
 import {
   CheckCircleIcon,
@@ -36,12 +38,15 @@ export const columns: ColumnDef<Invitation>[] = [
   // },
   {
     accessorKey: "email",
-    header: ({ column }) => (
-      <InvitationsTableColumnHeader
-        column={column}
-        title="Correo electrónico"
-      />
-    ),
+    header: ({ column }) => {
+      const { t: tCommon } = useTranslation("common");
+      return (
+        <InvitationsTableColumnHeader
+          column={column}
+          title={tCommon("fields.email")}
+        />
+      );
+    },
     cell: ({ row }) => {
       return (
         <div className="ml-2.5 flex items-center gap-2">
@@ -52,10 +57,17 @@ export const columns: ColumnDef<Invitation>[] = [
   },
   {
     accessorKey: "role",
-    header: ({ column }) => (
-      <InvitationsTableColumnHeader column={column} title="Rol" />
-    ),
+    header: ({ column }) => {
+      const { t: tOrganization } = useTranslation("organization");
+      return (
+        <InvitationsTableColumnHeader
+          column={column}
+          title={tOrganization("invitationsTableColumns.fields.role")}
+        />
+      );
+    },
     cell: ({ row }) => {
+      const { t: tOrganization } = useTranslation("organization");
       const role = row.original.role;
       const isOwner = role === "owner";
 
@@ -63,7 +75,9 @@ export const columns: ColumnDef<Invitation>[] = [
         <div className="ml-2.5 flex space-x-2">
           <Badge variant={isOwner ? "default" : "secondary"}>
             {isOwner ? <UserRoundCogIcon /> : <UserRoundIcon />}
-            {role}
+            {isOwner
+              ? tOrganization("invitationsTableColumns.text.owner")
+              : tOrganization("invitationsTableColumns.text.member")}
           </Badge>
         </div>
       );
@@ -71,10 +85,17 @@ export const columns: ColumnDef<Invitation>[] = [
   },
   {
     accessorKey: "status",
-    header: ({ column }) => (
-      <InvitationsTableColumnHeader column={column} title="Estado" />
-    ),
+    header: ({ column }) => {
+      const { t: tOrganization } = useTranslation("organization");
+      return (
+        <InvitationsTableColumnHeader
+          column={column}
+          title={tOrganization("invitationsTableColumns.fields.status")}
+        />
+      );
+    },
     cell: ({ row }) => {
+      const { t: tOrganization } = useTranslation("organization");
       const status = row.original.status;
 
       switch (status) {
@@ -82,7 +103,8 @@ export const columns: ColumnDef<Invitation>[] = [
           return (
             <div className="ml-2.5 flex space-x-2">
               <Badge variant="default">
-                {<ClockIcon />} {status}
+                <ClockIcon />{" "}
+                {tOrganization("invitationsTableColumns.text.pending")}
               </Badge>
             </div>
           );
@@ -90,7 +112,8 @@ export const columns: ColumnDef<Invitation>[] = [
           return (
             <div className="ml-2.5 flex space-x-2">
               <Badge variant="secondary">
-                {<CheckCircleIcon />} {status}
+                <CheckCircleIcon />{" "}
+                {tOrganization("invitationsTableColumns.text.accepted")}
               </Badge>
             </div>
           );
@@ -98,7 +121,8 @@ export const columns: ColumnDef<Invitation>[] = [
           return (
             <div className="ml-2.5 flex space-x-2">
               <Badge variant="outline">
-                {<CircleXIcon />} {status}
+                <CircleXIcon />{" "}
+                {tOrganization("invitationsTableColumns.text.canceled")}
               </Badge>
             </div>
           );
@@ -106,7 +130,8 @@ export const columns: ColumnDef<Invitation>[] = [
           return (
             <div className="ml-2.5 flex space-x-2">
               <Badge variant="destructive">
-                {<CircleXIcon />} {status}
+                <CircleXIcon />{" "}
+                {tOrganization("invitationsTableColumns.text.rejected")}
               </Badge>
             </div>
           );
@@ -115,9 +140,15 @@ export const columns: ColumnDef<Invitation>[] = [
   },
   {
     accessorKey: "expiresAt",
-    header: ({ column }) => (
-      <InvitationsTableColumnHeader column={column} title="Expira en" />
-    ),
+    header: ({ column }) => {
+      const { t: tOrganization } = useTranslation("organization");
+      return (
+        <InvitationsTableColumnHeader
+          column={column}
+          title={tOrganization("invitationsTableColumns.fields.expiresAt")}
+        />
+      );
+    },
     cell: ({ row }) => {
       return (
         <div className="ml-2.5 flex space-x-2">

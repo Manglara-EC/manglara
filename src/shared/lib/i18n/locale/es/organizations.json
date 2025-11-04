@@ -1,0 +1,227 @@
+{
+  "acceptOrRejectInvitationForm": {
+    "actions": {
+      "acceptInvitation": "Aceptar invitación",
+      "rejectInvitation": "Rechazar invitación",
+      "retry": "Reintentar"
+    },
+    "text": {
+      "errorFetchingInvitation": "Algo salió mal al obtener la invitación 😢",
+      "invitationExpires": "La invitación expira",
+      "invitationTo": "Invitación a",
+      "invitedBy": "Has sido invitado por:"
+    }
+  },
+  "createOrganizationButton": {
+    "actions": {
+      "createOrganization": "Crear organización"
+    }
+  },
+  "createOrganizationDialog": {
+    "description": "Las organizaciones te permiten agrupar a tus colaboradores en un solo lugar.",
+    "title": "Crear organización"
+  },
+  "createOrganizationForm": {
+    "actions": {
+      "createOrganization": "Crear organización"
+    },
+    "fields": {
+      "slug": "Slug"
+    },
+    "text": {
+      "resultWillBe": "El resultado será:",
+      "slugDescription": "El slug es la URL de la organización."
+    }
+  },
+  "deleteOrganizationButton": {
+    "text": {
+      "dangerZone": "Zona de peligro",
+      "deleteOrganization": "Eliminar organización",
+      "warning": "Ten cuidado, esta acción no se puede deshacer. Se eliminará toda la información de la organización."
+    }
+  },
+  "invitationsTable": {
+    "actions": {
+      "tryAgain": "Intentar de nuevo"
+    },
+    "text": {
+      "noInvitationsFound": "No se encontraron invitaciones 😢",
+      "somethingWentWrong": "Algo salió mal 😢"
+    }
+  },
+  "invitationsTableColumnHeader": {
+    "actions": {
+      "hide": "Ocultar"
+    },
+    "text": {
+      "asc": "Asc",
+      "desc": "Desc"
+    }
+  },
+  "invitationsTableFacetedFilter": {
+    "actions": {
+      "clearFilters": "Limpiar filtros"
+    },
+    "text": {
+      "noResults": "No se encontraron resultados.",
+      "selected": "{{count}} seleccionado(s)"
+    }
+  },
+  "invitationsTablePagination": {
+    "text": {
+      "goToFirstPage": "Ir a la primera página",
+      "goToLastPage": "Ir a la última página",
+      "goToNextPage": "Ir a la siguiente página",
+      "goToPreviousPage": "Ir a la página anterior",
+      "of": "de",
+      "page": "Página",
+      "rowsPerPage": "Filas por página"
+    }
+  },
+  "invitationsTableRowActions": {
+    "actions": {
+      "cancelInvitation": "Cancelar invitación"
+    }
+  },
+  "invitationsTableToolbar": {
+    "actions": {
+      "reset": "Reiniciar"
+    },
+    "fields": {
+      "role": "Rol",
+      "status": "Estado"
+    },
+    "text": {
+      "accepted": "Aceptada",
+      "canceled": "Cancelada",
+      "member": "Miembro",
+      "owner": "Propietario",
+      "pending": "Pendiente",
+      "rejected": "Rechazada",
+      "searchEmail": "Buscar correo..."
+    }
+  },
+  "invitationsTableViewOptions": {
+    "text": {
+      "toggleColumns": "Mostrar/ocultar columnas",
+      "view": "Ver"
+    }
+  },
+  "membersTable": {
+    "actions": {
+      "tryAgain": "Intentar de nuevo"
+    },
+    "text": {
+      "noUsersFound": "No se encontraron usuarios en esta página. 😢 Intenta cambiar los filtros o ir a la siguiente página",
+      "somethingWentWrong": "Algo salió mal 😢"
+    }
+  },
+  "membersTableColumnHeader": {
+    "actions": {
+      "hide": "Ocultar"
+    },
+    "text": {
+      "asc": "Asc",
+      "desc": "Desc"
+    }
+  },
+  "membersTableFacetedFilter": {
+    "actions": {
+      "clearFilters": "Limpiar filtros"
+    },
+    "text": {
+      "noResults": "No se encontraron resultados.",
+      "selected": "{{count}} seleccionado(s)"
+    }
+  },
+  "membersTablePagination": {
+    "text": {
+      "goToFirstPage": "Ir a la primera página",
+      "goToLastPage": "Ir a la última página",
+      "goToNextPage": "Ir a la siguiente página",
+      "goToPreviousPage": "Ir a la página anterior",
+      "of": "de",
+      "page": "Página",
+      "rowsPerPage": "Filas por página"
+    }
+  },
+  "membersTableRowActions": {
+    "actions": {
+      "removeMember": "Eliminar miembro"
+    }
+  },
+  "membersTableToolbar": {
+    "actions": {
+      "reset": "Reiniciar"
+    },
+    "fields": {
+      "role": "Rol"
+    },
+    "text": {
+      "filterMembers": "Filtrar miembros...",
+      "member": "Miembro",
+      "owner": "Propietario"
+    }
+  },
+  "membersTableViewOptions": {
+    "text": {
+      "toggleColumns": "Mostrar/ocultar columnas",
+      "view": "Ver"
+    }
+  },
+  "organizationInvitations": {
+    "actions": {
+      "inviteMember": "Invitar miembro"
+    },
+    "text": {
+      "invitations": "Invitaciones ({{count}})"
+    }
+  },
+  "organizationMembers": {
+    "text": {
+      "members": "Miembros ({{count}})"
+    }
+  },
+  "organizationPageHeaderError": {
+    "actions": {
+      "retry": "Reintentar"
+    },
+    "text": {
+      "errorFetchingData": "Algo salió mal al obtener los datos de la organización 😢"
+    }
+  },
+  "organizationsSidebar": {
+    "actions": {
+      "retry": "Reintentar"
+    },
+    "text": {
+      "noOrganizations": "No se han creado organizaciones 😢",
+      "somethingWentWrong": "Algo salió mal 😢"
+    }
+  },
+  "sendOrganizationInvitationDialog": {
+    "description": "Envía una invitación a un usuario de Manglara para unirse a la organización.",
+    "title": "Enviar invitación"
+  },
+  "sendOrganizationInvitationForm": {
+    "actions": {
+      "sendInvitation": "Enviar invitación"
+    }
+  },
+  "updateOrganizationDialog": {
+    "description": "Actualiza la información de la organización.",
+    "title": "Actualizar organización"
+  },
+  "updateOrganizationForm": {
+    "actions": {
+      "updateOrganization": "Actualizar organización"
+    },
+    "fields": {
+      "slug": "Slug"
+    },
+    "text": {
+      "resultWillBe": "El resultado será:",
+      "slugDescription": "El slug es la URL de la organización."
+    }
+  }
+}

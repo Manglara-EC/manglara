@@ -1,5 +1,7 @@
 "use client";
 
+import { useTranslation } from "react-i18next";
+
 import {
   Dialog,
   DialogContent,
@@ -16,17 +18,20 @@ interface Props {
 }
 
 export function CreateOrganizationDialog({ dialogTriggerRef }: Props) {
+  const { t: tOrganization } = useTranslation("organization");
+
   return (
     <Dialog>
       <DialogTrigger ref={dialogTriggerRef} />
 
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Crear organización</DialogTitle>
+          <DialogTitle>
+            {tOrganization("createOrganizationDialog.title")}
+          </DialogTitle>
 
           <DialogDescription>
-            Las organizaciones te permiten agrupar tus colaboradores en un mismo
-            lugar.
+            {tOrganization("createOrganizationDialog.description")}
           </DialogDescription>
         </DialogHeader>
 
