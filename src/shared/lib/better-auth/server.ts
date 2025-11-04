@@ -59,7 +59,7 @@ export const auth = betterAuth({
       disableSignUp: true,
       sendMagicLink: async ({ email, url }) => {
         const { error } = await resend.emails.send({
-          from: "Manglara <mail@manglara.aragundy.com>",
+          from: "onboarding@resend.dev",
           to: [email],
           subject: "Iniciar sesión con enlace mágico",
           react: MagicLink({ url }),
@@ -84,7 +84,7 @@ export const auth = betterAuth({
         const inviteLink = `${BASE_URL}/invitations?invitationId=${data.id}`;
 
         const { error } = await resend.emails.send({
-          from: "Manglara <mail@manglara.aragundy.com>",
+          from: "onboarding@resend.dev",
           to: [data.email],
           subject: "Invitación para unirse a organización",
           react: OrganizationInvitation({
@@ -111,7 +111,7 @@ export const auth = betterAuth({
       enabled: true,
       sendChangeEmailVerification: async ({ user, newEmail, url }) => {
         const { error } = await resend.emails.send({
-          from: "Manglara <mail@manglara.aragundy.com>",
+          from: "onboarding@resend.dev",
           to: [user.email],
           subject: "Aprobar nuevo correo electrónico",
           react: ChangeEmailVerification({ name: user.name, newEmail, url }),
@@ -132,7 +132,7 @@ export const auth = betterAuth({
     autoSignInAfterVerification: true,
     sendVerificationEmail: async ({ user, url }) => {
       const { error } = await resend.emails.send({
-        from: "Manglara <mail@manglara.aragundy.com>",
+        from: "onboarding@resend.dev",
         to: [user.email],
         subject: "Verificar dirección de correo electrónico",
         react: VerifyEmail({ name: user.name, url }),
@@ -152,7 +152,7 @@ export const auth = betterAuth({
     requireEmailVerification: true,
     sendResetPassword: async ({ user, url }) => {
       const { error } = await resend.emails.send({
-        from: "Manglara <mail@manglara.aragundy.com>",
+        from: "onboarding@resend.dev",
         to: [user.email],
         subject: "Restablecer contraseña",
         react: ResetPassword({ name: user.name, url }),
