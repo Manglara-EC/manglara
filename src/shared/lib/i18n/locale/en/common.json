@@ -5,6 +5,7 @@
     "edit": "Edit",
     "login": "Sign in",
     "openMenu": "Open menu",
+    "retry": "Retry",
     "verify": "Verify",
     "unban": "Unban"
   },
@@ -15,8 +16,8 @@
     "username": "Username"
   },
   "text": {
-    "doYouRemember": "Remembered your credentials?",
     "cancel": "Cancel",
+    "doYouRemember": "Remembered your credentials?",
     "orContinueWith": "Or continue with"
   }
 }

@@ -1,4 +1,5 @@
 import { MinusCircleIcon } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
@@ -28,13 +29,18 @@ export const ActiveSessionCard = ({
   isCurrentSession,
   isSessionsFetching,
 }: Props) => {
+  const { t: tSettings } = useTranslation("settings");
+
   const { handleRevokeSession } = useActiveSessionCard();
 
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center justify-between gap-2">
-          Agente de usuario {isCurrentSession && <Badge>Actual</Badge>}
+          {tSettings("activeSessionCard.fields.userAgent")}{" "}
+          {isCurrentSession && (
+            <Badge>{tSettings("activeSessionCard.text.current")}</Badge>
+          )}
         </CardTitle>
 
         <CardDescription>{session.userAgent}</CardDescription>
@@ -42,26 +48,34 @@ export const ActiveSessionCard = ({
 
       <CardContent className="flex flex-col gap-0 text-sm">
         <div className="flex items-center gap-2">
-          <TypographyP>Dirección IP:</TypographyP>
+          <TypographyP>
+            {tSettings("activeSessionCard.fields.ipAddress")}:
+          </TypographyP>
           <TypographyMuted>{session.ipAddress}</TypographyMuted>
         </div>
 
         <div className="flex items-center gap-2">
-          <TypographyP>Creado el:</TypographyP>
+          <TypographyP>
+            {tSettings("activeSessionCard.fields.createdAt")}:
+          </TypographyP>
           <TypographyMuted>
             {new Date(session.createdAt).toLocaleString()}
           </TypographyMuted>
         </div>
 
         <div className="flex items-center gap-2">
-          <TypographyP>Actualizado el:</TypographyP>
+          <TypographyP>
+            {tSettings("activeSessionCard.fields.updatedAt")}:
+          </TypographyP>
           <TypographyMuted>
             {new Date(session.updatedAt).toLocaleString()}
           </TypographyMuted>
         </div>
 
         <div className="flex items-center gap-2">
-          <TypographyP>Expira el:</TypographyP>
+          <TypographyP>
+            {tSettings("activeSessionCard.fields.expiresAt")}:
+          </TypographyP>
           <TypographyMuted>
             {new Date(session.expiresAt).toLocaleString()}
           </TypographyMuted>
@@ -77,7 +91,7 @@ export const ActiveSessionCard = ({
             onClick={() => handleRevokeSession(session.token)}
           >
             <MinusCircleIcon />
-            Revocar
+            {tSettings("activeSessionCard.actions.revoke")}
           </Button>
         </CardFooter>
       )}

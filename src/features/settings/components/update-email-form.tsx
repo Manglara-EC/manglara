@@ -16,8 +16,11 @@ import { Input } from "@/shared/components/ui/input";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 
 import { useUpdateEmailForm } from "@/features/settings/hooks/use-update-email-form";
+import { useTranslation } from "react-i18next";
 
 export function UpdateEmailForm() {
+  const { t: tSettings } = useTranslation("settings");
+
   const {
     form,
     canSubmit,
@@ -47,7 +50,9 @@ export function UpdateEmailForm() {
           render={({ field }) => (
             <FormItem>
               <div className="flex flex-wrap items-center justify-start gap-2">
-                <FormLabel>Correo electrónico</FormLabel>
+                <FormLabel>
+                  {tSettings("updateEmailForm.fields.email")}
+                </FormLabel>
 
                 {isSessionLoading && <Skeleton className="h-8 w-[200px]" />}
 
@@ -57,7 +62,7 @@ export function UpdateEmailForm() {
                     type="button"
                     onClick={() => refetchSession()}
                   >
-                    Reintentar{" "}
+                    {tSettings("updateEmailForm.text.retry")}{" "}
                     {isSessionRefetching ? (
                       <LoaderIcon className="animate-spin" />
                     ) : (
@@ -88,8 +93,7 @@ export function UpdateEmailForm() {
               </div>
 
               <FormDescription className="text-muted-foreground text-sm">
-                Esta es la dirección de correo electrónico que usaremos para
-                contactarte. No será visible públicamente.
+                {tSettings("updateEmailForm.text.description")}
               </FormDescription>
 
               <FormMessage />

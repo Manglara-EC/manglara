@@ -16,8 +16,11 @@ import { Input } from "@/shared/components/ui/input";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 
 import { useUpdateUsernameForm } from "@/features/settings/hooks/use-update-username-form";
+import { useTranslation } from "react-i18next";
 
 export function UpdateUsernameForm() {
+  const { t: tSettings } = useTranslation("settings");
+
   const {
     form,
     canSubmit,
@@ -47,7 +50,9 @@ export function UpdateUsernameForm() {
           render={({ field }) => (
             <FormItem>
               <div className="flex flex-wrap items-center justify-start gap-2">
-                <FormLabel>Usuario</FormLabel>
+                <FormLabel>
+                  {tSettings("updateUsernameForm.fields.username")}
+                </FormLabel>
 
                 {isSessionLoading && <Skeleton className="h-8 w-[200px]" />}
 
@@ -57,7 +62,7 @@ export function UpdateUsernameForm() {
                     type="button"
                     onClick={() => refetchSession()}
                   >
-                    Reintentar{" "}
+                    {tSettings("updateUsernameForm.text.retry")}{" "}
                     {isSessionRefetching ? (
                       <LoaderIcon className="animate-spin" />
                     ) : (
@@ -88,8 +93,7 @@ export function UpdateUsernameForm() {
               </div>
 
               <FormDescription className="text-muted-foreground text-sm">
-                Este es tu nombre de usuario público. Puede ser tu nombre real o
-                un pseudónimo.
+                {tSettings("updateUsernameForm.text.description")}
               </FormDescription>
 
               <FormMessage />

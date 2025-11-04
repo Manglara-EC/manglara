@@ -32,6 +32,7 @@ import {
 } from "@/shared/components/ui/input-otp";
 
 import { useQrCodeDialog } from "@/features/settings/hooks/use-qr-code-dialog";
+import { useTranslation } from "react-i18next";
 
 interface Props {
   URI: string;
@@ -49,6 +50,8 @@ export const QRCodeDialog = ({
   backupCodes,
   setBackupCodes,
 }: Props) => {
+  const { t: tSettings } = useTranslation("settings");
+
   const {
     form,
     onSubmit,
@@ -77,13 +80,13 @@ export const QRCodeDialog = ({
         <DialogHeader>
           <DialogTitle>
             {showBackupCodes
-              ? "Descargar códigos de respaldo"
-              : "Escanea el QR en tu aplicación de autenticación"}
+              ? tSettings("qrCodeDialog.text.downloadTitle")
+              : tSettings("qrCodeDialog.text.scanTitle")}
           </DialogTitle>
           <DialogDescription>
             {showBackupCodes
-              ? "Por favor descarga tus códigos de respaldo y guárdalos en un lugar seguro."
-              : "O ingresa tu clave secreta manualmente:"}
+              ? tSettings("qrCodeDialog.text.downloadDescription")
+              : tSettings("qrCodeDialog.text.keyDescription")}
           </DialogDescription>
 
           {!showBackupCodes && (
@@ -107,7 +110,7 @@ export const QRCodeDialog = ({
 
         {showBackupCodes ? (
           <Button onClick={handleDownloadBackupCodes} className="mx-auto">
-            Descargar códigos de respaldo
+            {tSettings("qrCodeDialog.actions.downloadBackupCodes")}
           </Button>
         ) : (
           <Form {...form}>
@@ -117,10 +120,11 @@ export const QRCodeDialog = ({
                 name="code"
                 render={({ field }) => (
                   <FormItem className="flex flex-col">
-                    <FormLabel>Contraseña de un solo uso</FormLabel>
+                    <FormLabel>
+                      {tSettings("qrCodeDialog.fields.code")}
+                    </FormLabel>
                     <FormDescription>
-                      Por favor ingresa la contraseña de un solo uso de tu
-                      aplicación de autenticación.
+                      {tSettings("qrCodeDialog.text.codeDescription")}
                     </FormDescription>
                     <FormControl>
                       <div className="flex items-center gap-4">
@@ -147,7 +151,7 @@ export const QRCodeDialog = ({
                         >
                           {isPending && <LoaderIcon className="animate-spin" />}
                           {isError && <RotateCcwIcon />}
-                          Verificar
+                          {tSettings("qrCodeDialog.actions.verify")}
                         </Button>
                       </div>
                     </FormControl>

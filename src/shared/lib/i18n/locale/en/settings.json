@@ -1,0 +1,125 @@
+{
+  "accountPage": {
+    "text": {
+      "description": "Update your account settings.",
+      "title": "Account"
+    }
+  },
+  "activeSessionCard": {
+    "actions": {
+      "revoke": "Revoke"
+    },
+    "fields": {
+      "createdAt": "Created at",
+      "expiresAt": "Expires at",
+      "ipAddress": "IP Address",
+      "updatedAt": "Updated at",
+      "userAgent": "User agent"
+    },
+    "text": {
+      "current": "Current"
+    }
+  },
+  "activeSessions": {
+    "text": {
+      "retry": "Retry",
+      "title": "Active sessions"
+    }
+  },
+  "generateBackupCodesForm": {
+    "actions": {
+      "generate": "Generate",
+      "generateBackupCodes": "Generate backup codes"
+    },
+    "fields": {
+      "password": "Password"
+    },
+    "text": {
+      "description": "Generate a set of backup codes to use if you lose your authentication app. If you already have backup codes, this will generate a new set and invalidate the previous one.",
+      "label": "Generate backup codes",
+      "passwordDescription": "To generate backup codes, please enter your password.",
+      "title": "Backup codes"
+    }
+  },
+  "qrCodeDialog": {
+    "actions": {
+      "downloadBackupCodes": "Download backup codes",
+      "verify": "Verify"
+    },
+    "fields": {
+      "code": "One-time password"
+    },
+    "text": {
+      "codeDescription": "Please enter the one-time password from your authentication app.",
+      "downloadDescription": "Please download your backup codes and store them in a safe place.",
+      "downloadTitle": "Download backup codes",
+      "keyDescription": "Or enter your secret key manually:",
+      "scanTitle": "Scan the QR in your authentication app"
+    }
+  },
+  "settingsSidebar": {
+    "items": {
+      "account": "Account",
+      "security": "Security"
+    }
+  },
+  "updateEmailForm": {
+    "fields": {
+      "email": "Email"
+    },
+    "text": {
+      "description": "This is the email address we will use to contact you. It will not be publicly visible.",
+      "retry": "Retry"
+    }
+  },
+  "updateNameForm": {
+    "fields": {
+      "name": "Name"
+    },
+    "text": {
+      "description": "This is your public name. It can be your real name or a pseudonym.",
+      "retry": "Retry"
+    }
+  },
+  "updatePasswordForm": {
+    "actions": {
+      "changePassword": "Change password"
+    },
+    "fields": {
+      "currentPassword": "Current password",
+      "newPassword": "New password"
+    },
+    "text": {
+      "currentPasswordDescription": "To change your password, please enter your current password.",
+      "newPasswordDescription": "If you change your password, all your active sessions will be closed.",
+      "title": "Change password"
+    }
+  },
+  "updateTwoFactorForm": {
+    "actions": {
+      "disable2FA": "Disable 2FA",
+      "enable2FA": "Enable 2FA"
+    },
+    "fields": {
+      "enable2FA": "Enable 2FA",
+      "password": "Password"
+    },
+    "text": {
+      "description": "Add an extra layer of security to your account.",
+      "disable": "disable",
+      "enable": "enable",
+      "passwordDescription": "To {{action}} 2FA, please enter your password.",
+      "retry": "Retry",
+      "title": "Two-factor authentication"
+    }
+  },
+  "updateUsernameForm": {
+    "fields": {
+      "username": "Username"
+    },
+    "text": {
+      "description": "This is your public username. It can be your real name or a pseudonym.",
+      "retry": "Retry"
+    }
+  }
+}

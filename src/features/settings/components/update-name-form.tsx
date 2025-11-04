@@ -16,8 +16,11 @@ import { Input } from "@/shared/components/ui/input";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 
 import { useUpdateNameForm } from "@/features/settings/hooks/use-update-name-form";
+import { useTranslation } from "react-i18next";
 
 export function UpdateNameForm() {
+  const { t: tSettings } = useTranslation("settings");
+
   const {
     form,
     canSubmit,
@@ -47,7 +50,7 @@ export function UpdateNameForm() {
           render={({ field }) => (
             <FormItem>
               <div className="flex flex-wrap items-center justify-start gap-2">
-                <FormLabel>Nombre</FormLabel>
+                <FormLabel>{tSettings("updateNameForm.fields.name")}</FormLabel>
 
                 {isSessionLoading && <Skeleton className="h-8 w-[200px]" />}
 
@@ -57,7 +60,7 @@ export function UpdateNameForm() {
                     type="button"
                     onClick={() => refetchSession()}
                   >
-                    Reintentar{" "}
+                    {tSettings("updateNameForm.text.retry")}{" "}
                     {isSessionRefetching ? (
                       <LoaderIcon className="animate-spin" />
                     ) : (
@@ -88,8 +91,7 @@ export function UpdateNameForm() {
               </div>
 
               <FormDescription className="text-muted-foreground text-sm">
-                Este es tu nombre público. Puede ser tu nombre real o un
-                pseudónimo.
+                {tSettings("updateNameForm.text.description")}
               </FormDescription>
 
               <FormMessage />

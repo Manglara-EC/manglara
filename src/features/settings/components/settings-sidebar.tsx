@@ -4,24 +4,27 @@ import { KeyRoundIcon, UserRoundPenIcon } from "lucide-react";
 
 import { SubNavLink } from "@/shared/components/sub-nav-link";
 import { useInMobileWrapper } from "@/shared/hooks/use-in-mobile-wrapper";
-
-const items = [
-  {
-    label: "Cuenta",
-    href: "/settings/account",
-    icon: <UserRoundPenIcon />,
-  },
-  {
-    label: "Seguridad",
-    href: "/settings/security",
-    icon: <KeyRoundIcon />,
-  },
-];
+import { useTranslation } from "react-i18next";
 
 export function SettingsSidebar() {
+  const { t: tSettings } = useTranslation("settings");
+
   const { isMobile, isMounted, isWrapperPage } = useInMobileWrapper({
     wrapperPage: "/settings",
   });
+
+  const items = [
+    {
+      label: tSettings("settingsSidebar.items.account"),
+      href: "/settings/account",
+      icon: <UserRoundPenIcon />,
+    },
+    {
+      label: tSettings("settingsSidebar.items.security"),
+      href: "/settings/security",
+      icon: <KeyRoundIcon />,
+    },
+  ];
 
   if (!isMounted) return null;
 

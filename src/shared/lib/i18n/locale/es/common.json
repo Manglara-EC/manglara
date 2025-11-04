@@ -5,6 +5,7 @@
     "edit": "Editar",
     "login": "Iniciar sesión",
     "openMenu": "Abrir menú",
+    "retry": "Reintentar",
     "verify": "Verificar",
     "unban": "Desbloquear"
   },
@@ -15,8 +16,8 @@
     "username": "Usuario"
   },
   "text": {
-    "doYouRemember": "¿Ya te acordaste?",
     "cancel": "Cancelar",
+    "doYouRemember": "¿Ya te acordaste?",
     "orContinueWith": "O continúa con"
   }
 }

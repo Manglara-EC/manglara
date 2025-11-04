@@ -8,8 +8,11 @@ import { TypographyH4 } from "@/shared/components/ui/typography";
 import { ActiveSessionCard } from "@/features/settings/components/active-session-card";
 import { ActiveSessionCardSkeleton } from "@/features/settings/components/active-session-card-skeleton";
 import { useActiveSessions } from "@/features/settings/hooks/use-active-sessions";
+import { useTranslation } from "react-i18next";
 
 export const ActiveSessions = () => {
+  const { t: tSettings } = useTranslation("settings");
+
   const {
     sessions,
     isSessionsSuccess,
@@ -24,7 +27,8 @@ export const ActiveSessions = () => {
   return (
     <div className="flex flex-col gap-4">
       <TypographyH4 className="mb-4 flex items-center gap-2">
-        Sesiones activas {isSessionsSuccess && `(${sessions?.length})`}{" "}
+        {tSettings("activeSessions.text.title")}{" "}
+        {isSessionsSuccess && `(${sessions?.length})`}{" "}
         {isSessionsFetching && (
           <LoaderIcon className="animate-spin" size={18} />
         )}
@@ -38,7 +42,7 @@ export const ActiveSessions = () => {
           type="button"
           onClick={() => refetchSessions()}
         >
-          Reintentar
+          {tSettings("activeSessions.text.retry")}
           {isSessionsRefetching ? (
             <LoaderIcon className="animate-spin" />
           ) : (
