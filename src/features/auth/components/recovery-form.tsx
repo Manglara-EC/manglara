@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { LoaderIcon } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import { Button } from "@/shared/components/ui/button";
 import {
@@ -28,6 +29,9 @@ export function RecoveryForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
+  const { t: tAuth } = useTranslation("auth");
+  const { t: tCommon } = useTranslation("common");
+
   const { form, onSubmit, isPending } = useRecoveryForm();
 
   return (
@@ -35,13 +39,12 @@ export function RecoveryForm({
       <Card className="bg-background border-none shadow-none">
         <CardHeader className="text-center">
           <CardTitle>
-            <TypographyH1>Código de recuperación</TypographyH1>
+            <TypographyH1>{tAuth("recoveryCode.title")}</TypographyH1>
           </CardTitle>
 
           <CardDescription>
             <TypographyP className="leading-normal">
-              Ingresa el código de tu lista de códigos de recuperación. Recuerda
-              que cada código solo se puede usar una vez 🌴
+              {tAuth("recoveryCode.text.instructions")}
             </TypographyP>
           </CardDescription>
         </CardHeader>
@@ -68,15 +71,15 @@ export function RecoveryForm({
 
               <Button disabled={isPending} type="submit" className="w-full">
                 {isPending && <LoaderIcon className="animate-spin" />}
-                Verificar
+                {tCommon("actions.verify")}
               </Button>
             </form>
           </Form>
 
           <div className="text-center text-sm">
-            ¿Recordaste tus credenciales?{" "}
+            {tAuth("recoveryCode.text.rememberCredentials")}{" "}
             <Link href="/sign-in" className="underline underline-offset-4">
-              Iniciar sesión
+              {tCommon("actions.login")}
             </Link>
           </div>
         </CardContent>

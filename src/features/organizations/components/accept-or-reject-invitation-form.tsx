@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslation } from "react-i18next";
 import { LoaderIcon, RotateCcwIcon } from "lucide-react";
 import { format, formatDistanceToNowStrict } from "date-fns";
 import { es } from "date-fns/locale";
@@ -20,6 +21,8 @@ interface Props {
 }
 
 export const AcceptOrRejectInvitationForm = ({ invitationId }: Props) => {
+  const { t: tOrganization } = useTranslation("organization");
+
   const {
     data,
     isSuccess,
@@ -58,7 +61,9 @@ export const AcceptOrRejectInvitationForm = ({ invitationId }: Props) => {
       {isError && (
         <div className="flex flex-col items-center justify-center gap-2">
           <TypographyH4>
-            Algo salió mal al obtener la invitación 😢
+            {tOrganization(
+              "acceptOrRejectInvitationForm.text.errorFetchingInvitation"
+            )}
           </TypographyH4>
 
           <Button variant="outline" onClick={() => refetch()}>
@@ -67,7 +72,7 @@ export const AcceptOrRejectInvitationForm = ({ invitationId }: Props) => {
             ) : (
               <RotateCcwIcon />
             )}
-            Reintentar
+            {tOrganization("acceptOrRejectInvitationForm.actions.retry")}
           </Button>
         </div>
       )}
@@ -76,20 +81,23 @@ export const AcceptOrRejectInvitationForm = ({ invitationId }: Props) => {
         <div className="bg-background/80 border-border -mt-12 flex w-full max-w-2xl flex-col items-center gap-12 rounded-4xl border p-12 shadow-2xl">
           <div className="flex flex-col items-center gap-2">
             <TypographyH4 className="text-2xl md:text-3xl">
-              Invitación a{" "}
+              {tOrganization("acceptOrRejectInvitationForm.text.invitationTo")}{" "}
               <span className="text-primary text-2xl font-semibold md:text-3xl">
                 {data.organizationName}
               </span>
             </TypographyH4>
             <span className="text-muted-foreground text-lg md:text-xl">
-              Te ha invitado:{" "}
+              {tOrganization("acceptOrRejectInvitationForm.text.invitedBy")}{" "}
               <span className="font-medium">{data.inviterEmail}</span>
             </span>
           </div>
 
           <div className="flex flex-col items-center gap-4">
             <span className="text-muted-foreground text-base md:text-lg">
-              La invitación expira&nbsp;
+              {tOrganization(
+                "acceptOrRejectInvitationForm.text.invitationExpires"
+              )}
+              &nbsp;
               <Tooltip>
                 <TooltipTrigger asChild>
                   <span className="cursor-help underline decoration-dotted">
@@ -115,7 +123,9 @@ export const AcceptOrRejectInvitationForm = ({ invitationId }: Props) => {
               {isAcceptInvitationPending && (
                 <LoaderIcon className="mr-3 h-6 w-6 animate-spin" />
               )}
-              Aceptar invitación
+              {tOrganization(
+                "acceptOrRejectInvitationForm.actions.acceptInvitation"
+              )}
             </Button>
 
             <Button
@@ -127,7 +137,9 @@ export const AcceptOrRejectInvitationForm = ({ invitationId }: Props) => {
               {isRejectInvitationPending && (
                 <LoaderIcon className="mr-3 h-6 w-6 animate-spin" />
               )}
-              Rechazar invitación
+              {tOrganization(
+                "acceptOrRejectInvitationForm.actions.rejectInvitation"
+              )}
             </Button>
           </div>
         </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { type RefObject } from "react";
+import { useTranslation } from "react-i18next";
 import { PaginationState } from "@tanstack/react-table";
 
 import {
@@ -26,16 +27,18 @@ export const UpdateUserDrawer = ({
   user,
   pagination,
 }: Props) => {
+  const { t: tAdmin } = useTranslation("admin");
+
   return (
     <Drawer direction="right">
       <DrawerTrigger ref={updateUserDrawerTriggerRef} className="hidden" />
 
       <DrawerContent className="flex flex-col gap-4 p-6">
         <DrawerHeader>
-          <DrawerTitle>Actualizar usuario</DrawerTitle>
+          <DrawerTitle>{tAdmin("updateUserDrawer.title")}</DrawerTitle>
 
           <DrawerDescription>
-            Estás a punto de actualizar a {user.name}
+            {tAdmin("updateUserDrawer.description", { name: user.name })}
           </DrawerDescription>
         </DrawerHeader>
 

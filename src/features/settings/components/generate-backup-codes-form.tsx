@@ -16,8 +16,11 @@ import { Input } from "@/shared/components/ui/input";
 import { TypographyH4 } from "@/shared/components/ui/typography";
 
 import { useGenerateBackupCodesForm } from "@/features/settings/hooks/use-generate-backup-codes-form";
+import { useTranslation } from "react-i18next";
 
 export const GenerateBackupCodesForm = () => {
+  const { t: tSettings } = useTranslation("settings");
+
   const { form, onSubmit, isPending, isError, isTwoFactorEnabled } =
     useGenerateBackupCodesForm();
 
@@ -25,7 +28,9 @@ export const GenerateBackupCodesForm = () => {
     isTwoFactorEnabled && (
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-          <TypographyH4>Códigos de respaldo</TypographyH4>
+          <TypographyH4>
+            {tSettings("generateBackupCodesForm.text.title")}
+          </TypographyH4>
 
           <div className="space-y-4">
             <FormField
@@ -34,7 +39,9 @@ export const GenerateBackupCodesForm = () => {
               render={({ field }) => (
                 <FormItem>
                   <div className="flex flex-wrap items-center justify-start gap-4">
-                    <FormLabel>Generar códigos de respaldo</FormLabel>
+                    <FormLabel>
+                      {tSettings("generateBackupCodesForm.text.label")}
+                    </FormLabel>
 
                     <FormControl>
                       <Button
@@ -44,16 +51,13 @@ export const GenerateBackupCodesForm = () => {
                         variant="outline"
                         onClick={() => field.onChange(true)}
                       >
-                        Generar
+                        {tSettings("generateBackupCodesForm.actions.generate")}
                       </Button>
                     </FormControl>
                   </div>
 
                   <FormDescription>
-                    Genera un conjunto de códigos de respaldo para usar si
-                    pierdes tu aplicación de autenticación. Si ya tienes códigos
-                    de respaldo, esto generará un nuevo conjunto e invalidará el
-                    anterior.
+                    {tSettings("generateBackupCodesForm.text.description")}
                   </FormDescription>
                 </FormItem>
               )}
@@ -68,11 +72,14 @@ export const GenerateBackupCodesForm = () => {
               render={({ field }) => (
                 <FormItem className="bg-destructive/40 flex flex-col items-start gap-4 rounded-lg p-4">
                   <div className="space-y-0.5">
-                    <FormLabel className="text-base">Contraseña</FormLabel>
+                    <FormLabel className="text-base">
+                      {tSettings("generateBackupCodesForm.fields.password")}
+                    </FormLabel>
 
                     <FormDescription>
-                      Para generar códigos de respaldo, por favor ingresa tu
-                      contraseña.
+                      {tSettings(
+                        "generateBackupCodesForm.text.passwordDescription"
+                      )}
                     </FormDescription>
                   </div>
 
@@ -88,7 +95,9 @@ export const GenerateBackupCodesForm = () => {
                   >
                     {isPending && <LoaderIcon className="animate-spin" />}
                     {isError && <RotateCcwIcon />}
-                    Generar códigos de respaldo
+                    {tSettings(
+                      "generateBackupCodesForm.actions.generateBackupCodes"
+                    )}
                   </Button>
                 </FormItem>
               )}

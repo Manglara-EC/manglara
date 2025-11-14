@@ -1,6 +1,7 @@
 "use client";
 
 import { LoaderIcon, MailIcon } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import { Button } from "@/shared/components/ui/button";
 import {
@@ -17,6 +18,9 @@ import { cn } from "@/shared/utils/cn";
 import { useMagicLinkForm } from "@/features/auth/hooks/use-magic-link-form";
 
 export function MagicLinkForm() {
+  const { t: tAuth } = useTranslation("auth");
+  const { t: tCommon } = useTranslation("common");
+
   const { form, onSubmit, isPending } = useMagicLinkForm();
 
   return (
@@ -30,7 +34,7 @@ export function MagicLinkForm() {
           name="email"
           render={({ field, fieldState }) => (
             <FormItem>
-              <FormLabel>Correo electrónico</FormLabel>
+              <FormLabel>{tCommon("fields.email")}</FormLabel>
 
               <div className="relative">
                 <FormControl>
@@ -39,7 +43,7 @@ export function MagicLinkForm() {
                     type="email"
                     disabled={isPending}
                     placeholder={
-                      fieldState.invalid ? undefined : "david@aragundy.com"
+                      fieldState.invalid ? undefined : "email@manglara.com"
                     }
                     {...field}
                   />
@@ -51,7 +55,7 @@ export function MagicLinkForm() {
                     fieldState.invalid && "text-destructive-foreground",
                     fieldState.isDirty &&
                       !fieldState.invalid &&
-                      "text-foreground",
+                      "text-foreground"
                   )}
                 >
                   <MailIcon size={16} aria-hidden="true" />
@@ -65,7 +69,7 @@ export function MagicLinkForm() {
 
         <Button disabled={isPending} type="submit">
           {isPending && <LoaderIcon className="animate-spin" />}
-          Enviar enlace mágico
+          {tAuth("magicLink.actions.sendLink")}
         </Button>
       </form>
     </Form>

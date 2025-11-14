@@ -1,5 +1,7 @@
 "use client";
 
+import { useTranslation } from "react-i18next";
+
 import { flexRender } from "@tanstack/react-table";
 import { LoaderIcon } from "lucide-react";
 
@@ -25,6 +27,8 @@ interface Props {
 }
 
 export function MembersTable({ organizationId }: Props) {
+  const { t: tOrganization } = useTranslation("organization");
+
   const {
     table,
     isSuccess,
@@ -52,7 +56,7 @@ export function MembersTable({ organizationId }: Props) {
                           ? null
                           : flexRender(
                               header.column.columnDef.header,
-                              header.getContext(),
+                              header.getContext()
                             )}
                       </TableHead>
                     );
@@ -72,14 +76,14 @@ export function MembersTable({ organizationId }: Props) {
                         </TableCell>
                       ))}
                     </TableRow>
-                  ),
+                  )
                 )}
 
               {isError && (
                 <TableRow>
                   <TableCell colSpan={columns.length} className="h-24">
                     <div className="flex flex-col items-center justify-center gap-2">
-                      Algo salió mal 😢
+                      {tOrganization("membersTable.text.somethingWentWrong")}
                       <Button
                         variant="outline"
                         onClick={() => refetch()}
@@ -89,7 +93,7 @@ export function MembersTable({ organizationId }: Props) {
                         {isRefetching && (
                           <LoaderIcon className="animate-spin" />
                         )}
-                        Intentar de nuevo
+                        {tOrganization("membersTable.actions.tryAgain")}
                       </Button>
                     </div>
                   </TableCell>
@@ -104,7 +108,7 @@ export function MembersTable({ organizationId }: Props) {
                       <TableCell key={cell.id}>
                         {flexRender(
                           cell.column.columnDef.cell,
-                          cell.getContext(),
+                          cell.getContext()
                         )}
                       </TableCell>
                     ))}
@@ -117,8 +121,7 @@ export function MembersTable({ organizationId }: Props) {
                     colSpan={columns.length}
                     className="h-24 text-center"
                   >
-                    No se encontraron usuarios en esta página. 😢 <br /> Intenta
-                    cambiar los filtros o ir a la página siguiente
+                    {tOrganization("membersTable.text.noUsersFound")}
                   </TableCell>
                 </TableRow>
               )}

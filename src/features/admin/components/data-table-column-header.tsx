@@ -1,5 +1,6 @@
 import { Column } from "@tanstack/react-table";
 import { ArrowDown, ArrowUp, ChevronsUpDown, EyeOff } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import { cn } from "@/shared/utils/cn";
 import { Button } from "@/shared/components/ui/button";
@@ -22,6 +23,8 @@ export function DataTableColumnHeader<TData, TValue>({
   title,
   className,
 }: DataTableColumnHeaderProps<TData, TValue>) {
+  const { t: tAdmin } = useTranslation("admin");
+
   if (!column.getCanSort()) {
     return <div className={cn(className)}>{title}</div>;
   }
@@ -48,16 +51,16 @@ export function DataTableColumnHeader<TData, TValue>({
         <DropdownMenuContent align="start">
           <DropdownMenuItem onClick={() => column.toggleSorting(false)}>
             <ArrowUp className="text-muted-foreground/70 h-3.5 w-3.5" />
-            Asc
+            {tAdmin("dataTableColumnHeader.text.asc")}
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => column.toggleSorting(true)}>
             <ArrowDown className="text-muted-foreground/70 h-3.5 w-3.5" />
-            Desc
+            {tAdmin("dataTableColumnHeader.text.desc")}
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={() => column.toggleVisibility(false)}>
             <EyeOff className="text-muted-foreground/70 h-3.5 w-3.5" />
-            Ocultar
+            {tAdmin("dataTableColumnHeader.actions.hide")}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

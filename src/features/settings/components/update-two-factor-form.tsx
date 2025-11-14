@@ -19,8 +19,11 @@ import { TypographyH4 } from "@/shared/components/ui/typography";
 
 import { QRCodeDialog } from "@/features/settings/components/qr-code-dialog";
 import { useUpdateTwoFactorForm } from "@/features/settings/hooks/use-update-two-factor-form";
+import { useTranslation } from "react-i18next";
 
 export const UpdateTwoFactorForm = () => {
+  const { t: tSettings } = useTranslation("settings");
+
   const {
     form,
     onSubmit,
@@ -51,7 +54,9 @@ export const UpdateTwoFactorForm = () => {
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-          <TypographyH4>Autenticación de dos factores</TypographyH4>
+          <TypographyH4>
+            {tSettings("updateTwoFactorForm.text.title")}
+          </TypographyH4>
 
           <div className="space-y-4">
             <FormField
@@ -60,9 +65,11 @@ export const UpdateTwoFactorForm = () => {
               render={({ field }) => (
                 <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                   <div className="space-y-0.5">
-                    <FormLabel className="text-base">Habilitar 2FA</FormLabel>
+                    <FormLabel className="text-base">
+                      {tSettings("updateTwoFactorForm.fields.enable2FA")}
+                    </FormLabel>
                     <FormDescription>
-                      Añade una capa extra de seguridad a tu cuenta.
+                      {tSettings("updateTwoFactorForm.text.description")}
                     </FormDescription>
                   </div>
 
@@ -76,7 +83,7 @@ export const UpdateTwoFactorForm = () => {
                       type="button"
                       onClick={() => refetchSession()}
                     >
-                      Reintentar{" "}
+                      {tSettings("updateTwoFactorForm.text.retry")}{" "}
                       {isSessionRefetching ? (
                         <LoaderIcon className="animate-spin" />
                       ) : (
@@ -107,14 +114,19 @@ export const UpdateTwoFactorForm = () => {
               render={({ field }) => (
                 <FormItem className="flex flex-col items-start gap-4 rounded-lg border-2 border-dotted p-4">
                   <div className="space-y-0.5">
-                    <FormLabel className="text-base">Contraseña</FormLabel>
+                    <FormLabel className="text-base">
+                      {tSettings("updateTwoFactorForm.fields.password")}
+                    </FormLabel>
 
                     <FormDescription>
-                      Para{" "}
-                      {form.getValues("enable2FA")
-                        ? "habilitar"
-                        : "deshabilitar"}{" "}
-                      la 2FA, por favor ingresa tu contraseña.
+                      {tSettings(
+                        "updateTwoFactorForm.text.passwordDescription",
+                        {
+                          action: form.getValues("enable2FA")
+                            ? tSettings("updateTwoFactorForm.text.enable")
+                            : tSettings("updateTwoFactorForm.text.disable"),
+                        }
+                      )}
                     </FormDescription>
                   </div>
 
@@ -131,9 +143,8 @@ export const UpdateTwoFactorForm = () => {
                     {isPending && <LoaderIcon className="animate-spin" />}
                     {isError && <RotateCcwIcon />}
                     {form.getValues("enable2FA")
-                      ? "Habilitar"
-                      : "Deshabilitar"}{" "}
-                    2FA
+                      ? tSettings("updateTwoFactorForm.actions.enable2FA")
+                      : tSettings("updateTwoFactorForm.actions.disable2FA")}
                   </Button>
                 </FormItem>
               )}

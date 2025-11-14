@@ -1,0 +1,23 @@
+{
+  "actions": {
+    "ban": "Ban",
+    "delete": "Delete",
+    "edit": "Edit",
+    "login": "Sign in",
+    "openMenu": "Open menu",
+    "retry": "Retry",
+    "verify": "Verify",
+    "unban": "Unban"
+  },
+  "fields": {
+    "email": "Email",
+    "name": "Name",
+    "password": "Password",
+    "username": "Username"
+  },
+  "text": {
+    "cancel": "Cancel",
+    "doYouRemember": "Remembered your credentials?",
+    "orContinueWith": "Or continue with"
+  }
+}

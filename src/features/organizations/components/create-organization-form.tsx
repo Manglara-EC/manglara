@@ -1,5 +1,7 @@
 "use client";
 
+import { useTranslation } from "react-i18next";
+
 import { BuildingIcon, HashIcon, LoaderIcon } from "lucide-react";
 import slugify from "slugify";
 
@@ -21,6 +23,9 @@ import { TypographySmall } from "@/shared/components/ui/typography";
 import { useCreateOrganizationForm } from "@/features/organizations/hooks/use-create-organization-form";
 
 export function CreateOrganizationForm() {
+  const { t: tCommon } = useTranslation("common");
+  const { t: tOrganization } = useTranslation("organization");
+
   const { form, onSubmit, isPending, dialogCloseRef } =
     useCreateOrganizationForm();
 
@@ -35,7 +40,7 @@ export function CreateOrganizationForm() {
           name="name"
           render={({ field, fieldState }) => (
             <FormItem>
-              <FormLabel>Nombre</FormLabel>
+              <FormLabel>{tCommon("fields.name")}</FormLabel>
 
               <div className="relative">
                 <FormControl>
@@ -53,7 +58,7 @@ export function CreateOrganizationForm() {
                     fieldState.invalid && "text-destructive-foreground",
                     fieldState.isDirty &&
                       !fieldState.invalid &&
-                      "text-foreground",
+                      "text-foreground"
                   )}
                 >
                   <BuildingIcon size={16} aria-hidden="true" />
@@ -70,9 +75,11 @@ export function CreateOrganizationForm() {
           name="slug"
           render={({ field, fieldState }) => (
             <FormItem>
-              <FormLabel>Slug</FormLabel>
+              <FormLabel>
+                {tOrganization("createOrganizationForm.fields.slug")}
+              </FormLabel>
               <FormDescription>
-                El slug es la URL de la organización.
+                {tOrganization("createOrganizationForm.text.slugDescription")}
               </FormDescription>
 
               <div className="relative">
@@ -92,7 +99,7 @@ export function CreateOrganizationForm() {
                     fieldState.invalid && "text-destructive-foreground",
                     fieldState.isDirty &&
                       !fieldState.invalid &&
-                      "text-foreground",
+                      "text-foreground"
                   )}
                 >
                   <HashIcon size={16} aria-hidden="true" />
@@ -101,7 +108,9 @@ export function CreateOrganizationForm() {
 
               {fieldState.isDirty && !fieldState.invalid && (
                 <TypographySmall className="text-muted-foreground mt-2 ml-2">
-                  <b>El resultado será:</b>{" "}
+                  <b>
+                    {tOrganization("createOrganizationForm.text.resultWillBe")}
+                  </b>{" "}
                   {slugify(field.value, {
                     lower: true,
                     strict: true,
@@ -118,13 +127,13 @@ export function CreateOrganizationForm() {
         <DialogFooter>
           <DialogClose asChild ref={dialogCloseRef}>
             <Button type="button" variant="outline">
-              Cancelar
+              {tCommon("text.cancel")}
             </Button>
           </DialogClose>
 
           <Button disabled={isPending} type="submit">
             {isPending && <LoaderIcon className="animate-spin" />}
-            Crear organización
+            {tOrganization("createOrganizationForm.actions.createOrganization")}
           </Button>
         </DialogFooter>
       </form>

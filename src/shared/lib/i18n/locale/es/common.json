@@ -1,0 +1,23 @@
+{
+  "actions": {
+    "ban": "Bloquear",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "login": "Iniciar sesión",
+    "openMenu": "Abrir menú",
+    "retry": "Reintentar",
+    "verify": "Verificar",
+    "unban": "Desbloquear"
+  },
+  "fields": {
+    "email": "Correo electrónico",
+    "name": "Nombre",
+    "password": "Contraseña",
+    "username": "Usuario"
+  },
+  "text": {
+    "cancel": "Cancelar",
+    "doYouRemember": "¿Ya te acordaste?",
+    "orContinueWith": "O continúa con"
+  }
+}

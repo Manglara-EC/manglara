@@ -1,5 +1,6 @@
 import { Column } from "@tanstack/react-table";
 import { Check, PlusCircle } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
@@ -35,6 +36,8 @@ export function DataTableFacetedFilter<TData, TValue>({
   title,
   options,
 }: DataTableFacetedFilterProps<TData, TValue>) {
+  const { t: tAdmin } = useTranslation("admin");
+
   const facets = column?.getFacetedUniqueValues();
   const selectedValues = new Set(column?.getFilterValue() as string[]);
 
@@ -59,7 +62,9 @@ export function DataTableFacetedFilter<TData, TValue>({
                     variant="secondary"
                     className="rounded-sm px-1 font-normal"
                   >
-                    {selectedValues.size} seleccionados
+                    {tAdmin("dataTableFacetedFilter.text.selected", {
+                      count: selectedValues.size,
+                    })}
                   </Badge>
                 ) : (
                   options
@@ -83,7 +88,9 @@ export function DataTableFacetedFilter<TData, TValue>({
         <Command>
           <CommandInput placeholder={title} />
           <CommandList>
-            <CommandEmpty>No se encontraron resultados.</CommandEmpty>
+            <CommandEmpty>
+              {tAdmin("dataTableFacetedFilter.text.noResults")}
+            </CommandEmpty>
             <CommandGroup>
               {options.map((option) => {
                 const isSelected = selectedValues.has(option.value);
@@ -98,7 +105,7 @@ export function DataTableFacetedFilter<TData, TValue>({
                       }
                       const filterValues = Array.from(selectedValues);
                       column?.setFilterValue(
-                        filterValues.length ? filterValues : undefined,
+                        filterValues.length ? filterValues : undefined
                       );
                     }}
                   >
@@ -107,7 +114,7 @@ export function DataTableFacetedFilter<TData, TValue>({
                         "border-primary mr-2 flex h-4 w-4 items-center justify-center rounded-sm border",
                         isSelected
                           ? "bg-primary text-primary-foreground"
-                          : "opacity-50 [&_svg]:invisible",
+                          : "opacity-50 [&_svg]:invisible"
                       )}
                     >
                       <Check />
@@ -133,7 +140,7 @@ export function DataTableFacetedFilter<TData, TValue>({
                     onSelect={() => column?.setFilterValue(undefined)}
                     className="justify-center text-center"
                   >
-                    Limpiar filtros
+                    {tAdmin("dataTableFacetedFilter.actions.clearFilters")}
                   </CommandItem>
                 </CommandGroup>
               </>

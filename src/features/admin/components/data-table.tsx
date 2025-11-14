@@ -17,7 +17,7 @@ import { ScrollArea, ScrollBar } from "@/shared/components/ui/scroll-area";
 
 import { DataTablePagination } from "@/features/admin/components/data-table-pagination";
 import { DataTableToolbar } from "@/features/admin/components/data-table-toolbar";
-import { columns } from "@/features/admin/components/columns";
+import { useAdminColumns } from "@/features/admin/components/columns";
 import { useDataTable } from "@/features/admin/hooks/use-data-table";
 
 export function DataTable() {
@@ -30,6 +30,8 @@ export function DataTable() {
     isRefetching,
     pagination,
   } = useDataTable();
+
+  const columns = useAdminColumns();
 
   return (
     <div className="w-full space-y-4">
@@ -48,7 +50,7 @@ export function DataTable() {
                           ? null
                           : flexRender(
                               header.column.columnDef.header,
-                              header.getContext(),
+                              header.getContext()
                             )}
                       </TableHead>
                     );
@@ -68,7 +70,7 @@ export function DataTable() {
                         </TableCell>
                       ))}
                     </TableRow>
-                  ),
+                  )
                 )}
 
               {isError && (
@@ -100,7 +102,7 @@ export function DataTable() {
                       <TableCell key={cell.id}>
                         {flexRender(
                           cell.column.columnDef.cell,
-                          cell.getContext(),
+                          cell.getContext()
                         )}
                       </TableCell>
                     ))}

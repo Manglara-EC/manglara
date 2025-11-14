@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { LoaderIcon, MailIcon } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import { Button } from "@/shared/components/ui/button";
 import {
@@ -31,17 +32,20 @@ export function ForgotPasswordForm({
 }: React.ComponentProps<"div">) {
   const { form, onSubmit, isPending } = useForgotPasswordForm();
 
+  const { t: tAuth } = useTranslation("auth");
+  const { t: tCommon } = useTranslation("common");
+
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card className="bg-background border-none shadow-none">
         <CardHeader className="text-center">
           <CardTitle>
-            <TypographyH1>Olvidé mi contraseña</TypographyH1>
+            <TypographyH1>{tAuth("recoverPassword.title")}</TypographyH1>
           </CardTitle>
 
           <CardDescription>
             <TypographyP className="leading-normal">
-              Ingresa tu correo electrónico para restablecer tu contraseña 🌴
+              {tAuth("recoverPassword.text.askEmail")}
             </TypographyP>
           </CardDescription>
         </CardHeader>
@@ -53,7 +57,7 @@ export function ForgotPasswordForm({
                 name="email"
                 render={({ field, fieldState }) => (
                   <FormItem>
-                    <FormLabel>Correo electrónico</FormLabel>
+                    <FormLabel>{tCommon("fields.email")}</FormLabel>
 
                     <div className="relative">
                       <FormControl>
@@ -64,7 +68,7 @@ export function ForgotPasswordForm({
                           placeholder={
                             fieldState.invalid
                               ? undefined
-                              : "david@aragundy.com"
+                              : "email@manglara.com"
                           }
                           {...field}
                         />
@@ -76,7 +80,7 @@ export function ForgotPasswordForm({
                           fieldState.invalid && "text-destructive-foreground",
                           fieldState.isDirty &&
                             !fieldState.invalid &&
-                            "text-foreground",
+                            "text-foreground"
                         )}
                       >
                         <MailIcon size={16} aria-hidden="true" />
@@ -90,18 +94,18 @@ export function ForgotPasswordForm({
 
               <Button disabled={isPending} type="submit" className="w-full">
                 {isPending && <LoaderIcon className="animate-spin" />}
-                Enviar enlace de restablecimiento
+                {tAuth("recoverPassword.actions.sendEmail")}
               </Button>
             </form>
           </Form>
 
           <div className="text-center text-sm">
-            ¿Ya te acordaste?{" "}
+            {tCommon("text.doYouRemember")}{" "}
             <Link
               href="/sign-in"
               className="font-bold hover:underline hover:underline-offset-4"
             >
-              Iniciar sesión
+              {tCommon("actions.login")}
             </Link>
           </div>
         </CardContent>

@@ -1,0 +1,252 @@
+{
+  "acceptOrRejectInvitationForm": {
+    "actions": {
+      "acceptInvitation": "Accept invitation",
+      "rejectInvitation": "Reject invitation",
+      "retry": "Retry"
+    },
+    "text": {
+      "errorFetchingInvitation": "Something went wrong while fetching the invitation 😢",
+      "invitationExpires": "The invitation expires",
+      "invitationTo": "Invitation to",
+      "invitedBy": "You have been invited by:"
+    }
+  },
+  "createOrganizationButton": {
+    "actions": {
+      "createOrganization": "Create organization"
+    }
+  },
+  "createOrganizationDialog": {
+    "description": "Organizations allow you to group your collaborators in one place.",
+    "title": "Create organization"
+  },
+  "createOrganizationForm": {
+    "actions": {
+      "createOrganization": "Create organization"
+    },
+    "fields": {
+      "slug": "Slug"
+    },
+    "text": {
+      "resultWillBe": "The result will be:",
+      "slugDescription": "The slug is the organization's URL."
+    }
+  },
+  "deleteOrganizationButton": {
+    "text": {
+      "dangerZone": "Danger zone",
+      "deleteOrganization": "Delete organization",
+      "warning": "Be careful, this action cannot be undone. All organization information will be deleted."
+    }
+  },
+  "invitationsTable": {
+    "actions": {
+      "tryAgain": "Try again"
+    },
+    "text": {
+      "noInvitationsFound": "No invitations found 😢",
+      "somethingWentWrong": "Something went wrong 😢"
+    }
+  },
+  "invitationsTableColumnHeader": {
+    "actions": {
+      "hide": "Hide"
+    },
+    "text": {
+      "asc": "Asc",
+      "desc": "Desc"
+    }
+  },
+  "invitationsTableColumns": {
+    "fields": {
+      "expiresAt": "Expires at",
+      "role": "Role",
+      "status": "Status"
+    },
+    "text": {
+      "accepted": "Accepted",
+      "canceled": "Canceled",
+      "member": "Member",
+      "owner": "Owner",
+      "pending": "Pending",
+      "rejected": "Rejected"
+    }
+  },
+  "invitationsTableFacetedFilter": {
+    "actions": {
+      "clearFilters": "Clear filters"
+    },
+    "text": {
+      "noResults": "No results found.",
+      "selected": "{{count}} selected"
+    }
+  },
+  "invitationsTablePagination": {
+    "text": {
+      "goToFirstPage": "Go to first page",
+      "goToLastPage": "Go to last page",
+      "goToNextPage": "Go to next page",
+      "goToPreviousPage": "Go to previous page",
+      "of": "of",
+      "page": "Page",
+      "rowsPerPage": "Rows per page"
+    }
+  },
+  "invitationsTableRowActions": {
+    "actions": {
+      "cancelInvitation": "Cancel invitation"
+    }
+  },
+  "invitationsTableToolbar": {
+    "actions": {
+      "reset": "Reset"
+    },
+    "fields": {
+      "role": "Role",
+      "status": "Status"
+    },
+    "text": {
+      "accepted": "Accepted",
+      "canceled": "Canceled",
+      "member": "Member",
+      "owner": "Owner",
+      "pending": "Pending",
+      "rejected": "Rejected",
+      "searchEmail": "Search email..."
+    }
+  },
+  "invitationsTableViewOptions": {
+    "text": {
+      "toggleColumns": "Toggle columns",
+      "view": "View"
+    }
+  },
+  "membersTable": {
+    "actions": {
+      "tryAgain": "Try again"
+    },
+    "text": {
+      "noUsersFound": "No users found on this page. 😢 Try changing the filters or go to the next page",
+      "somethingWentWrong": "Something went wrong 😢"
+    }
+  },
+  "membersTableColumnHeader": {
+    "actions": {
+      "hide": "Hide"
+    },
+    "text": {
+      "asc": "Asc",
+      "desc": "Desc"
+    }
+  },
+  "membersTableColumns": {
+    "fields": {
+      "memberSince": "Member since",
+      "role": "Role"
+    },
+    "text": {
+      "member": "Member",
+      "owner": "Owner"
+    }
+  },
+  "membersTableFacetedFilter": {
+    "actions": {
+      "clearFilters": "Clear filters"
+    },
+    "text": {
+      "noResults": "No results found.",
+      "selected": "{{count}} selected"
+    }
+  },
+  "membersTablePagination": {
+    "text": {
+      "goToFirstPage": "Go to first page",
+      "goToLastPage": "Go to last page",
+      "goToNextPage": "Go to next page",
+      "goToPreviousPage": "Go to previous page",
+      "of": "of",
+      "page": "Page",
+      "rowsPerPage": "Rows per page"
+    }
+  },
+  "membersTableRowActions": {
+    "actions": {
+      "removeMember": "Remove member"
+    }
+  },
+  "membersTableToolbar": {
+    "actions": {
+      "reset": "Reset"
+    },
+    "fields": {
+      "role": "Role"
+    },
+    "text": {
+      "filterMembers": "Filter members...",
+      "member": "Member",
+      "owner": "Owner"
+    }
+  },
+  "membersTableViewOptions": {
+    "text": {
+      "toggleColumns": "Toggle columns",
+      "view": "View"
+    }
+  },
+  "organizationInvitations": {
+    "actions": {
+      "inviteMember": "Invite member"
+    },
+    "text": {
+      "invitations": "Invitations ({{count}})"
+    }
+  },
+  "organizationMembers": {
+    "text": {
+      "members": "Members ({{count}})"
+    }
+  },
+  "organizationPageHeaderError": {
+    "actions": {
+      "retry": "Retry"
+    },
+    "text": {
+      "errorFetchingData": "Something went wrong while fetching the organization data 😢"
+    }
+  },
+  "organizationsSidebar": {
+    "actions": {
+      "retry": "Retry"
+    },
+    "text": {
+      "noOrganizations": "No organizations created 😢",
+      "somethingWentWrong": "Something went wrong 😢"
+    }
+  },
+  "sendOrganizationInvitationDialog": {
+    "description": "Send an invitation to a Manglara user to join the organization.",
+    "title": "Send invitation"
+  },
+  "sendOrganizationInvitationForm": {
+    "actions": {
+      "sendInvitation": "Send invitation"
+    }
+  },
+  "updateOrganizationDialog": {
+    "description": "Update the organization information.",
+    "title": "Update organization"
+  },
+  "updateOrganizationForm": {
+    "actions": {
+      "updateOrganization": "Update organization"
+    },
+    "fields": {
+      "slug": "Slug"
+    },
+    "text": {
+      "resultWillBe": "The result will be:",
+      "slugDescription": "The slug is the organization's URL."
+    }
+  }
+}

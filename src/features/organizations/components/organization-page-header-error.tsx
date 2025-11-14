@@ -1,5 +1,7 @@
 "use client";
 
+import { useTranslation } from "react-i18next";
+
 import { LoaderIcon, RotateCcwIcon } from "lucide-react";
 
 import { Button } from "@/shared/components/ui/button";
@@ -14,10 +16,12 @@ export const OrganizationPageHeaderError = ({
   refetch,
   isRefetching,
 }: Props) => {
+  const { t: tOrganization } = useTranslation("organization");
+
   return (
     <div className="flex flex-col items-center justify-center gap-2">
       <TypographyLarge className="text-center">
-        Algo salió mal al obtener los datos de la organización 😢
+        {tOrganization("organizationPageHeaderError.text.errorFetchingData")}
       </TypographyLarge>
 
       <Button
@@ -30,7 +34,7 @@ export const OrganizationPageHeaderError = ({
         ) : (
           <RotateCcwIcon />
         )}
-        Reintentar
+        {tOrganization("organizationPageHeaderError.actions.retry")}
       </Button>
     </div>
   );

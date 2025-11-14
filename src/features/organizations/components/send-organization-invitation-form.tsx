@@ -1,5 +1,7 @@
 "use client";
 
+import { useTranslation } from "react-i18next";
+
 import { LoaderIcon, MailIcon } from "lucide-react";
 
 import { DialogClose, DialogFooter } from "@/shared/components/ui/dialog";
@@ -22,6 +24,9 @@ interface Props {
 }
 
 export function SendOrganizationInvitationForm({ organizationId }: Props) {
+  const { t: tCommon } = useTranslation("common");
+  const { t: tOrganization } = useTranslation("organization");
+
   const { form, onSubmit, isPending, dialogCloseRef } =
     useSendOrganizationInvitationForm({ organizationId });
 
@@ -36,7 +41,7 @@ export function SendOrganizationInvitationForm({ organizationId }: Props) {
           name="email"
           render={({ field, fieldState }) => (
             <FormItem>
-              <FormLabel>Correo electrónico</FormLabel>
+              <FormLabel>{tCommon("fields.email")}</FormLabel>
 
               <div className="relative">
                 <FormControl>
@@ -57,7 +62,7 @@ export function SendOrganizationInvitationForm({ organizationId }: Props) {
                     fieldState.invalid && "text-destructive-foreground",
                     fieldState.isDirty &&
                       !fieldState.invalid &&
-                      "text-foreground",
+                      "text-foreground"
                   )}
                 >
                   <MailIcon size={16} aria-hidden="true" />
@@ -72,13 +77,15 @@ export function SendOrganizationInvitationForm({ organizationId }: Props) {
         <DialogFooter>
           <DialogClose asChild ref={dialogCloseRef}>
             <Button type="button" variant="outline">
-              Cancelar
+              {tCommon("text.cancel")}
             </Button>
           </DialogClose>
 
           <Button disabled={isPending} type="submit">
             {isPending && <LoaderIcon className="animate-spin" />}
-            Enviar invitación
+            {tOrganization(
+              "sendOrganizationInvitationForm.actions.sendInvitation"
+            )}
           </Button>
         </DialogFooter>
       </form>

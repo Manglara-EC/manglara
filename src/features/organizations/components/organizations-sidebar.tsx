@@ -1,5 +1,7 @@
 "use client";
 
+import { useTranslation } from "react-i18next";
+
 import { LoaderIcon, RotateCcwIcon } from "lucide-react";
 
 import { Button } from "@/shared/components/ui/button";
@@ -16,6 +18,8 @@ import { OrganizationsListSkeleton } from "@/features/organizations/components/o
 import { useOrganizationsSidebar } from "@/features/organizations/hooks/use-organizations-sidebar";
 
 export function OrganizationsSidebar() {
+  const { t: tOrganization } = useTranslation("organization");
+
   const {
     isMobile,
     isMounted,
@@ -41,7 +45,9 @@ export function OrganizationsSidebar() {
 
           {isError && (
             <div className="mx-6 flex flex-col gap-2">
-              <TypographyMuted>Algo salió mal 😢</TypographyMuted>
+              <TypographyMuted>
+                {tOrganization("organizationsSidebar.text.somethingWentWrong")}
+              </TypographyMuted>
 
               <Button
                 variant="outline"
@@ -53,7 +59,7 @@ export function OrganizationsSidebar() {
                 ) : (
                   <RotateCcwIcon />
                 )}
-                Reintentar
+                {tOrganization("organizationsSidebar.actions.retry")}
               </Button>
             </div>
           )}
@@ -84,7 +90,9 @@ export function OrganizationsSidebar() {
             ))}
 
           {isSuccess && data && data.length === 0 && (
-            <TypographyMuted>No hay organizaciones creadas 😢</TypographyMuted>
+            <TypographyMuted>
+              {tOrganization("organizationsSidebar.text.noOrganizations")}
+            </TypographyMuted>
           )}
         </nav>
       </ScrollArea>

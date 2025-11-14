@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { Column } from "@tanstack/react-table";
 import { ArrowDown, ArrowUp, ChevronsUpDown, EyeOff } from "lucide-react";
 
@@ -22,6 +24,8 @@ export function InvitationsTableColumnHeader<TData, TValue>({
   title,
   className,
 }: InvitationsTableColumnHeaderProps<TData, TValue>) {
+  const { t: tOrganization } = useTranslation("organization");
+
   if (!column.getCanSort()) {
     return <div className={cn(className)}>{title}</div>;
   }
@@ -48,16 +52,16 @@ export function InvitationsTableColumnHeader<TData, TValue>({
         <DropdownMenuContent align="start">
           <DropdownMenuItem onClick={() => column.toggleSorting(false)}>
             <ArrowUp className="text-muted-foreground/70 h-3.5 w-3.5" />
-            Asc
+            {tOrganization("invitationsTableColumnHeader.text.asc")}
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => column.toggleSorting(true)}>
             <ArrowDown className="text-muted-foreground/70 h-3.5 w-3.5" />
-            Desc
+            {tOrganization("invitationsTableColumnHeader.text.desc")}
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={() => column.toggleVisibility(false)}>
             <EyeOff className="text-muted-foreground/70 h-3.5 w-3.5" />
-            Ocultar
+            {tOrganization("invitationsTableColumnHeader.actions.hide")}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

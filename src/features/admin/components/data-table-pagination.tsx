@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { Table } from "@tanstack/react-table";
 import {
   ChevronLeft,
@@ -22,11 +24,15 @@ interface DataTablePaginationProps {
 }
 
 export function DataTablePagination({ table }: DataTablePaginationProps) {
+  const { t: tAdmin } = useTranslation("admin");
+
   return (
     <div className="flex items-center justify-end px-2">
       <div className="flex items-center space-x-6 lg:space-x-8">
         <div className="flex items-center space-x-2">
-          <p className="text-sm font-medium">Filas por página</p>
+          <p className="text-sm font-medium">
+            {tAdmin("dataTablePagination.text.rowsPerPage")}
+          </p>
           <Select
             value={table.getState().pagination.pageSize.toString()}
             onValueChange={(value) => {
@@ -46,12 +52,15 @@ export function DataTablePagination({ table }: DataTablePaginationProps) {
           </Select>
         </div>
         <div className="flex w-[100px] items-center justify-center text-sm font-medium">
-          Página {table.getState().pagination.pageIndex + 1} de{" "}
-          {table.getPageCount() === 0 ? (
-            <Skeleton className="ml-1 size-5 rounded-full" />
-          ) : (
-            table.getPageCount()
-          )}
+          {tAdmin("dataTablePagination.text.pageOf", {
+            current: table.getState().pagination.pageIndex + 1,
+            total:
+              table.getPageCount() === 0 ? (
+                <Skeleton className="ml-1 size-5 rounded-full" />
+              ) : (
+                table.getPageCount()
+              ),
+          })}
         </div>
         <div className="flex items-center space-x-2">
           <Button
@@ -60,7 +69,9 @@ export function DataTablePagination({ table }: DataTablePaginationProps) {
             onClick={() => table.firstPage()}
             disabled={!table.getCanPreviousPage()}
           >
-            <span className="sr-only">Ir a la primera página</span>
+            <span className="sr-only">
+              {tAdmin("dataTablePagination.text.goToFirstPage")}
+            </span>
             <ChevronsLeft />
           </Button>
           <Button
@@ -69,7 +80,9 @@ export function DataTablePagination({ table }: DataTablePaginationProps) {
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
           >
-            <span className="sr-only">Ir a la página anterior</span>
+            <span className="sr-only">
+              {tAdmin("dataTablePagination.text.goToPreviousPage")}
+            </span>
             <ChevronLeft />
           </Button>
           <Button
@@ -78,7 +91,9 @@ export function DataTablePagination({ table }: DataTablePaginationProps) {
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
           >
-            <span className="sr-only">Ir a la página siguiente</span>
+            <span className="sr-only">
+              {tAdmin("dataTablePagination.text.goToNextPage")}
+            </span>
             <ChevronRight />
           </Button>
           <Button
@@ -87,7 +102,9 @@ export function DataTablePagination({ table }: DataTablePaginationProps) {
             onClick={() => table.lastPage()}
             disabled={!table.getCanNextPage()}
           >
-            <span className="sr-only">Ir a la última página</span>
+            <span className="sr-only">
+              {tAdmin("dataTablePagination.text.goToLastPage")}
+            </span>
             <ChevronsRight />
           </Button>
         </div>

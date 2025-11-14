@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useTranslation } from "react-i18next";
 
 import { Button } from "@/shared/components/ui/button";
 import {
@@ -19,6 +20,9 @@ export function SignInForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
+  const { t: tAuth } = useTranslation("auth");
+  const { t: tCommon } = useTranslation("common");
+
   const {
     form,
     handleSignInWithGoogle,
@@ -32,12 +36,12 @@ export function SignInForm({
       <Card className="bg-background border-none shadow-none">
         <CardHeader className="text-center">
           <CardTitle>
-            <TypographyH1>Iniciar sesión</TypographyH1>
+            <TypographyH1>{tAuth("signIn.title")}</TypographyH1>
           </CardTitle>
 
           <CardDescription>
             <TypographyP className="leading-normal">
-              Bienvenido de nuevo a Manglara 🌴
+              {tAuth("signIn.description")}
             </TypographyP>
           </CardDescription>
         </CardHeader>
@@ -74,20 +78,20 @@ export function SignInForm({
 
           <div className="after:border-border relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t">
             <span className="bg-background text-muted-foreground relative z-10 px-2">
-              O continuar con
+              {tCommon("text.orContinueWith")}
             </span>
           </div>
 
           {form}
 
           <div className="text-center text-sm">
-            ¿No tienes una cuenta?{" "}
+            {tAuth("signIn.noAccount")}{" "}
             <Link
               prefetch
               href="/sign-up"
               className="font-bold hover:underline hover:underline-offset-4"
             >
-              Regístrate
+              {tAuth("signIn.register")}
             </Link>
           </div>
         </CardContent>

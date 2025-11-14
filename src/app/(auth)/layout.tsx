@@ -1,4 +1,5 @@
 import { ThemeSwitch } from "@/shared/components/theme-switch";
+import { LanguageSwitcher } from "@/shared/components/language-switcher";
 
 export default function AuthLayout({
   children,
@@ -9,6 +10,7 @@ export default function AuthLayout({
     <div className="flex min-h-svh flex-col p-6 md:p-10">
       <header className="flex items-center justify-end gap-2">
         <div className="flex items-center justify-between gap-2">
+          <LanguageSwitcher />
           <ThemeSwitch />
         </div>
       </header>

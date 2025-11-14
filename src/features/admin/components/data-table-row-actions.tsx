@@ -1,5 +1,7 @@
 "use client";
 
+import { useTranslation } from "react-i18next";
+
 import { PaginationState, Row } from "@tanstack/react-table";
 import {
   BanIcon,
@@ -31,6 +33,8 @@ export function DataTableRowActions({
   row,
   pagination,
 }: DataTableRowActionsProps) {
+  const { t: tCommon } = useTranslation("common");
+
   const {
     isBanned,
     isDeleteUserPending,
@@ -51,14 +55,16 @@ export function DataTableRowActions({
             className="data-[state=open]:bg-muted flex h-8 w-8 p-0"
           >
             <MoreHorizontal />
-            <span className="sr-only">Abrir menú</span>
+            <span className="sr-only">{tCommon("actions.openMenu")}</span>
           </Button>
         </DropdownMenuTrigger>
+
         <DropdownMenuContent align="end" className="w-[160px]">
           <DropdownMenuItem onSelect={handleUpdateUser}>
             <UserRoundPenIcon />
-            Editar
+            {tCommon("actions.edit")}
           </DropdownMenuItem>
+
           <DropdownMenuItem
             disabled={isUnbarUserPending}
             variant={isBanned ? "default" : "destructive"}
@@ -69,8 +75,9 @@ export function DataTableRowActions({
             ) : (
               <BanIcon />
             )}
-            {isBanned ? "Desbloquear" : "Bloquear"}
+            {isBanned ? tCommon("actions.unban") : tCommon("actions.ban")}
           </DropdownMenuItem>
+
           <DropdownMenuItem
             disabled={isDeleteUserPending}
             variant="destructive"
@@ -81,7 +88,7 @@ export function DataTableRowActions({
             ) : (
               <TrashIcon />
             )}
-            Eliminar
+            {tCommon("actions.delete")}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

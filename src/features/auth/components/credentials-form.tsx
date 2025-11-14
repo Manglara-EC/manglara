@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { LoaderIcon, LockIcon, User2Icon } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import { Button } from "@/shared/components/ui/button";
 import {
@@ -18,6 +19,9 @@ import { cn } from "@/shared/utils/cn";
 import { useCredentialsForm } from "@/features/auth/hooks/use-credentials-form";
 
 export function CredentialsForm() {
+  const { t: tAuth } = useTranslation("auth");
+  const { t: tCommon } = useTranslation("common");
+
   const { form, onSubmit, isPending } = useCredentialsForm();
 
   return (
@@ -31,16 +35,14 @@ export function CredentialsForm() {
           name="username"
           render={({ field, fieldState }) => (
             <FormItem>
-              <FormLabel>Usuario</FormLabel>
+              <FormLabel>{tCommon("fields.username")}</FormLabel>
 
               <div className="relative">
                 <FormControl>
                   <Input
                     className="peer aria-invalid:text-destructive-foreground ps-9 shadow-none not-aria-invalid:border-none"
                     disabled={isPending}
-                    placeholder={
-                      fieldState.invalid ? undefined : "davidaragundy"
-                    }
+                    placeholder={fieldState.invalid ? undefined : "manglara"}
                     {...field}
                   />
                 </FormControl>
@@ -51,7 +53,7 @@ export function CredentialsForm() {
                     fieldState.invalid && "text-destructive-foreground",
                     fieldState.isDirty &&
                       !fieldState.invalid &&
-                      "text-foreground",
+                      "text-foreground"
                   )}
                 >
                   <User2Icon size={16} aria-hidden="true" />
@@ -69,13 +71,13 @@ export function CredentialsForm() {
           render={({ field, fieldState }) => (
             <FormItem>
               <FormLabel>
-                Contraseña
+                {tCommon("fields.password")}
                 <Link
                   prefetch
                   href="/forgot-password"
                   className="text-foreground ml-auto text-xs underline-offset-4 hover:underline"
                 >
-                  ¿Olvidaste tu contraseña?
+                  {tAuth("login.actions.forgotPassword")}
                 </Link>
               </FormLabel>
 
@@ -96,7 +98,7 @@ export function CredentialsForm() {
                     fieldState.invalid && "text-destructive-foreground",
                     fieldState.isDirty &&
                       !fieldState.invalid &&
-                      "text-foreground",
+                      "text-foreground"
                   )}
                 >
                   <LockIcon size={16} aria-hidden="true" />
@@ -110,7 +112,7 @@ export function CredentialsForm() {
 
         <Button disabled={isPending} type="submit">
           {isPending && <LoaderIcon className="animate-spin" />}
-          Iniciar sesión
+          {tCommon("actions.login")}
         </Button>
       </form>
     </Form>

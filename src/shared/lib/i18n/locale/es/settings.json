@@ -1,0 +1,125 @@
+{
+  "accountPage": {
+    "text": {
+      "description": "Actualiza la configuración de tu cuenta.",
+      "title": "Cuenta"
+    }
+  },
+  "activeSessionCard": {
+    "actions": {
+      "revoke": "Revocar"
+    },
+    "fields": {
+      "createdAt": "Creado el",
+      "expiresAt": "Expira el",
+      "ipAddress": "Dirección IP",
+      "updatedAt": "Actualizado el",
+      "userAgent": "Agente de usuario"
+    },
+    "text": {
+      "current": "Actual"
+    }
+  },
+  "activeSessions": {
+    "text": {
+      "retry": "Reintentar",
+      "title": "Sesiones activas"
+    }
+  },
+  "generateBackupCodesForm": {
+    "actions": {
+      "generate": "Generar",
+      "generateBackupCodes": "Generar códigos de respaldo"
+    },
+    "fields": {
+      "password": "Contraseña"
+    },
+    "text": {
+      "description": "Genera un conjunto de códigos de respaldo para usar si pierdes tu aplicación de autenticación. Si ya tienes códigos de respaldo, se generará un nuevo conjunto y se invalidará el anterior.",
+      "label": "Generar códigos de respaldo",
+      "passwordDescription": "Para generar los códigos de respaldo, por favor ingresa tu contraseña.",
+      "title": "Códigos de respaldo"
+    }
+  },
+  "qrCodeDialog": {
+    "actions": {
+      "downloadBackupCodes": "Descargar códigos de respaldo",
+      "verify": "Verificar"
+    },
+    "fields": {
+      "code": "Contraseña de un solo uso"
+    },
+    "text": {
+      "codeDescription": "Por favor ingresa la contraseña de un solo uso desde tu aplicación de autenticación.",
+      "downloadDescription": "Por favor descarga tus códigos de respaldo y guárdalos en un lugar seguro.",
+      "downloadTitle": "Descargar códigos de respaldo",
+      "keyDescription": "O ingresa tu clave secreta manualmente:",
+      "scanTitle": "Escanea el código QR en tu aplicación de autenticación"
+    }
+  },
+  "settingsSidebar": {
+    "items": {
+      "account": "Cuenta",
+      "security": "Seguridad"
+    }
+  },
+  "updateEmailForm": {
+    "fields": {
+      "email": "Correo electrónico"
+    },
+    "text": {
+      "description": "Esta es la dirección de correo que usaremos para contactarte. No será visible públicamente.",
+      "retry": "Reintentar"
+    }
+  },
+  "updateNameForm": {
+    "fields": {
+      "name": "Nombre"
+    },
+    "text": {
+      "description": "Este es tu nombre público. Puede ser tu nombre real o un seudónimo.",
+      "retry": "Reintentar"
+    }
+  },
+  "updatePasswordForm": {
+    "actions": {
+      "changePassword": "Cambiar contraseña"
+    },
+    "fields": {
+      "currentPassword": "Contraseña actual",
+      "newPassword": "Nueva contraseña"
+    },
+    "text": {
+      "currentPasswordDescription": "Para cambiar tu contraseña, por favor ingresa tu contraseña actual.",
+      "newPasswordDescription": "Si cambias tu contraseña, todas tus sesiones activas se cerrarán.",
+      "title": "Cambiar contraseña"
+    }
+  },
+  "updateTwoFactorForm": {
+    "actions": {
+      "disable2FA": "Desactivar 2FA",
+      "enable2FA": "Activar 2FA"
+    },
+    "fields": {
+      "enable2FA": "Activar 2FA",
+      "password": "Contraseña"
+    },
+    "text": {
+      "description": "Agrega una capa extra de seguridad a tu cuenta.",
+      "disable": "desactivar",
+      "enable": "activar",
+      "passwordDescription": "Para {{action}} 2FA, por favor ingresa tu contraseña.",
+      "retry": "Reintentar",
+      "title": "Autenticación de dos factores"
+    }
+  },
+  "updateUsernameForm": {
+    "fields": {
+      "username": "Usuario"
+    },
+    "text": {
+      "description": "Este es tu nombre de usuario público. Puede ser tu nombre real o un seudónimo.",
+      "retry": "Reintentar"
+    }
+  }
+}

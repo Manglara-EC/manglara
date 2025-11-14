@@ -1,4 +1,5 @@
 "use client";
+import { useTranslation } from "react-i18next";
 
 import { Table } from "@tanstack/react-table";
 import { X } from "lucide-react";
@@ -16,13 +17,17 @@ interface InvitationsTableToolbarProps<TData> {
 export function InvitationsTableToolbar<TData>({
   table,
 }: InvitationsTableToolbarProps<TData>) {
+  const { t: tOrganization } = useTranslation("organization");
+
   const isFiltered = table.getState().columnFilters.length > 0;
 
   return (
     <div className="flex items-center justify-between">
       <div className="flex flex-1 items-center space-x-2">
         <Input
-          placeholder="Buscar correo electrónico..."
+          placeholder={tOrganization(
+            "invitationsTableToolbar.text.searchEmail"
+          )}
           value={(table.getColumn("email")?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
             table.getColumn("email")?.setFilterValue(event.target.value)
@@ -32,22 +37,40 @@ export function InvitationsTableToolbar<TData>({
         {table.getColumn("role") && (
           <InvitationsTableFacetedFilter
             column={table.getColumn("role")}
-            title="Rol"
+            title={tOrganization("invitationsTableToolbar.fields.role")}
             options={[
-              { label: "Dueño", value: "owner" },
-              { label: "Miembro", value: "member" },
+              {
+                label: tOrganization("invitationsTableToolbar.text.owner"),
+                value: "owner",
+              },
+              {
+                label: tOrganization("invitationsTableToolbar.text.member"),
+                value: "member",
+              },
             ]}
           />
         )}
         {table.getColumn("status") && (
           <InvitationsTableFacetedFilter
             column={table.getColumn("status")}
-            title="Estado"
+            title={tOrganization("invitationsTableToolbar.fields.status")}
             options={[
-              { label: "Pendiente", value: "pending" },
-              { label: "Aceptado", value: "accepted" },
-              { label: "Cancelado", value: "canceled" },
-              { label: "Rechazado", value: "rejected" },
+              {
+                label: tOrganization("invitationsTableToolbar.text.pending"),
+                value: "pending",
+              },
+              {
+                label: tOrganization("invitationsTableToolbar.text.accepted"),
+                value: "accepted",
+              },
+              {
+                label: tOrganization("invitationsTableToolbar.text.canceled"),
+                value: "canceled",
+              },
+              {
+                label: tOrganization("invitationsTableToolbar.text.rejected"),
+                value: "rejected",
+              },
             ]}
           />
         )}
@@ -57,7 +80,7 @@ export function InvitationsTableToolbar<TData>({
             onClick={() => table.resetColumnFilters()}
             className="h-8 px-2 lg:px-3"
           >
-            Restablecer
+            {tOrganization("invitationsTableToolbar.actions.reset")}
             <X />
           </Button>
         )}

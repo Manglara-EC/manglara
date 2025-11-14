@@ -1,5 +1,7 @@
 "use client";
 
+import { useTranslation } from "react-i18next";
+
 import {
   Dialog,
   DialogContent,
@@ -21,16 +23,20 @@ export function UpdateOrganizationDialog({
   dialogTriggerRef,
   organization,
 }: Props) {
+  const { t: tOrganization } = useTranslation("organization");
+
   return (
     <Dialog>
       <DialogTrigger ref={dialogTriggerRef} />
 
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Actualizar organización</DialogTitle>
+          <DialogTitle>
+            {tOrganization("updateOrganizationDialog.title")}
+          </DialogTitle>
 
           <DialogDescription>
-            Actualiza la información de la organización.
+            {tOrganization("updateOrganizationDialog.description")}
           </DialogDescription>
         </DialogHeader>
 

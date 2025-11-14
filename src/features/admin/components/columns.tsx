@@ -4,6 +4,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { CircleXIcon, UserRoundCogIcon, UserRoundIcon } from "lucide-react";
 import { format, formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
+import { useTranslation } from "react-i18next";
 
 import { Badge } from "@/shared/components/ui/badge";
 import type { User } from "@/shared/types";
@@ -16,138 +17,136 @@ import {
   TooltipTrigger,
 } from "@/shared/components/ui/tooltip";
 
-export const columns: ColumnDef<User>[] = [
-  // {
-  //   accessorKey: "id",
-  //   header: ({ column }) => (
-  //     <DataTableColumnHeader column={column} title="Id" />
-  //   ),
-  //   cell: ({ row }) => (
-  //     <div className="ml-2.5 flex space-x-2">
-  //       <span className="w-fit font-medium">{row.getValue("id")}</span>
-  //     </div>
-  //   ),
-  // },
-  {
-    accessorKey: "name",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Nombre" />
-    ),
-    cell: ({ row }) => {
-      const isBanned =
-        row.original.banned &&
-        (row.original.banExpires === null ||
-          row.original.banExpires > new Date());
+export const useAdminColumns = (): ColumnDef<User>[] => {
+  const { t: tAdmin } = useTranslation("admin");
+  const { t: tCommon } = useTranslation("common");
 
-      return (
-        <div className="ml-2.5 flex items-center gap-2">
-          <span className="w-max font-medium">{row.getValue("name")}</span>
+  return [
+    {
+      accessorKey: "name",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title={tCommon("fields.name")} />
+      ),
+      cell: ({ row }) => {
+        const isBanned =
+          row.original.banned &&
+          (row.original.banExpires === null ||
+            row.original.banExpires > new Date());
 
-          {isBanned && (
-            <Tooltip>
-              <TooltipTrigger className="cursor-pointer">
-                <Badge variant="destructive" className="text-xs">
-                  bloqueado
-                </Badge>
-              </TooltipTrigger>
-              <TooltipContent className="flex flex-col gap-1">
-                <span>
-                  <b>Motivo:</b> {row.original.banReason}
-                </span>
+        return (
+          <div className="ml-2.5 flex items-center gap-2">
+            <span className="w-max font-medium">{row.getValue("name")}</span>
 
-                <span>
-                  <b>Expira:</b>{" "}
-                  {row.original.banExpires
-                    ? `${format(row.original.banExpires, "PPP, HH:mm", {
-                        locale: es,
-                      })} (${formatDistanceToNow(row.original.banExpires, {
-                        locale: es,
-                      })})`
-                    : "Nunca"}
-                </span>
-              </TooltipContent>
-            </Tooltip>
-          )}
-        </div>
-      );
+            {isBanned && (
+              <Tooltip>
+                <TooltipTrigger className="cursor-pointer">
+                  <Badge variant="destructive" className="text-xs">
+                    {tAdmin("columns.fields.banned")}
+                  </Badge>
+                </TooltipTrigger>
+                <TooltipContent className="flex flex-col gap-1">
+                  <span>
+                    <b>{tAdmin("columns.fields.reason")}:</b>{" "}
+                    {row.original.banReason}
+                  </span>
+                  <span>
+                    <b>{tAdmin("columns.fields.expires")}:</b>{" "}
+                    {row.original.banExpires
+                      ? `${format(row.original.banExpires, "PPP, HH:mm", { locale: es })} (${formatDistanceToNow(row.original.banExpires, { locale: es })})`
+                      : tAdmin("columns.fields.never")}
+                  </span>
+                </TooltipContent>
+              </Tooltip>
+            )}
+          </div>
+        );
+      },
     },
-  },
-  {
-    accessorKey: "email",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Correo electrónico" />
-    ),
-    cell: ({ row }) => {
-      const isEmailVerified = row.original.emailVerified;
+    {
+      accessorKey: "email",
+      header: ({ column }) => (
+        <DataTableColumnHeader
+          column={column}
+          title={tCommon("fields.email")}
+        />
+      ),
+      cell: ({ row }) => {
+        const isEmailVerified = row.original.emailVerified;
 
-      return (
-        <div className="ml-2.5 flex items-center gap-2">
-          <span className="w-max font-medium">{row.getValue("email")}</span>
+        return (
+          <div className="ml-2.5 flex items-center gap-2">
+            <span className="w-max font-medium">{row.getValue("email")}</span>
 
-          {!isEmailVerified && (
-            <Tooltip>
-              <TooltipTrigger className="cursor-pointer">
-                <CircleXIcon className="text-destructive size-4" />
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Correo electrónico no verificado</p>
-              </TooltipContent>
-            </Tooltip>
-          )}
-        </div>
-      );
+            {!isEmailVerified && (
+              <Tooltip>
+                <TooltipTrigger className="cursor-pointer">
+                  <CircleXIcon className="text-destructive size-4" />
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{tAdmin("columns.text.emailNotVerified")}</p>
+                </TooltipContent>
+              </Tooltip>
+            )}
+          </div>
+        );
+      },
     },
-  },
-  {
-    accessorKey: "emailVerified",
-    accessorFn: (row) => String(!!row.emailVerified),
-  },
-  {
-    accessorKey: "username",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Usuario" />
-    ),
-    cell: ({ row }) => {
-      return (
+    {
+      accessorKey: "emailVerified",
+      accessorFn: (row) => String(!!row.emailVerified),
+    },
+    {
+      accessorKey: "username",
+      header: ({ column }) => (
+        <DataTableColumnHeader
+          column={column}
+          title={tCommon("fields.username")}
+        />
+      ),
+      cell: ({ row }) => (
         <div className="ml-2.5 flex space-x-2">
           <span className="w-max font-medium">{row.getValue("username")}</span>
         </div>
-      );
-    },
-  },
-  {
-    accessorKey: "role",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Rol" />
-    ),
-    cell: ({ row }) => {
-      const role = row.getValue("role") as string;
-      const isAdmin = role === "admin";
-
-      return (
-        <div className="ml-2.5 flex space-x-2">
-          <Badge variant={isAdmin ? "default" : "secondary"}>
-            {isAdmin ? <UserRoundCogIcon /> : <UserRoundIcon />}
-            {role}
-          </Badge>
-        </div>
-      );
-    },
-  },
-  {
-    accessorKey: "banned",
-    accessorFn: (row) =>
-      String(
-        row.banned && (row.banExpires === null || row.banExpires > new Date()),
       ),
-  },
-  {
-    accessorKey: "createdAt",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Creado el" />
-    ),
-    cell: ({ row }) => {
-      return (
+    },
+    {
+      accessorKey: "role",
+      header: ({ column }) => (
+        <DataTableColumnHeader
+          column={column}
+          title={tAdmin("columns.fields.role")}
+        />
+      ),
+      cell: ({ row }) => {
+        const role = row.getValue("role") as string;
+        const isAdmin = role === "admin";
+
+        return (
+          <div className="ml-2.5 flex space-x-2">
+            <Badge variant={isAdmin ? "default" : "secondary"}>
+              {isAdmin ? <UserRoundCogIcon /> : <UserRoundIcon />}
+              {role}
+            </Badge>
+          </div>
+        );
+      },
+    },
+    {
+      accessorKey: "banned",
+      accessorFn: (row) =>
+        String(
+          row.banned && (row.banExpires === null || row.banExpires > new Date())
+        ),
+    },
+    {
+      accessorKey: "createdAt",
+      header: ({ column }) => (
+        <DataTableColumnHeader
+          column={column}
+          title={tAdmin("columns.fields.createdAt")}
+        />
+      ),
+      cell: ({ row }) => (
         <div className="ml-2.5 flex space-x-2">
           <Tooltip>
             <TooltipTrigger className="cursor-pointer">
@@ -164,16 +163,17 @@ export const columns: ColumnDef<User>[] = [
             </TooltipContent>
           </Tooltip>
         </div>
-      );
+      ),
     },
-  },
-  {
-    accessorKey: "updatedAt",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Actualizado el" />
-    ),
-    cell: ({ row }) => {
-      return (
+    {
+      accessorKey: "updatedAt",
+      header: ({ column }) => (
+        <DataTableColumnHeader
+          column={column}
+          title={tAdmin("columns.fields.updatedAt")}
+        />
+      ),
+      cell: ({ row }) => (
         <div className="ml-2.5 flex space-x-2">
           <Tooltip>
             <TooltipTrigger className="cursor-pointer">
@@ -190,13 +190,16 @@ export const columns: ColumnDef<User>[] = [
             </TooltipContent>
           </Tooltip>
         </div>
-      );
+      ),
     },
-  },
-  {
-    id: "actions",
-    cell: ({ row, table }) => (
-      <DataTableRowActions row={row} pagination={table.getState().pagination} />
-    ),
-  },
-];
+    {
+      id: "actions",
+      cell: ({ row, table }) => (
+        <DataTableRowActions
+          row={row}
+          pagination={table.getState().pagination}
+        />
+      ),
+    },
+  ];
+};
