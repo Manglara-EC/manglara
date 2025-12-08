@@ -5,6 +5,7 @@ import {
   boolean,
   integer,
   decimal,
+  json
 } from "drizzle-orm/pg-core";
 
 export const user = pgTable("user", {
@@ -113,6 +114,9 @@ export const product = pgTable("product", {
   description: text("description"),
   price: decimal("price", { precision: 10, scale: 2 }).notNull(),
 
+  stock: integer("stock").default(0).notNull(), 
+  images: json("images").$type<string[]>(),
+
   sellerId: text("seller_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
@@ -136,12 +140,23 @@ export const product = pgTable("product", {
 });
 
 export const service = pgTable("service", {
-  id: text("id")
-    .primaryKey()
-    .$defaultFn(() => crypto.randomUUID()),
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
   name: text("name").notNull(),
   description: text("description"),
   price: decimal("price", { precision: 10, scale: 2 }).notNull(),
+  
+  // 'hour', 'day', 'person', 'flat_rate'
+  priceUnit: text("price_unit").default("flat_rate").notNull(),
+  durationMinutes: integer("duration_minutes").default(60),
+  
+  // Capacidad máxima por turno (ej: 10 personas para un tour, 1 para una cita)
+  maxCapacity: integer("max_capacity").default(1).notNull(),
+  requiresCheckIn: boolean("requires_check_in").default(false).notNull(),
+  
+  // Reglas de cancelación (ej: horas antes para reembolso)
+  cancellationWindowHours: integer("cancellation_window_hours").default(24),
+  availabilitySchedule: json("availability"),
+  images: json("images").$type<string[]>(),
 
   sellerId: text("seller_id")
     .notNull()
@@ -149,20 +164,15 @@ export const service = pgTable("service", {
   organizationId: text("organization_id")
     .notNull()
     .references(() => organization.id, { onDelete: "cascade" }),
-
-  status: text("status").default("pending").notNull(),
+  status: text("status").default("pending").notNull(), // Estado de PUBLICACIÓN (no de la reserva)
   deleted: boolean("deleted").default(false).notNull(),
 
   approvedBy: text("approved_by").references(() => user.id),
   approvedAt: timestamp("approved_at"),
   rejectionReason: text("rejection_reason"),
 
-  createdAt: timestamp("created_at")
-    .$defaultFn(() => new Date())
-    .notNull(),
-  updatedAt: timestamp("updated_at")
-    .$defaultFn(() => new Date())
-    .notNull(),
+  createdAt: timestamp("created_at").$defaultFn(() => new Date()).notNull(),
+  updatedAt: timestamp("updated_at").$defaultFn(() => new Date()).notNull(),
 });
 
 export const request = pgTable("request", {
@@ -177,10 +187,9 @@ export const request = pgTable("request", {
   message: text("message").notNull(),
   read: boolean("read").default(false).notNull(),
 
-  referenceId: text("reference_id")
-    .notNull()
-    .references(() => product.id || service.id, { onDelete: "cascade" }),
-  referenceType: text("reference_type"), // 'product' or 'service'
+  productId: text("product_id").references(() => product.id, { onDelete: "cascade" }),
+  serviceId: text("service_id").references(() => service.id, { onDelete: "cascade" }),
+  referenceType: text("reference_type").notNull(), // 'product' or 'service'
 
   createdAt: timestamp("created_at")
     .$defaultFn(() => new Date())
