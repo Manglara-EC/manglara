@@ -41,6 +41,16 @@ export const createService = async (
 
   const validation = createServiceSchema.safeParse(variables);
   
+  if (variables.sellerId !== session.user.id) {
+    return {
+      data: null,
+      error: {
+        code: "FORBIDDEN",
+        message: "No puedes crear ítems a nombre de otro usuario",
+      },
+    };
+  }
+  
   if (!validation.success) {
     return {
       data: null,
