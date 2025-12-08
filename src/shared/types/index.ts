@@ -29,6 +29,8 @@ export type ActionResponse<T, E extends string> =
       error: ActionError<E>;
     };
 
+export type ItemType = "product" | "service";
+
 export type User = typeof user.$inferSelect;
 export type Product = typeof product.$inferSelect;
 export type Service = typeof service.$inferSelect;

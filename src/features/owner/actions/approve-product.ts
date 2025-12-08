@@ -12,6 +12,7 @@ import type { ActionResponse } from "@/shared/types";
 import { approveProductSchema } from "@/features/owner/schemas/approve-product";
 import type { ApproveProductVariables } from "@/features/owner/types";
 import type { Product } from "@/shared/types";
+import { markRequestAsReadByItem } from "@/shared/actions/mark-notification-as-read";
 
 type ErrorCode =
   | "UNAUTHORIZED"
@@ -110,20 +111,13 @@ export const approveProduct = async (
       },
     };
   }
-  // Mark request as read
-  await tryCatch(
-    db
-      .update(request)
-      .set({ read: true })
-      .where(
-        and(
-          eq(request.productId, variables.productId),
-          eq(request.referenceType, "product"),
-          eq(request.userId, session.user.id)
-        )
-      )
-  );
-  // Notify seller
+
+  await markRequestAsReadByItem({
+    userId: session.user.id,
+    itemId: variables.productId,
+    type: "product"
+  });
+
   await tryCatch(
     db.insert(request).values({
       id: crypto.randomUUID(),

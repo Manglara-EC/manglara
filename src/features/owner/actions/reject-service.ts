@@ -12,6 +12,7 @@ import type { ActionResponse } from "@/shared/types";
 import { rejectServiceSchema } from "@/features/owner/schemas/reject-service";
 import type { RejectServiceVariables } from "@/features/owner/types";
 import type { Service } from "@/shared/types";
+import { markRequestAsReadByItem } from "@/shared/actions/mark-notification-as-read";
 
 type ErrorCode = 
   | "UNAUTHORIZED" 
@@ -107,17 +108,11 @@ export const rejectService = async (
     };
   }
 
-  await tryCatch(
-    db.update(request)
-      .set({ read: true })
-      .where(
-        and(
-          eq(request.serviceId, variables.serviceId),
-          eq(request.referenceType, "service"),
-          eq(request.userId, session.user.id)
-        )
-      )
-  );
+  await markRequestAsReadByItem({
+    userId: session.user.id,
+    itemId: variables.serviceId,
+    type: "service"
+  });
 
   await tryCatch(
     db.insert(request).values({

@@ -5,8 +5,7 @@ import { eq, and } from "drizzle-orm";
 import { db } from "@/shared/lib/drizzle/server";
 import { member, request } from "@/shared/lib/drizzle/schema";
 import { tryCatch } from "@/shared/utils/try-catch";
-
-type ItemType = "product" | "service";
+import { ItemType } from "@/shared/types";
 
 interface NotifyOwnerParams {
   organizationId: string;
