@@ -49,21 +49,10 @@ export const createProduct = async (
     };
   }
 
-  if (validation.data.sellerId !== session.user.id) {
-    return {
-      data: null,
-      error: {
-        code: "FORBIDDEN",
-        message: "No puedes crear ítems a nombre de otro usuario",
-      },
-    };
-  }
-
-  // Verificar que el usuario es seller de la organización
   const { data: membership, error: membershipError } = await tryCatch(
     db.query.member.findFirst({
       where: and(
-        eq(member.userId, variables.sellerId),
+        eq(member.userId, session.user.id),
         eq(member.organizationId, variables.organizationId)
       ),
     })
@@ -95,7 +84,8 @@ export const createProduct = async (
       status: "pending",
       createdAt: new Date(),
       updatedAt: new Date(),
-      ...validation.data
+      ...validation.data,
+      sellerId: session.user.id
     }).returning()
   );
 
