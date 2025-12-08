@@ -108,6 +108,18 @@ export const rejectService = async (
   }
 
   await tryCatch(
+    db.update(request)
+      .set({ read: true })
+      .where(
+        and(
+          eq(request.serviceId, variables.serviceId),
+          eq(request.referenceType, "service"),
+          eq(request.userId, session.user.id)
+        )
+      )
+  );
+
+  await tryCatch(
     db.insert(request).values({
       id: crypto.randomUUID(),
       userId: serv.sellerId,

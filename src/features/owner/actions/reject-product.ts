@@ -108,6 +108,18 @@ export const rejectProduct = async (
   }
 
   await tryCatch(
+    db.update(request)
+      .set({ read: true })
+      .where(
+        and(
+          eq(request.productId, variables.productId),
+          eq(request.referenceType, "product"),
+          eq(request.userId, session.user.id)
+        )
+      )
+  );
+
+  await tryCatch(
     db.insert(request).values({
       id: crypto.randomUUID(),
       userId: prod.sellerId,
