@@ -118,7 +118,7 @@ export const approveProduct = async (
       .where(
         and(
           eq(request.productId, variables.productId),
-          eq(request.referenceType, "product_request"),
+          eq(request.referenceType, "product"),
           eq(request.userId, session.user.id)
         )
       )
