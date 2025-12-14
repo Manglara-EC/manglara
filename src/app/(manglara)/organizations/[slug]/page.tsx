@@ -15,6 +15,7 @@ import { DeleteOrganizationButton } from "@/features/organizations/components/de
 import { OrganizationPageHeader } from "@/features/organizations/components/organization-page-header";
 import { OrganizationMembers } from "@/features/organizations/components/organization-members";
 import { OrganizationInvitations } from "@/features/organizations/components/organization-invitations";
+import { OrganizationItemsView } from "@/features/organizations/components/organization-items-view";
 
 export const metadata: Metadata = {
   title: "Manglara | Organizaciones",
@@ -56,6 +57,8 @@ export default async function OrganizationsPage({
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
       <OrganizationPageHeader organizationId={data.id} />
+
+      <OrganizationItemsView organizationId={data.id} />
 
       <OrganizationMembers organizationId={data.id} />
 

@@ -59,3 +59,11 @@ export type AcceptInvitationVariables = {
 export type RejectInvitationVariables = {
   invitationId: string;
 };
+
+import type { PublicItem } from "@/features/items/types";
+
+export interface OrganizationItem extends PublicItem {
+  // For seller view: statistics
+  sales?: number;
+  views?: number; // Placeholder for future implementation
+}
