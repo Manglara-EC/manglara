@@ -195,3 +195,37 @@ export const request = pgTable("request", {
     .$defaultFn(() => new Date())
     .notNull(),
 });
+
+export const transactionHeader = pgTable("transaction_header", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  totalAmount: decimal("total_amount", { precision: 12, scale: 2 }).notNull(),
+  createdAt: timestamp("created_at")
+    .$defaultFn(() => new Date())
+    .notNull(),
+  customerId: text("customer_id")
+    .notNull()
+    .references(() => user.id),
+  sellerId: text("seller_id")
+    .notNull()
+    .references(() => user.id),
+  status: text("status").notNull(),
+});
+
+export const lineItem = pgTable("line_item", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  transactionId: text("transaction_id")
+    .notNull()
+    .references(() => transactionHeader.id, { onDelete: "cascade" }),
+  itemId: text("item_id")
+    .notNull()
+    .references(() => product.id),
+  unitPrice: decimal("unit_price", { precision: 12, scale: 2 }).notNull(),
+  quantity: integer("quantity").notNull(),
+  discount: decimal("discount", { precision: 12, scale: 2 }).notNull(),
+  taxes: decimal("taxes", { precision: 12, scale: 2 }).notNull(),
+  totalAmount: decimal("total_amount", { precision: 12, scale: 2 }).notNull(),
+});
