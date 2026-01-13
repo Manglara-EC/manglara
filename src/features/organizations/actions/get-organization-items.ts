@@ -9,15 +9,9 @@ import { product, service, organization, user, member, lineItem, transactionHead
 import { tryCatch } from "@/shared/utils/try-catch";
 import type { ActionResponse } from "@/shared/types";
 
-import type { PublicItem } from "@/features/items/types";
+import type { OrganizationItem } from "@/features/organizations/types";
 
 type ErrorCode = "UNAUTHORIZED" | "FORBIDDEN" | "INTERNAL_SERVER_ERROR";
-
-interface OrganizationItem extends PublicItem {
-  // For seller view: statistics
-  sales?: number;
-  views?: number; // Placeholder for future implementation
-}
 
 export const getOrganizationItems = async (
   organizationId: string
