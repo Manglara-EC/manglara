@@ -1,4 +1,12 @@
-import { pgTable, text, timestamp, boolean } from "drizzle-orm/pg-core";
+import {
+  pgTable,
+  text,
+  timestamp,
+  boolean,
+  integer,
+  decimal,
+  json
+} from "drizzle-orm/pg-core";
 
 export const user = pgTable("user", {
   id: text("id").primaryKey(),
@@ -47,10 +55,10 @@ export const verification = pgTable("verification", {
   value: text("value").notNull(),
   expiresAt: timestamp("expires_at").notNull(),
   createdAt: timestamp("created_at").$defaultFn(
-    () => /* @__PURE__ */ new Date(),
+    () => /* @__PURE__ */ new Date()
   ),
   updatedAt: timestamp("updated_at").$defaultFn(
-    () => /* @__PURE__ */ new Date(),
+    () => /* @__PURE__ */ new Date()
   ),
 });
 
@@ -96,4 +104,211 @@ export const invitation = pgTable("invitation", {
   inviterId: text("inviter_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
+});
+
+export const product = pgTable("product", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  name: text("name").notNull(),
+  description: text("description"),
+  price: decimal("price", { precision: 10, scale: 2 }).notNull(),
+
+  stock: integer("stock").default(0).notNull(), 
+  images: json("images").$type<string[]>(),
+
+  sellerId: text("seller_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  organizationId: text("organization_id")
+    .notNull()
+    .references(() => organization.id, { onDelete: "cascade" }),
+
+  status: text("status").default("pending").notNull(), // 'pending', 'approved', 'rejected' --> Confirm if rejected status is needed
+  deleted: boolean("deleted").default(false).notNull(),
+
+  approvedBy: text("approved_by").references(() => user.id),
+  approvedAt: timestamp("approved_at"),
+  rejectionReason: text("rejection_reason"),
+
+  createdAt: timestamp("created_at")
+    .$defaultFn(() => new Date())
+    .notNull(),
+  updatedAt: timestamp("updated_at")
+    .$defaultFn(() => new Date())
+    .notNull(),
+});
+
+export const service = pgTable("service", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  name: text("name").notNull(),
+  description: text("description"),
+  
+  // Tipo de servicio: accommodation, time_based, activity, other
+  serviceType: text("service_type").default("other").notNull(),
+  
+  // Precio base y unidad
+  price: decimal("price", { precision: 10, scale: 2 }).notNull(),
+  // 'hour', 'day', 'night', 'person', 'session', 'flat_rate'
+  priceUnit: text("price_unit").default("flat_rate").notNull(),
+  
+  // Duración base en minutos (para servicios basados en tiempo)
+  durationMinutes: integer("duration_minutes"),
+  
+  // Capacidad máxima (personas por sesión, huéspedes, etc.)
+  maxCapacity: integer("max_capacity").default(1).notNull(),
+  
+  // Ubicación del servicio (solo texto)
+  location: text("location"),
+  
+  // Configuración flexible por tipo de servicio (JSON)
+  // Para accommodation: { checkInTime, checkOutTime, minNights, maxNights, amenities }
+  // Para time_based: { durationOptions: [{ minutes, price }], bufferMinutes }
+  // Para activity: { difficulty, requirements, inclusions, exclusions }
+  serviceConfig: json("service_config").$type<ServiceConfig | null>(),
+  
+  // Reglas de disponibilidad (JSON)
+  // { schedule: { monday: [{start, end}], ... }, blockedDates: [], exceptions: [] }
+  availabilityRules: json("availability_rules").$type<AvailabilityRules | null>(),
+  
+  // Reglas de cancelación
+  cancellationPolicy: text("cancellation_policy").default("flexible"), // flexible, moderate, strict
+  cancellationWindowHours: integer("cancellation_window_hours").default(24),
+  
+  // Imágenes
+  images: json("images").$type<string[]>(),
+
+  // Relaciones
+  sellerId: text("seller_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  organizationId: text("organization_id")
+    .notNull()
+    .references(() => organization.id, { onDelete: "cascade" }),
+  
+  // Estado de publicación
+  status: text("status").default("pending").notNull(), // pending, approved, rejected
+  deleted: boolean("deleted").default(false).notNull(),
+
+  // Aprobación
+  approvedBy: text("approved_by").references(() => user.id),
+  approvedAt: timestamp("approved_at"),
+  rejectionReason: text("rejection_reason"),
+
+  createdAt: timestamp("created_at").$defaultFn(() => new Date()).notNull(),
+  updatedAt: timestamp("updated_at").$defaultFn(() => new Date()).notNull(),
+});
+
+// Tipos para configuraciones de servicios (usados en el schema)
+export interface DurationOption {
+  minutes: number;
+  price: string;
+  label?: string;
+}
+
+export interface AccommodationConfig {
+  checkInTime?: string; // "15:00"
+  checkOutTime?: string; // "11:00"
+  minNights?: number;
+  maxNights?: number;
+  amenities?: string[];
+  houseRules?: string[];
+  bedrooms?: number;
+  bathrooms?: number;
+  beds?: number;
+}
+
+export interface TimeBasedConfig {
+  durationOptions?: DurationOption[];
+  bufferMinutes?: number; // tiempo entre citas
+  simultaneousBookings?: number; // cuántas reservas simultáneas permite
+}
+
+export interface ActivityConfig {
+  difficulty?: "easy" | "moderate" | "challenging" | "expert";
+  requirements?: string[];
+  inclusions?: string[];
+  exclusions?: string[];
+  minParticipants?: number;
+  meetingPoint?: string;
+}
+
+export type ServiceConfig = AccommodationConfig | TimeBasedConfig | ActivityConfig | Record<string, unknown>;
+
+export interface TimeSlot {
+  start: string; // "09:00"
+  end: string;   // "18:00"
+}
+
+export interface AvailabilityRules {
+  schedule?: {
+    monday?: TimeSlot[];
+    tuesday?: TimeSlot[];
+    wednesday?: TimeSlot[];
+    thursday?: TimeSlot[];
+    friday?: TimeSlot[];
+    saturday?: TimeSlot[];
+    sunday?: TimeSlot[];
+  };
+  blockedDates?: string[]; // ISO dates
+  seasonalPricing?: {
+    startDate: string;
+    endDate: string;
+    priceMultiplier: number;
+  }[];
+}
+
+export const request = pgTable("request", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+
+  type: text("type").notNull(), // 'product_request', 'product_approved', 'product_rejected', etc.
+  message: text("message").notNull(),
+  read: boolean("read").default(false).notNull(),
+
+  productId: text("product_id").references(() => product.id, { onDelete: "cascade" }),
+  serviceId: text("service_id").references(() => service.id, { onDelete: "cascade" }),
+  referenceType: text("reference_type").notNull(), // 'product' or 'service'
+
+  createdAt: timestamp("created_at")
+    .$defaultFn(() => new Date())
+    .notNull(),
+});
+
+export const transactionHeader = pgTable("transaction_header", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  totalAmount: decimal("total_amount", { precision: 12, scale: 2 }).notNull(),
+  createdAt: timestamp("created_at")
+    .$defaultFn(() => new Date())
+    .notNull(),
+  customerId: text("customer_id")
+    .notNull()
+    .references(() => user.id),
+  sellerId: text("seller_id")
+    .notNull()
+    .references(() => user.id),
+  status: text("status").notNull(),
+});
+
+export const lineItem = pgTable("line_item", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  transactionId: text("transaction_id")
+    .notNull()
+    .references(() => transactionHeader.id, { onDelete: "cascade" }),
+  itemId: text("item_id")
+    .notNull()
+    .references(() => product.id),
+  unitPrice: decimal("unit_price", { precision: 12, scale: 2 }).notNull(),
+  quantity: integer("quantity").notNull(),
+  discount: decimal("discount", { precision: 12, scale: 2 }).notNull(),
+  taxes: decimal("taxes", { precision: 12, scale: 2 }).notNull(),
+  totalAmount: decimal("total_amount", { precision: 12, scale: 2 }).notNull(),
 });

@@ -7,6 +7,7 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { Toaster } from "@/shared/components/ui/sonner";
 import { ThemeProvider } from "@/shared/components/theme-provider";
 import { getQueryClient } from "@/shared/lib/react-query/get-query-client";
+import { CartProvider } from "@/features/cart/context/cart-context";
 
 export const Providers: FC<PropsWithChildren> = ({ children }) => {
   // NOTE: Avoid useState when initializing the query client if you don't
@@ -23,9 +24,11 @@ export const Providers: FC<PropsWithChildren> = ({ children }) => {
       disableTransitionOnChange
     >
       <QueryClientProvider client={queryClient}>
-        {children}
+        <CartProvider>
+          {children}
 
-        <ReactQueryDevtools initialIsOpen={false} />
+          <ReactQueryDevtools initialIsOpen={false} />
+        </CartProvider>
       </QueryClientProvider>
 
       <Toaster />

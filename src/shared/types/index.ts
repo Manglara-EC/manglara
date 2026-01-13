@@ -2,7 +2,7 @@ import { z } from "zod";
 
 import { twoFactorSchema } from "@/shared/schemas/two-factor";
 import { authClient } from "@/shared/lib/better-auth/client";
-import { user } from "@/shared/lib/drizzle/schema";
+import { product, request, service, user } from "@/shared/lib/drizzle/schema";
 
 export type TwoFactorVariables = z.infer<typeof twoFactorSchema>;
 
@@ -29,4 +29,9 @@ export type ActionResponse<T, E extends string> =
       error: ActionError<E>;
     };
 
+export type ItemType = "product" | "service";
+
 export type User = typeof user.$inferSelect;
+export type Product = typeof product.$inferSelect;
+export type Service = typeof service.$inferSelect;
+export type Request = typeof request.$inferSelect;
