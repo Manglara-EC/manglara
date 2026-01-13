@@ -17,14 +17,16 @@ import { ScrollArea, ScrollBar } from "@/shared/components/ui/scroll-area";
 
 import { MembersTablePagination } from "@/features/organizations/components/members-table-pagination";
 import { MembersTableToolbar } from "@/features/organizations/components/members-table-toolbar";
-import { columns } from "@/features/organizations/components/members-table-columns";
+import { columns, readOnlyColumns } from "@/features/organizations/components/members-table-columns";
 import { useMembersTable } from "@/features/organizations/hooks/use-members-table";
 
 interface Props {
   organizationId: string;
+  readOnly?: boolean;
 }
 
-export function MembersTable({ organizationId }: Props) {
+export function MembersTable({ organizationId, readOnly = false }: Props) {
+  const tableColumns = readOnly ? readOnlyColumns : columns;
   const {
     table,
     isSuccess,
@@ -33,7 +35,7 @@ export function MembersTable({ organizationId }: Props) {
     refetch,
     isRefetching,
     pagination,
-  } = useMembersTable({ organizationId });
+  } = useMembersTable({ organizationId, columns: tableColumns });
 
   return (
     <div className="w-full space-y-4">
@@ -66,7 +68,7 @@ export function MembersTable({ organizationId }: Props) {
                 Array.from({ length: pagination.pageSize }).map(
                   (_, rowIndex) => (
                     <TableRow key={rowIndex} className="h-12">
-                      {columns.slice(0, -1).map((_, columnIndex) => (
+                      {tableColumns.slice(0, -1).map((_, columnIndex) => (
                         <TableCell key={columnIndex}>
                           <Skeleton className="h-4 w-full" />
                         </TableCell>
@@ -77,7 +79,7 @@ export function MembersTable({ organizationId }: Props) {
 
               {isError && (
                 <TableRow>
-                  <TableCell colSpan={columns.length} className="h-24">
+                  <TableCell colSpan={tableColumns.length} className="h-24">
                     <div className="flex flex-col items-center justify-center gap-2">
                       Algo salió mal 😢
                       <Button
@@ -114,7 +116,7 @@ export function MembersTable({ organizationId }: Props) {
               {table.getRowModel().rows?.length === 0 && isSuccess && (
                 <TableRow>
                   <TableCell
-                    colSpan={columns.length}
+                    colSpan={tableColumns.length}
                     className="h-24 text-center"
                   >
                     No se encontraron usuarios en esta página. 😢 <br /> Intenta

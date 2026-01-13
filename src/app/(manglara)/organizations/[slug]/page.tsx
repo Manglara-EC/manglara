@@ -28,11 +28,15 @@ export default async function OrganizationsPage({
 }) {
   const { slug } = await params;
 
+  // Obtener sesión para saber el rol del usuario
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
   const { data, error } = await tryCatch(
     auth.api.getFullOrganization({
       query: {
         organizationSlug: slug,
-        membersLimit: 0,
       },
       headers: await headers(),
     }),
@@ -46,6 +50,13 @@ export default async function OrganizationsPage({
       "Algo salió mal mientras se obtenía los datos de la organización",
     );
 
+  // Obtener el rol del usuario actual en esta organización
+  const currentUserMember = data.members?.find(
+    (member) => member.userId === session?.user?.id
+  );
+  const userRoleInOrg = currentUserMember?.role ?? "member";
+  const canManageOrg = userRoleInOrg === "owner" || userRoleInOrg === "admin";
+
   const queryClient = new QueryClient();
 
   await queryClient.prefetchQuery({
@@ -58,13 +69,13 @@ export default async function OrganizationsPage({
     <HydrationBoundary state={dehydrate(queryClient)}>
       <OrganizationPageHeader organizationId={data.id} />
 
-      <OrganizationItemsView organizationId={data.id} />
+      {canManageOrg && <OrganizationItemsView organizationId={data.id} />}
 
-      <OrganizationMembers organizationId={data.id} />
+      <OrganizationMembers organizationId={data.id} readOnly={!canManageOrg} />
 
-      <OrganizationInvitations organizationId={data.id} />
+      {canManageOrg && <OrganizationInvitations organizationId={data.id} />}
 
-      <DeleteOrganizationButton organizationId={data.id} />
+      {canManageOrg && <DeleteOrganizationButton organizationId={data.id} />}
     </HydrationBoundary>
   );
 }

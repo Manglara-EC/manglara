@@ -1,32 +1,63 @@
 "use server";
 
-import { eq, and, desc, getTableColumns, ilike, gte, lte } from "drizzle-orm";
+import { eq, and, desc, getTableColumns, ilike, gte, lte, count } from "drizzle-orm";
 
 import { db } from "@/shared/lib/drizzle/server";
 import { product, service, organization, user } from "@/shared/lib/drizzle/schema";
 import { tryCatch } from "@/shared/utils/try-catch";
 import type { ActionResponse } from "@/shared/types";
+import {
+  paginationParamsSchema,
+  calculateOffset,
+  calculatePagination,
+  type PaginationResponse,
+} from "@/shared/schemas/pagination";
 
 import type { PublicItem, ItemSearchParams } from "@/features/items/types";
 
-type ErrorCode = "INTERNAL_SERVER_ERROR";
+type ErrorCode = "INTERNAL_SERVER_ERROR" | "INVALID_PARAMS";
+
+export interface GetVisibleItemsResponse {
+  items: PublicItem[];
+  pagination: PaginationResponse;
+}
 
 export const getVisibleItems = async (
   params?: ItemSearchParams
-): Promise<ActionResponse<PublicItem[], ErrorCode>> => {
+): Promise<ActionResponse<GetVisibleItemsResponse, ErrorCode>> => {
   const {
     query,
     organizationId,
     minPrice,
     maxPrice,
     itemType,
-    limit = 50,
-    offset = 0,
+    page = 1,
+    pageSize = 50,
   } = params ?? {};
 
-  const items: PublicItem[] = [];
+  // Validar parámetros de paginación
+  const validationResult = paginationParamsSchema.safeParse({
+    page,
+    pageSize,
+  });
 
-  // Fetch products if itemType is not specified or is "product"
+  if (!validationResult.success) {
+    return {
+      data: null,
+      error: {
+        code: "INVALID_PARAMS",
+        message: "Invalid pagination parameters",
+      },
+    };
+  }
+
+  const { page: validPage, pageSize: validPageSize } = validationResult.data;
+  const offset = calculateOffset(validPage, validPageSize);
+
+  const items: PublicItem[] = [];
+  let totalCount = 0;
+
+  // Fetch products si itemType no está especificado o es "product"
   if (!itemType || itemType === "product") {
     const productConditions = [
       eq(product.status, "approved"),
@@ -49,23 +80,34 @@ export const getVisibleItems = async (
       productConditions.push(lte(product.price, maxPrice.toString()));
     }
 
-    const { data: products, error: productsError } = await tryCatch(
-      db
-        .select({
-          ...getTableColumns(product),
-          organizationName: organization.name,
-          sellerName: user.name,
-        })
-        .from(product)
-        .innerJoin(organization, eq(product.organizationId, organization.id))
-        .innerJoin(user, eq(product.sellerId, user.id))
-        .where(and(...productConditions))
-        .orderBy(desc(product.createdAt))
-        .limit(limit)
-        .offset(offset)
-    );
+    const [
+      { data: products, error: productsError },
+      { data: productsCountResult, error: productsCountError },
+    ] = await Promise.all([
+      tryCatch(
+        db
+          .select({
+            ...getTableColumns(product),
+            organizationName: organization.name,
+            sellerName: user.name,
+          })
+          .from(product)
+          .innerJoin(organization, eq(product.organizationId, organization.id))
+          .innerJoin(user, eq(product.sellerId, user.id))
+          .where(and(...productConditions))
+          .orderBy(desc(product.createdAt))
+          .limit(validPageSize)
+          .offset(offset)
+      ),
+      tryCatch(
+        db
+          .select({ count: count() })
+          .from(product)
+          .where(and(...productConditions))
+      ),
+    ]);
 
-    if (productsError) {
+    if (productsError || productsCountError) {
       return {
         data: null,
         error: {
@@ -83,9 +125,11 @@ export const getVisibleItems = async (
         }))
       );
     }
+
+    totalCount += productsCountResult?.[0]?.count ?? 0;
   }
 
-  // Fetch services if itemType is not specified or is "service"
+  // Fetch services si itemType no está especificado o es "service"
   if (!itemType || itemType === "service") {
     const serviceConditions = [
       eq(service.status, "approved"),
@@ -108,23 +152,34 @@ export const getVisibleItems = async (
       serviceConditions.push(lte(service.price, maxPrice.toString()));
     }
 
-    const { data: services, error: servicesError } = await tryCatch(
-      db
-        .select({
-          ...getTableColumns(service),
-          organizationName: organization.name,
-          sellerName: user.name,
-        })
-        .from(service)
-        .innerJoin(organization, eq(service.organizationId, organization.id))
-        .innerJoin(user, eq(service.sellerId, user.id))
-        .where(and(...serviceConditions))
-        .orderBy(desc(service.createdAt))
-        .limit(limit)
-        .offset(offset)
-    );
+    const [
+      { data: services, error: servicesError },
+      { data: servicesCountResult, error: servicesCountError },
+    ] = await Promise.all([
+      tryCatch(
+        db
+          .select({
+            ...getTableColumns(service),
+            organizationName: organization.name,
+            sellerName: user.name,
+          })
+          .from(service)
+          .innerJoin(organization, eq(service.organizationId, organization.id))
+          .innerJoin(user, eq(service.sellerId, user.id))
+          .where(and(...serviceConditions))
+          .orderBy(desc(service.createdAt))
+          .limit(validPageSize)
+          .offset(offset)
+      ),
+      tryCatch(
+        db
+          .select({ count: count() })
+          .from(service)
+          .where(and(...serviceConditions))
+      ),
+    ]);
 
-    if (servicesError) {
+    if (servicesError || servicesCountError) {
       return {
         data: null,
         error: {
@@ -142,20 +197,24 @@ export const getVisibleItems = async (
         }))
       );
     }
+
+    totalCount += servicesCountResult?.[0]?.count ?? 0;
   }
 
-  // Sort all items by createdAt (most recent first)
+  // Ordenar todos los items por createdAt (más recientes primero)
   items.sort((a, b) => {
     const aDate = new Date(a.createdAt).getTime();
     const bDate = new Date(b.createdAt).getTime();
     return bDate - aDate;
   });
 
-  // Apply limit and offset to the combined results
-  const paginatedItems = items.slice(offset, offset + limit);
+  const pagination = calculatePagination(validPage, validPageSize, totalCount);
 
   return {
-    data: paginatedItems,
+    data: {
+      items,
+      pagination,
+    },
     error: null,
   };
 };

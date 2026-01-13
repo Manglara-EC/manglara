@@ -1,11 +1,17 @@
-import { TypographyLarge } from "@/shared/components/ui/typography";
+import { OrganizationsList } from "@/features/organizations/components/organizations-list";
+import { getUserOrganizations } from "@/features/organizations/actions/get-user-organizations";
 
-export default function OrganizationsPage() {
+// Forzar renderizado dinámico (no cachear)
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
+export default async function OrganizationsPage() {
+  const result = await getUserOrganizations();
+
   return (
-    <div className="grid h-full w-full place-content-center">
-      <TypographyLarge className="text-muted-foreground mt-30 text-center font-normal">
-        Selecciona una organización para administrarla.
-      </TypographyLarge>
-    </div>
+    <OrganizationsList 
+      initialData={result.data ?? []} 
+      error={result.error?.message}
+    />
   );
 }

@@ -16,6 +16,7 @@ import { MobileWrapper } from "@/shared/components/mobile-wrapper";
 import { Card } from "@/shared/components/ui/card";
 
 import { getOrganizations } from "@/features/organizations/actions/get-organizations";
+import { getUserOrganizations } from "@/features/organizations/actions/get-user-organizations";
 import { OrganizationsSidebar } from "@/features/organizations/components/organizations-sidebar";
 import { CreateOrganizationButton } from "@/features/organizations/components/create-organization-button";
 
@@ -35,7 +36,8 @@ export default async function OrganizationsLayout({
   await queryClient.prefetchQuery({
     queryKey: ["organization", "list"],
     queryFn: async () => {
-      const { data } = await getOrganizations();
+      // Usar getUserOrganizations que funciona para todos los roles
+      const { data } = await getUserOrganizations();
 
       organizationsCount = data?.length ?? 0;
 
