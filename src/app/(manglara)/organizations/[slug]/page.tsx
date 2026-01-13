@@ -16,6 +16,8 @@ import { OrganizationPageHeader } from "@/features/organizations/components/orga
 import { OrganizationMembers } from "@/features/organizations/components/organization-members";
 import { OrganizationInvitations } from "@/features/organizations/components/organization-invitations";
 import { OrganizationItemsView } from "@/features/organizations/components/organization-items-view";
+import { OrganizationPublicView } from "@/features/organizations/components/organization-public-view";
+import { getOrganizationBySlug } from "@/features/organizations/actions/get-organization-by-slug";
 
 export const metadata: Metadata = {
   title: "Manglara | Organizaciones",
@@ -28,11 +30,19 @@ export default async function OrganizationsPage({
 }) {
   const { slug } = await params;
 
-  // Obtener sesión para saber el rol del usuario
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
+  // Primero obtener info básica de la organización
+  const { data: orgInfo, error: orgInfoError } = await getOrganizationBySlug(slug);
 
+  if (orgInfoError?.code === "NOT_FOUND" || !orgInfo) {
+    return notFound();
+  }
+
+  // Si el usuario NO es miembro, mostrar vista pública
+  if (!orgInfo.isMember) {
+    return <OrganizationPublicView organization={orgInfo} />;
+  }
+
+  // Si es miembro, obtener datos completos
   const { data, error } = await tryCatch(
     auth.api.getFullOrganization({
       query: {
@@ -42,13 +52,14 @@ export default async function OrganizationsPage({
     }),
   );
 
-  if ((error as APIError)?.body?.code === "ORGANIZATION_NOT_FOUND")
-    return notFound();
+  if (error || !data) {
+    return <OrganizationPublicView organization={orgInfo} />;
+  }
 
-  if (error || !data)
-    throw new Error(
-      "Algo salió mal mientras se obtenía los datos de la organización",
-    );
+  // Obtener sesión para saber el rol del usuario
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
 
   // Obtener el rol del usuario actual en esta organización
   const currentUserMember = data.members?.find(
