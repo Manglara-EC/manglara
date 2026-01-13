@@ -151,12 +151,23 @@ export const service = pgTable("service", {
   
   // Capacidad máxima por turno (ej: 10 personas para un tour, 1 para una cita)
   maxCapacity: integer("max_capacity").default(1).notNull(),
-  requiresCheckIn: boolean("requires_check_in").default(false).notNull(),
   
   // Reglas de cancelación (ej: horas antes para reembolso)
   cancellationWindowHours: integer("cancellation_window_hours").default(24),
-  availabilitySchedule: json("availability"),
   images: json("images").$type<string[]>(),
+  
+  // Tipo de servicio y configuración
+  serviceType: text("service_type"),
+  serviceConfig: json("service_config"),
+  
+  // Reglas de disponibilidad
+  availabilityRules: json("availability_rules"),
+  
+  // Política de cancelación
+  cancellationPolicy: text("cancellation_policy"),
+  
+  // Ubicación del servicio
+  location: text("location"),
 
   sellerId: text("seller_id")
     .notNull()

@@ -17,10 +17,13 @@ export interface CreateServiceVariables {
   priceUnit?: 'hour' | 'day' | 'person' | 'flat_rate';
   durationMinutes?: number;
   maxCapacity?: number;
-  requiresCheckIn?: boolean;
   cancellationWindowHours?: number;
-  availabilitySchedule?: Record<string, string[]>;
   images?: string[];
+  serviceType?: string;
+  serviceConfig?: Record<string, any>;
+  availabilityRules?: Record<string, any>;
+  cancellationPolicy?: string;
+  location?: string;
   sellerId: string;
   organizationId: string;
 }
@@ -42,10 +45,13 @@ export interface UpdateServiceVariables {
   priceUnit?: 'hour' | 'day' | 'person' | 'flat_rate';
   durationMinutes?: number;
   maxCapacity?: number;
-  requiresCheckIn?: boolean;
   cancellationWindowHours?: number;
-  availabilitySchedule?: Record<string, string[]>;
   images?: string[];
+  serviceType?: string;
+  serviceConfig?: Record<string, any>;
+  availabilityRules?: Record<string, any>;
+  cancellationPolicy?: string;
+  location?: string;
 }
 
 export interface ProductWithOrg extends Product {
