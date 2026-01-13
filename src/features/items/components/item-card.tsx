@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Package, Wrench, ShoppingCart, MapPinIcon, ClockIcon, UsersIcon, HomeIcon, CalendarIcon } from "lucide-react";
+import { Package, Wrench, ShoppingCart } from "lucide-react";
 import { toast } from "sonner";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/components/ui/card";
@@ -24,18 +24,6 @@ import { Label } from "@/shared/components/ui/label";
 import { useCart } from "@/features/cart/context/cart-context";
 import type { PublicItem } from "@/features/items/types";
 
-const SERVICE_TYPE_LABELS: Record<string, string> = {
-  accommodation: "Alojamiento",
-  activity: "Actividad",
-};
-
-const PRICE_UNIT_LABELS: Record<string, string> = {
-  night: "/noche",
-  person: "/persona",
-  day: "/día",
-  flat_rate: "",
-};
-
 interface Props {
   item: PublicItem;
 }
@@ -52,20 +40,12 @@ export function ItemCard({ item }: Props) {
   const [quantity, setQuantity] = useState(1);
   const [open, setOpen] = useState(false);
 
-  // For services, show enhanced card without cart functionality
+  // For services, just show the card without cart functionality
   if (!isProduct) {
-    const serviceItem = item as PublicItem & { type: "service" };
-    const serviceType = (serviceItem as any).serviceType || "other";
-    const priceUnit = (serviceItem as any).priceUnit || "flat_rate";
-    const config = ((serviceItem as any).serviceConfig as Record<string, unknown>) ?? {};
-    const location = (serviceItem as any).location;
-    const durationMinutes = (serviceItem as any).durationMinutes;
-    const maxCapacity = (serviceItem as any).maxCapacity;
-
     return (
       <Link href={`/${item.type}s/${item.id}`}>
         <Card className="h-full transition-all hover:shadow-md">
-          <CardHeader className="pb-2">
+          <CardHeader>
             <div className="relative aspect-video w-full overflow-hidden rounded-lg bg-muted">
               {imageUrl ? (
                 <Image
@@ -76,68 +56,24 @@ export function ItemCard({ item }: Props) {
                 />
               ) : (
                 <div className="flex h-full items-center justify-center">
-                  {serviceType === "accommodation" ? (
-                    <HomeIcon className="h-12 w-12 text-muted-foreground" />
-                  ) : serviceType === "activity" ? (
-                    <CalendarIcon className="h-12 w-12 text-muted-foreground" />
-                  ) : (
-                    <Wrench className="h-12 w-12 text-muted-foreground" />
-                  )}
+                  <Wrench className="h-12 w-12 text-muted-foreground" />
                 </div>
               )}
-              {/* Badge de tipo en la imagen */}
-              <Badge 
-                variant="secondary" 
-                className="absolute top-2 left-2 bg-background/80 backdrop-blur-sm"
-              >
-                {SERVICE_TYPE_LABELS[serviceType]}
-              </Badge>
             </div>
           </CardHeader>
           <CardContent className="flex flex-col gap-2">
-            <CardTitle className="line-clamp-2 text-lg">{item.name}</CardTitle>
-            
+            <div className="flex items-start justify-between gap-2">
+              <CardTitle className="line-clamp-2 text-lg">{item.name}</CardTitle>
+              <Badge variant="secondary">Servicio</Badge>
+            </div>
             {item.description && (
               <CardDescription className="line-clamp-2">
                 {item.description}
               </CardDescription>
             )}
-
-            {/* Info rápida según tipo */}
-            <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
-              {location && (
-                <span className="flex items-center gap-1">
-                  <MapPinIcon className="h-3 w-3" />
-                  <span className="line-clamp-1 max-w-[120px]">{location}</span>
-                </span>
-              )}
-              {durationMinutes && (
-                <span className="flex items-center gap-1">
-                  <ClockIcon className="h-3 w-3" />
-                  {durationMinutes} min
-                </span>
-              )}
-              {maxCapacity && maxCapacity > 1 && (
-                <span className="flex items-center gap-1">
-                  <UsersIcon className="h-3 w-3" />
-                  {maxCapacity} pers.
-                </span>
-              )}
-              {serviceType === "accommodation" && config.bedrooms && (
-                <span className="flex items-center gap-1">
-                  🛏️ {String(config.bedrooms)} hab.
-                </span>
-              )}
-            </div>
-
-            <div className="mt-auto flex items-center justify-between pt-2 border-t">
-              <div>
-                <span className="text-lg font-semibold">{price}</span>
-                <span className="text-sm text-muted-foreground">
-                  {PRICE_UNIT_LABELS[priceUnit]}
-                </span>
-              </div>
-              <span className="text-xs text-muted-foreground line-clamp-1 max-w-[100px]">
+            <div className="mt-auto flex items-center justify-between pt-2">
+              <span className="text-lg font-semibold">{price}</span>
+              <span className="text-sm text-muted-foreground">
                 {item.organizationName}
               </span>
             </div>

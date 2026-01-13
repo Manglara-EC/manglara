@@ -1,7 +1,6 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
-  ColumnDef,
   ColumnFiltersState,
   PaginationState,
   SortingState,
@@ -16,15 +15,14 @@ import {
 
 import { authClient } from "@/shared/lib/better-auth/client";
 
-import { columns as defaultColumns } from "@/features/organizations/components/members-table-columns";
+import { columns } from "@/features/organizations/components/members-table-columns";
 import type { OrganizationMember } from "@/features/organizations/types";
 
 interface Props {
   organizationId: string;
-  columns?: ColumnDef<OrganizationMember>[];
 }
 
-export const useMembersTable = ({ organizationId, columns = defaultColumns }: Props) => {
+export const useMembersTable = ({ organizationId }: Props) => {
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [sorting, setSorting] = useState<SortingState>([]);

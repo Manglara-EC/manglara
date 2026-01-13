@@ -16,8 +16,6 @@ import { OrganizationPageHeader } from "@/features/organizations/components/orga
 import { OrganizationMembers } from "@/features/organizations/components/organization-members";
 import { OrganizationInvitations } from "@/features/organizations/components/organization-invitations";
 import { OrganizationItemsView } from "@/features/organizations/components/organization-items-view";
-import { OrganizationPublicView } from "@/features/organizations/components/organization-public-view";
-import { getOrganizationBySlug } from "@/features/organizations/actions/get-organization-by-slug";
 
 export const metadata: Metadata = {
   title: "Manglara | Organizaciones",
@@ -30,43 +28,23 @@ export default async function OrganizationsPage({
 }) {
   const { slug } = await params;
 
-  // Primero obtener info básica de la organización
-  const { data: orgInfo, error: orgInfoError } = await getOrganizationBySlug(slug);
-
-  if (orgInfoError?.code === "NOT_FOUND" || !orgInfo) {
-    return notFound();
-  }
-
-  // Si el usuario NO es miembro, mostrar vista pública
-  if (!orgInfo.isMember) {
-    return <OrganizationPublicView organization={orgInfo} />;
-  }
-
-  // Si es miembro, obtener datos completos
   const { data, error } = await tryCatch(
     auth.api.getFullOrganization({
       query: {
         organizationSlug: slug,
+        membersLimit: 0,
       },
       headers: await headers(),
     }),
   );
 
-  if (error || !data) {
-    return <OrganizationPublicView organization={orgInfo} />;
-  }
+  if ((error as APIError)?.body?.code === "ORGANIZATION_NOT_FOUND")
+    return notFound();
 
-  // Obtener sesión para saber el rol del usuario
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-
-  // Obtener el rol del usuario actual en esta organización
-  const currentUserMember = data.members?.find(
-    (member) => member.userId === session?.user?.id
-  );
-  const userRoleInOrg = currentUserMember?.role ?? "member";
-  const canManageOrg = userRoleInOrg === "owner" || userRoleInOrg === "admin";
+  if (error || !data)
+    throw new Error(
+      "Algo salió mal mientras se obtenía los datos de la organización",
+    );
 
   const queryClient = new QueryClient();
 
@@ -80,13 +58,13 @@ export default async function OrganizationsPage({
     <HydrationBoundary state={dehydrate(queryClient)}>
       <OrganizationPageHeader organizationId={data.id} />
 
-      {canManageOrg && <OrganizationItemsView organizationId={data.id} />}
+      <OrganizationItemsView organizationId={data.id} />
 
-      <OrganizationMembers organizationId={data.id} readOnly={!canManageOrg} />
+      <OrganizationMembers organizationId={data.id} />
 
-      {canManageOrg && <OrganizationInvitations organizationId={data.id} />}
+      <OrganizationInvitations organizationId={data.id} />
 
-      {canManageOrg && <DeleteOrganizationButton organizationId={data.id} />}
+      <DeleteOrganizationButton organizationId={data.id} />
     </HydrationBoundary>
   );
 }

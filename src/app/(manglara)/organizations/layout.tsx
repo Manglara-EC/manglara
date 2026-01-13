@@ -15,7 +15,7 @@ import { PageWrapper } from "@/shared/components/page-wrapper";
 import { MobileWrapper } from "@/shared/components/mobile-wrapper";
 import { Card } from "@/shared/components/ui/card";
 
-import { getAllOrganizations } from "@/features/organizations/actions/get-all-organizations";
+import { getOrganizations } from "@/features/organizations/actions/get-organizations";
 import { OrganizationsSidebar } from "@/features/organizations/components/organizations-sidebar";
 import { CreateOrganizationButton } from "@/features/organizations/components/create-organization-button";
 
@@ -35,8 +35,7 @@ export default async function OrganizationsLayout({
   await queryClient.prefetchQuery({
     queryKey: ["organization", "list"],
     queryFn: async () => {
-      // Usar getAllOrganizations para mostrar todas las organizaciones
-      const { data } = await getAllOrganizations();
+      const { data } = await getOrganizations();
 
       organizationsCount = data?.length ?? 0;
 
@@ -52,7 +51,7 @@ export default async function OrganizationsLayout({
         <div className="flex w-full flex-1 items-center justify-center">
           <Card className="-mt-12 flex flex-col items-center justify-center rounded-4xl p-8">
             <TypographyLarge className="text-center text-xl font-medium">
-              No hay organizaciones disponibles
+              No hay organizaciones creadas 😢
             </TypographyLarge>
           </Card>
         </div>

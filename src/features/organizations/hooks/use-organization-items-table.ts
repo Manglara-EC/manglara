@@ -47,11 +47,9 @@ export const useOrganizationItemsTable = ({ organizationId }: Props) => {
 
   const defaultData = useMemo(() => [], []);
   
-  // Determine if user is admin
-  const isAdmin = session?.user.role === "admin";
   // Determine if user is seller (not admin) - sellers see statistics
-  const isSeller = !isAdmin && data && data.length > 0 && "sales" in (data[0] ?? {});
-  const columns = useMemo(() => getOrganizationItemsColumns(isSeller ?? false, isAdmin), [isSeller, isAdmin]);
+  const isSeller = session?.user.role !== "admin" && data && data.length > 0 && "sales" in (data[0] ?? {});
+  const columns = useMemo(() => getOrganizationItemsColumns(isSeller ?? false), [isSeller]);
 
   const table = useReactTable({
     data: (data as OrganizationItem[]) ?? defaultData,

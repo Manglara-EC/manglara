@@ -32,11 +32,11 @@ export default async function StoriesLayout({
       <div className="flex h-svh gap-6 overflow-hidden px-2 py-4 sm:px-6 sm:py-8 md:p-10">
         <AppSidebar />
 
-        <div className="min-w-0 flex-1 flex flex-col overflow-hidden">
+        <div className="h-full w-1 flex-1 flex flex-col overflow-hidden">
           <div className="flex justify-end mb-4">
             <CartButton />
           </div>
-          <main className="h-full w-full flex-1 overflow-y-auto">{children}</main>
+          <main className="h-full w-full flex-1 overflow-hidden">{children}</main>
         </div>
       </div>
     </HydrationBoundary>

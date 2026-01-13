@@ -10,7 +10,7 @@ export interface ItemSearchParams {
   minPrice?: number;
   maxPrice?: number;
   itemType?: ItemType;
-  page?: number;
-  pageSize?: number;
+  limit?: number;
+  offset?: number;
 }
 
