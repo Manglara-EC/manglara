@@ -14,7 +14,7 @@ import {
   ShoppingCartIcon,
 } from "lucide-react";
 
-import { UserRole } from "@/shared/constants/roles";
+import type { UserRole } from "@/shared/constants/roles";
 
 export interface MenuItem {
   /** ID único del item de menú */
@@ -48,7 +48,7 @@ export const MENU_CONFIG: MenuItem[] = [
     label: "Inicio",
     icon: LayoutDashboardIcon,
     href: "/home",
-    allowedRoles: [UserRole.USER, UserRole.SELLER, UserRole.ADMIN],
+    allowedRoles: ["user", "seller", "admin"],
     description: "Vuelve al inicio",
   },
 
@@ -57,7 +57,7 @@ export const MENU_CONFIG: MenuItem[] = [
     label: "Explorar",
     icon: ShoppingBagIcon,
     href: "/explore",
-    allowedRoles: [UserRole.USER, UserRole.SELLER, UserRole.ADMIN],
+    allowedRoles: ["user", "seller", "admin"],
     description: "Explora productos y servicios",
   },
 
@@ -66,7 +66,7 @@ export const MENU_CONFIG: MenuItem[] = [
     label: "Carrito",
     icon: ShoppingCartIcon,
     href: "/cart",
-    allowedRoles: [UserRole.USER, UserRole.SELLER, UserRole.ADMIN],
+    allowedRoles: ["user", "seller", "admin"],
     description: "Revisa tu carrito de compras",
   },
 
@@ -78,7 +78,7 @@ export const MENU_CONFIG: MenuItem[] = [
     label: "Dashboard",
     icon: BarChart3Icon,
     href: "/seller/dashboard",
-    allowedRoles: [UserRole.SELLER, UserRole.ADMIN],
+    allowedRoles: ["seller", "admin"],
     description: "Panel de control del vendedor",
     isNew: false,
   },
@@ -88,7 +88,7 @@ export const MENU_CONFIG: MenuItem[] = [
     label: "Mis Productos",
     icon: BoxIcon,
     href: "/seller/products",
-    allowedRoles: [UserRole.SELLER, UserRole.ADMIN],
+    allowedRoles: ["seller", "admin"],
     description: "Gestiona tus productos",
   },
 
@@ -97,7 +97,7 @@ export const MENU_CONFIG: MenuItem[] = [
     label: "Mis Servicios",
     icon: ShoppingBagIcon,
     href: "/seller/services",
-    allowedRoles: [UserRole.SELLER, UserRole.ADMIN],
+    allowedRoles: ["seller", "admin"],
     description: "Gestiona tus servicios",
   },
 
@@ -106,7 +106,7 @@ export const MENU_CONFIG: MenuItem[] = [
     label: "Crear",
     icon: PlusIcon,
     href: "#",
-    allowedRoles: [UserRole.SELLER, UserRole.ADMIN],
+    allowedRoles: ["seller", "admin"],
     description: "Crear nuevo producto o servicio",
     subItems: [
       {
@@ -114,7 +114,7 @@ export const MENU_CONFIG: MenuItem[] = [
         label: "Crear Producto",
         icon: PlusIcon,
         href: "/seller/products/create",
-        allowedRoles: [UserRole.SELLER, UserRole.ADMIN],
+        allowedRoles: ["seller", "admin"],
         description: "Crea un nuevo producto",
         isNew: true,
       },
@@ -123,7 +123,7 @@ export const MENU_CONFIG: MenuItem[] = [
         label: "Crear Servicio",
         icon: PlusIcon,
         href: "/seller/services/create",
-        allowedRoles: [UserRole.SELLER, UserRole.ADMIN],
+        allowedRoles: ["seller", "admin"],
         description: "Crea un nuevo servicio",
         isNew: true,
       },
@@ -138,7 +138,7 @@ export const MENU_CONFIG: MenuItem[] = [
     label: "Admin",
     icon: LayoutDashboardIcon,
     href: "/admin",
-    allowedRoles: [UserRole.ADMIN],
+    allowedRoles: ["admin"],
     description: "Panel administrativo",
   },
 
@@ -150,7 +150,7 @@ export const MENU_CONFIG: MenuItem[] = [
     label: "Organizaciones",
     icon: BuildingIcon,
     href: "/organizations",
-    allowedRoles: [UserRole.USER, UserRole.SELLER, UserRole.ADMIN],
+    allowedRoles: ["user", "seller", "admin"],
     description: "Mis organizaciones",
   },
 
@@ -159,7 +159,7 @@ export const MENU_CONFIG: MenuItem[] = [
     label: "Configuración",
     icon: SettingsIcon,
     href: "/settings",
-    allowedRoles: [UserRole.USER, UserRole.SELLER, UserRole.ADMIN],
+    allowedRoles: ["user", "seller", "admin"],
     description: "Configuración de cuenta",
   },
 ];

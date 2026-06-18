@@ -67,6 +67,7 @@ export function OrganizationsSidebar() {
                 key={item.id}
                 href={`/organizations/${item.slug}`}
                 label={item.name}
+                description={`${item.memberCount} ${item.memberCount === 1 ? "miembro" : "miembros"}`}
                 icon={
                   <Avatar className="size-6">
                     <AvatarImage src={item.logo || undefined} alt={item.name} />
@@ -84,7 +85,7 @@ export function OrganizationsSidebar() {
             ))}
 
           {isSuccess && data && data.length === 0 && (
-            <TypographyMuted>No hay organizaciones creadas 😢</TypographyMuted>
+            <TypographyMuted>No hay organizaciones disponibles</TypographyMuted>
           )}
         </nav>
       </ScrollArea>

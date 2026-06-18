@@ -62,14 +62,8 @@ export type RejectInvitationVariables = {
 
 import type { PublicItem } from "@/features/items/types";
 
-export type OrganizationItem = PublicItem & {
+export interface OrganizationItem extends PublicItem {
   // For seller view: statistics
   sales?: number;
   views?: number; // Placeholder for future implementation
 }
-
-export interface OrganizationData extends Organization {
-  membersCount: number;
-  productsCount: number;
-  servicesCount: number;
-};

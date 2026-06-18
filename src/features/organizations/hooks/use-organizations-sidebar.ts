@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { authClient } from "@/shared/lib/better-auth/client";
 import { useInMobileWrapper } from "@/shared/hooks/use-in-mobile-wrapper";
 
-import { getOrganizations } from "@/features/organizations/actions/get-organizations";
+import { getAllOrganizations } from "@/features/organizations/actions/get-all-organizations";
 
 export const useOrganizationsSidebar = () => {
   const { isMobile, isMounted, isWrapperPage } = useInMobileWrapper({
@@ -14,7 +14,7 @@ export const useOrganizationsSidebar = () => {
     useQuery({
       queryKey: ["organization", "list"],
       queryFn: async () => {
-        const { data, error } = await getOrganizations();
+        const { data, error } = await getAllOrganizations();
 
         if (error) return Promise.reject(error);
 

@@ -1,6 +1,4 @@
-"use client";
-
-import { useState } from "react";
+import type { Metadata } from "next";
 
 import {
   TypographyH1,
@@ -9,11 +7,12 @@ import {
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/shared/components/ui/tabs";
 
 import { ItemsGrid } from "@/features/items/components/items-grid";
-import { OrganizationSelector } from "@/features/organizations/components/organization-selector";
+
+export const metadata: Metadata = {
+  title: "Manglara | Explore",
+};
 
 export default function ExplorePage() {
-  const [selectedOrganization, setSelectedOrganization] = useState<string | undefined>();
-
   return (
     <main className="flex flex-col gap-6">
       <div className="space-y-2">
@@ -21,11 +20,6 @@ export default function ExplorePage() {
 
         <TypographyMuted>Explora el mundo de Manglara. 🌴</TypographyMuted>
       </div>
-
-      <OrganizationSelector
-        value={selectedOrganization}
-        onValueChange={setSelectedOrganization}
-      />
 
       <Tabs defaultValue="all" className="w-full">
         <TabsList>
@@ -35,15 +29,15 @@ export default function ExplorePage() {
         </TabsList>
 
         <TabsContent value="all" className="mt-4">
-          <ItemsGrid params={{ organizationId: selectedOrganization }} />
+          <ItemsGrid />
         </TabsContent>
 
         <TabsContent value="products" className="mt-4">
-          <ItemsGrid params={{ itemType: "product", organizationId: selectedOrganization }} />
+          <ItemsGrid params={{ itemType: "product" }} />
         </TabsContent>
 
         <TabsContent value="services" className="mt-4">
-          <ItemsGrid params={{ itemType: "service", organizationId: selectedOrganization }} />
+          <ItemsGrid params={{ itemType: "service" }} />
         </TabsContent>
       </Tabs>
     </main>

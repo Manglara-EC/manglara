@@ -9,9 +9,15 @@ import { product, service, organization, user, member, lineItem, transactionHead
 import { tryCatch } from "@/shared/utils/try-catch";
 import type { ActionResponse } from "@/shared/types";
 
-import type { OrganizationItem } from "@/features/organizations/types";
+import type { PublicItem } from "@/features/items/types";
 
 type ErrorCode = "UNAUTHORIZED" | "FORBIDDEN" | "INTERNAL_SERVER_ERROR";
+
+interface OrganizationItem extends PublicItem {
+  // For seller view: statistics
+  sales?: number;
+  views?: number; // Placeholder for future implementation
+}
 
 export const getOrganizationItems = async (
   organizationId: string
@@ -41,12 +47,24 @@ export const getOrganizationItems = async (
   );
 
   // Check if user is admin (global admin role)
-  const isAdmin = session.user.role === "admin";
-  const isSeller = membership?.role === "seller" || membership?.role === "owner";
-  const isOwner = membership?.role === "owner";
+  const isSystemAdmin = session.user.role === "admin";
+  const isSystemSeller = session.user.role === "seller";
+  
+  // Organization roles: owner, admin, member
+  const isOrgOwner = membership?.role === "owner";
+  const isOrgAdmin = membership?.role === "admin";
+  const isOrgMember = membership?.role === "member";
+  const isMemberOfOrg = !!membership;
+  
+  // Permissions:
+  // - System admins: See all items
+  // - Org owners/admins: See all items of the organization
+  // - Org members who are system sellers: See only their own items
+  // - Org members who are regular users: Cannot see items (no permission)
+  const canSeeAllOrgItems = isSystemAdmin || isOrgOwner || isOrgAdmin;
+  const canSeeOwnItems = isMemberOfOrg && isSystemSeller;
 
-  // Admin can see all items, seller can only see their products
-  if (!isAdmin && !isSeller) {
+  if (!canSeeAllOrgItems && !canSeeOwnItems) {
     return {
       data: null,
       error: {
@@ -58,8 +76,8 @@ export const getOrganizationItems = async (
 
   const items: OrganizationItem[] = [];
 
-  if (isAdmin) {
-    // Admin: Get all products and services
+  if (canSeeAllOrgItems) {
+    // Admin/Owner/OrgAdmin: Get all products and services of the organization
     const { data: products, error: productsError } = await tryCatch(
       db
         .select({
@@ -135,8 +153,8 @@ export const getOrganizationItems = async (
         }))
       );
     }
-  } else if (isSeller) {
-    // Seller: Get only their products with statistics
+  } else if (canSeeOwnItems) {
+    // System seller member: Get only their products with statistics
     const { data: products, error: productsError } = await tryCatch(
       db
         .select({

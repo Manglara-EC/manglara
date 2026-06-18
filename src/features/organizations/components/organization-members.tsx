@@ -7,16 +7,17 @@ import { useOrganizationMembers } from "@/features/organizations/hooks/use-organ
 
 interface Props {
   organizationId: string;
+  readOnly?: boolean;
 }
 
-export const OrganizationMembers = ({ organizationId }: Props) => {
+export const OrganizationMembers = ({ organizationId, readOnly = false }: Props) => {
   const { total } = useOrganizationMembers({ organizationId });
 
   return (
     <div className="space-y-8 pb-8">
       <TypographyH4>Miembros ({total})</TypographyH4>
 
-      <MembersTable organizationId={organizationId} />
+      <MembersTable organizationId={organizationId} readOnly={readOnly} />
     </div>
   );
 };
