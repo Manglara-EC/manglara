@@ -1,14 +1,16 @@
 import { useMemo } from "react";
-import {
-  HomeIcon,
-  SearchIcon,
-  UserRoundIcon,
-  SettingsIcon,
-  UserRoundCogIcon,
-  Building2Icon,
-} from "lucide-react";
 
 import { useSession } from "@/shared/hooks/use-session";
+import { useUserRole } from "@/shared/hooks/use-user-role";
+import { getMenuItemsForRole } from "@/shared/constants/menu";
+import type { MenuItem } from "@/shared/constants/menu";
+
+interface NavLink {
+  href: string;
+  label: string;
+  icon: React.ReactNode;
+  description?: string;
+}
 
 export const useAppSidebar = () => {
   const {
@@ -20,50 +22,42 @@ export const useAppSidebar = () => {
     isRefetching: isSessionRefetching,
   } = useSession();
 
+  const { role, isLoading: isRoleLoading } = useUserRole();
+
+  /**
+   * Convierte MenuItem a NavLink para compatibilidad con AppSidebar
+   * Solo items sin subitems (items principales navegables)
+   */
+  const convertMenuItemToNavLink = (item: MenuItem): NavLink => ({
+    href: item.href,
+    label: item.label,
+    icon: <item.icon />,
+    description: item.description,
+  });
+
   const links = useMemo(() => {
-    const baseLinks = [
-      { href: "/home", label: "Inicio", icon: <HomeIcon /> },
-      {
-        href: "/explore",
-        label: "Explorar",
-        icon: <SearchIcon />,
-      },
-      {
-        href: "/settings",
-        label: "Configuraciones",
-        icon: <SettingsIcon />,
-      },
-    ];
-
-    if (session?.user.role === "admin") {
-      baseLinks.splice(-1, 0, {
-        href: "/admin",
-        label: "Administrador",
-        icon: <UserRoundCogIcon />,
-      });
-      baseLinks.splice(-1, 0, {
-        href: "/organizations",
-        label: "Organizaciones",
-        icon: <Building2Icon />,
-      });
+    // Si el rol aún se está cargando, retornar array vacío
+    if (!role || isRoleLoading) {
+      return [];
     }
 
-    if (session?.user.role === "user") {
-      baseLinks.splice(-1, 0, {
-        href: `/${session.user.username}`,
-        label: "Perfil",
-        icon: <UserRoundIcon />,
-      });
-    }
+    // Obtener items de menú para el rol actual
+    const menuItems = getMenuItemsForRole(role);
 
-    return baseLinks;
-  }, [session?.user.username, session?.user.role]);
+    // Convertir a NavLink, excluyendo items con subitems
+    // (ya que el sidebar plano no los maneja)
+    const navLinks: NavLink[] = menuItems
+      .filter((item) => !item.subItems || item.subItems.length === 0)
+      .map(convertMenuItemToNavLink);
+
+    return navLinks;
+  }, [role, isRoleLoading]);
 
   return {
     links,
     session,
     isSessionSuccess,
-    isSessionLoading,
+    isSessionLoading: isSessionLoading || isRoleLoading,
     isSessionError,
     refetchSession,
     isSessionRefetching,
