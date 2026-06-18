@@ -35,6 +35,7 @@ export interface UpdateProductVariables {
   price: string;
   stock?: number;
   images?: string[];
+  organizationId: string;
 }
 
 export interface UpdateServiceVariables {
