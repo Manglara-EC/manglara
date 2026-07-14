@@ -61,7 +61,7 @@ export const createService = async (
       data: null,
       error: {
         code: "VALIDATION_ERROR",
-        message: validation.error.errors.map(e => e.message).join(", "),
+        message: validation.error.issues.map((issue) => issue.message).join(", "),
       },
     };
   }

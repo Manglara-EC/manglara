@@ -59,8 +59,8 @@ export function Example2_RenderMenu() {
 import { useHasRole, useHasAnyRole } from "@/shared/hooks/use-user-role";
 
 export function Example3_ConditionalsByRole() {
-  const isSeller = useHasRole("seller");
-  const isAdminOrSeller = useHasAnyRole(["admin", "seller"]);
+  const isSeller = useHasRole("seller" as Parameters<typeof useHasRole>[0]);
+  const isAdminOrSeller = useHasAnyRole(["admin", "seller"] as Parameters<typeof useHasAnyRole>[0]);
 
   return (
     <div className="space-y-4">
