@@ -34,7 +34,7 @@ export function ProductsPageSimple() {
 "use client";
 
 import { useState } from "react";
-import { ItemsGrid } from "@/features/items/components/items-grid";
+//import { ItemsGrid } from "@/features/items/components/items-grid";
 import { Input } from "@/shared/components/ui/input";
 
 export function ServicesPageWithSearch() {
@@ -72,10 +72,10 @@ export function ServicesPageWithSearch() {
 
 "use client";
 
-import { useState } from "react";
+//import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/components/ui/tabs";
-import { ItemsGrid } from "@/features/items/components/items-grid";
-import type { ItemType } from "@/shared/types";
+//import { ItemsGrid } from "@/features/items/components/items-grid";
+//import type { ItemType } from "@/shared/types";
 
 export function ExplorePage() {
   const [itemType, setItemType] = useState<ItemType | undefined>(undefined);
@@ -120,7 +120,7 @@ export function ExplorePage() {
 
 "use client";
 
-import { ItemsGrid } from "@/features/items/components/items-grid";
+//import { ItemsGrid } from "@/features/items/components/items-grid";
 
 interface OrganizationStoreProps {
   organizationId: string;
@@ -155,9 +155,9 @@ export function OrganizationStore({
 
 "use client";
 
-import { useState } from "react";
-import { ItemsGrid } from "@/features/items/components/items-grid";
-import { Input } from "@/shared/components/ui/input";
+//import { useState } from "react";
+//import { ItemsGrid } from "@/features/items/components/items-grid";
+//import { Input } from "@/shared/components/ui/input";
 import { Slider } from "@/shared/components/ui/slider";
 import {
   Select,
@@ -252,8 +252,8 @@ export function AdvancedSearch() {
 
 "use client";
 
-import { usePaginatedItems } from "@/features/items/hooks/use-paginated-items";
-import { Pagination } from "@/shared/components/pagination";
+//import { usePaginatedItems } from "@/features/items/hooks/use-paginated-items";
+//import { Pagination } from "@/shared/components/pagination";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 
 export function ManualPaginationExample() {
@@ -326,7 +326,7 @@ export function ManualPaginationExample() {
 "use client";
 
 import { useEffect, useRef } from "react";
-import { ItemsGrid } from "@/features/items/components/items-grid";
+//import { ItemsGrid } from "@/features/items/components/items-grid";
 import { usePaginatedItems } from "@/features/items/hooks/use-paginated-items";
 import { Pagination } from "@/shared/components/pagination";
 
@@ -403,7 +403,7 @@ export function ProductPage({ productId }: ProductPageProps) {
 
 "use client";
 
-import { ItemsGrid } from "@/features/items/components/items-grid";
+//import { ItemsGrid } from "@/features/items/components/items-grid";
 
 interface SimilarItemsProps {
   organizationId: string;
@@ -430,7 +430,7 @@ export function SimilarItems({ organizationId, currentItemId }: SimilarItemsProp
 
 "use client";
 
-import { ItemsGrid } from "@/features/items/components/items-grid";
+//import { ItemsGrid } from "@/features/items/components/items-grid";
 
 export function CartSuggestions() {
   return (

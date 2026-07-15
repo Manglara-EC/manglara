@@ -7,7 +7,7 @@ import {
   TypographyMuted,
 } from "@/shared/components/ui/typography";
 import { Button } from "@/shared/components/ui/button";
-import { Card, CardContent } from "@/shared/components/ui/card";
+import { MyProductsList } from "@/features/seller/components/my-products-list";
 
 export const metadata: Metadata = {
   title: "Manglara | Mis Productos",
@@ -30,23 +30,7 @@ export default function SellerProductsPage() {
           </Link>
         </Button>
       </div>
-
-      {/* Lista de productos (placeholder) */}
-      <Card>
-        <CardContent className="flex min-h-[300px] items-center justify-center">
-          <div className="text-center">
-            <p className="text-muted-foreground mb-4">
-              Aún no tienes productos publicados
-            </p>
-            <Button asChild variant="outline">
-              <Link href="/seller/products/create">
-                <PlusIcon className="mr-2 h-4 w-4" />
-                Crear tu primer producto
-              </Link>
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+      <MyProductsList />
     </div>
   );
 }
