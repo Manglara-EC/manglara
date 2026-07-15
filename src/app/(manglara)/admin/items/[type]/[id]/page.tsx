@@ -174,69 +174,69 @@ export default async function AdminItemDetailPage({ params }: Props) {
                 <CardContent className="space-y-6">
                   {/* Información básica del config */}
                   <dl className="grid grid-cols-2 gap-4 text-sm">
-                    {item.serviceConfig.maxCapacity && (
+                    {Boolean(item.serviceConfig.maxCapacity) && (
                       <div>
                         <dt className="text-muted-foreground">Capacidad máxima</dt>
                         <dd className="font-medium">{String(item.serviceConfig.maxCapacity)} personas</dd>
                       </div>
                     )}
                     {/* Campos de Alojamiento */}
-                    {item.serviceConfig.checkInTime && (
+                    {Boolean(item.serviceConfig.checkInTime) && (
                       <div>
                         <dt className="text-muted-foreground">Check-in</dt>
                         <dd className="font-medium">{String(item.serviceConfig.checkInTime)}</dd>
                       </div>
                     )}
-                    {item.serviceConfig.checkOutTime && (
+                    {Boolean(item.serviceConfig.checkOutTime) && (
                       <div>
                         <dt className="text-muted-foreground">Check-out</dt>
                         <dd className="font-medium">{String(item.serviceConfig.checkOutTime)}</dd>
                       </div>
                     )}
-                    {item.serviceConfig.minNights && (
+                    {Boolean(item.serviceConfig.minNights) && (
                       <div>
                         <dt className="text-muted-foreground">Noches mínimas</dt>
                         <dd className="font-medium">{String(item.serviceConfig.minNights)}</dd>
                       </div>
                     )}
-                    {item.serviceConfig.maxNights && (
+                    {Boolean(item.serviceConfig.maxNights) && (
                       <div>
                         <dt className="text-muted-foreground">Noches máximas</dt>
                         <dd className="font-medium">{String(item.serviceConfig.maxNights)}</dd>
                       </div>
                     )}
-                    {item.serviceConfig.bedrooms && (
+                    {Boolean(item.serviceConfig.bedrooms) && (
                       <div>
                         <dt className="text-muted-foreground">Habitaciones</dt>
                         <dd className="font-medium">{String(item.serviceConfig.bedrooms)}</dd>
                       </div>
                     )}
-                    {item.serviceConfig.bathrooms && (
+                    {Boolean(item.serviceConfig.bathrooms) && (
                       <div>
                         <dt className="text-muted-foreground">Baños</dt>
                         <dd className="font-medium">{String(item.serviceConfig.bathrooms)}</dd>
                       </div>
                     )}
-                    {item.serviceConfig.beds && (
+                    {Boolean(item.serviceConfig.beds) && (
                       <div>
                         <dt className="text-muted-foreground">Camas</dt>
                         <dd className="font-medium">{String(item.serviceConfig.beds)}</dd>
                       </div>
                     )}
                     {/* Campos de Actividad */}
-                    {item.serviceConfig.difficulty && (
+                    {Boolean(item.serviceConfig.difficulty) && (
                       <div>
                         <dt className="text-muted-foreground">Dificultad</dt>
                         <dd className="font-medium capitalize">{String(item.serviceConfig.difficulty)}</dd>
                       </div>
                     )}
-                    {item.serviceConfig.minParticipants && (
+                    {Boolean(item.serviceConfig.minParticipants) && (
                       <div>
                         <dt className="text-muted-foreground">Participantes mínimos</dt>
                         <dd className="font-medium">{String(item.serviceConfig.minParticipants)}</dd>
                       </div>
                     )}
-                    {item.serviceConfig.meetingPoint && (
+                    {Boolean(item.serviceConfig.meetingPoint) && (
                       <div className="col-span-2">
                         <dt className="text-muted-foreground">Punto de encuentro</dt>
                         <dd className="font-medium">{String(item.serviceConfig.meetingPoint)}</dd>

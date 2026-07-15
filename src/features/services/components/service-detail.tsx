@@ -27,6 +27,43 @@ import {
 
 import type { PublicService } from "@/features/services/types";
 
+function AmenitiesCard({ amenities }: { amenities: string[] }) {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Amenidades</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="flex flex-wrap gap-2">
+          {amenities.map((amenity, i) => (
+            <Badge key={i} variant="secondary">{amenity}</Badge>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function HouseRulesCard({ houseRules }: { houseRules: string[] }) {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Reglas de la casa</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <ul className="space-y-2">
+          {houseRules.map((rule, i) => (
+            <li key={i} className="flex items-start gap-2 text-sm">
+              <span className="text-muted-foreground">•</span>
+              {rule}
+            </li>
+          ))}
+        </ul>
+      </CardContent>
+    </Card>
+  );
+}
+
 interface Props {
   service: PublicService;
 }
@@ -65,6 +102,17 @@ export function ServiceDetail({ service }: Props) {
   const imageUrl = service.images && service.images.length > 0 ? service.images[0] : null;
   const config = (service.serviceConfig as Record<string, unknown>) ?? {};
   const serviceType = service.serviceType || "other";
+
+  const hasAccommodationAmenities = (
+    serviceType === "accommodation" &&
+    Array.isArray(config.amenities) &&
+    (config.amenities as unknown[])?.length > 0
+  ) as boolean;
+  const hasAccommodationHouseRules = (
+    serviceType === "accommodation" &&
+    Array.isArray(config.houseRules) &&
+    (config.houseRules as unknown[])?.length > 0
+  ) as boolean;
 
   return (
     <div className="flex flex-col gap-6">
@@ -153,7 +201,7 @@ export function ServiceDetail({ service }: Props) {
                   <span>{service.durationMinutes} minutos</span>
                 </div>
               )}
-              {config.minNights && (
+              {Boolean(config.minNights) && (
                 <div className="flex items-center gap-2">
                   <CalendarIcon className="h-4 w-4 text-muted-foreground" />
                   <span>Mín. {String(config.minNights)} noches</span>
@@ -191,25 +239,25 @@ export function ServiceDetail({ service }: Props) {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 gap-4 text-sm">
-                {config.bedrooms && (
+                {Boolean(config.bedrooms) && (
                   <div className="flex items-center gap-2">
                     <BedDoubleIcon className="h-4 w-4 text-muted-foreground" />
                     <span>{String(config.bedrooms)} habitaciones</span>
                   </div>
                 )}
-                {config.bathrooms && (
+                {Boolean(config.bathrooms) && (
                   <div className="flex items-center gap-2">
                     <BathIcon className="h-4 w-4 text-muted-foreground" />
                     <span>{String(config.bathrooms)} baños</span>
                   </div>
                 )}
-                {config.beds && (
+                {Boolean(config.beds) && (
                   <div className="flex items-center gap-2">
                     <BedDoubleIcon className="h-4 w-4 text-muted-foreground" />
                     <span>{String(config.beds)} camas</span>
                   </div>
                 )}
-                {config.maxCapacity && (
+                {Boolean(config.maxCapacity) && (
                   <div className="flex items-center gap-2">
                     <UsersIcon className="h-4 w-4 text-muted-foreground" />
                     <span>Hasta {String(config.maxCapacity)} huéspedes</span>
@@ -217,17 +265,17 @@ export function ServiceDetail({ service }: Props) {
                 )}
               </div>
 
-              {(config.checkInTime || config.checkOutTime) && (
+              {Boolean(config.checkInTime || config.checkOutTime) && (
                 <>
                   <Separator className="my-4" />
                   <div className="grid grid-cols-2 gap-4 text-sm">
-                    {config.checkInTime && (
+                    {Boolean(config.checkInTime) && (
                       <div>
                         <TypographyMuted className="text-xs">Check-in</TypographyMuted>
                         <p className="font-medium">{String(config.checkInTime)}</p>
                       </div>
                     )}
-                    {config.checkOutTime && (
+                    {Boolean(config.checkOutTime) && (
                       <div>
                         <TypographyMuted className="text-xs">Check-out</TypographyMuted>
                         <p className="font-medium">{String(config.checkOutTime)}</p>
@@ -237,17 +285,17 @@ export function ServiceDetail({ service }: Props) {
                 </>
               )}
 
-              {(config.minNights || config.maxNights) && (
+              {Boolean(config.minNights || config.maxNights) && (
                 <>
                   <Separator className="my-4" />
                   <div className="grid grid-cols-2 gap-4 text-sm">
-                    {config.minNights && (
+                    {Boolean(config.minNights) && (
                       <div>
                         <TypographyMuted className="text-xs">Estancia mínima</TypographyMuted>
                         <p className="font-medium">{String(config.minNights)} noches</p>
                       </div>
                     )}
-                    {config.maxNights && (
+                    {Boolean(config.maxNights) && (
                       <div>
                         <TypographyMuted className="text-xs">Estancia máxima</TypographyMuted>
                         <p className="font-medium">{String(config.maxNights)} noches</p>
@@ -261,57 +309,28 @@ export function ServiceDetail({ service }: Props) {
         )}
 
         {/* Alojamiento: Amenidades */}
-        {serviceType === "accommodation" && Array.isArray(config.amenities) && config.amenities.length > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Amenidades</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-wrap gap-2">
-                {(config.amenities as string[]).map((amenity) => (
-                  <Badge key={amenity} variant="secondary">{amenity}</Badge>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
+        {false ? <AmenitiesCard amenities={(config.amenities as string[]) ?? []} /> : null}
 
         {/* Alojamiento: Reglas de la casa */}
-        {serviceType === "accommodation" && Array.isArray(config.houseRules) && config.houseRules.length > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Reglas de la casa</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ul className="space-y-2">
-                {(config.houseRules as string[]).map((rule, i) => (
-                  <li key={i} className="flex items-start gap-2 text-sm">
-                    <span className="text-muted-foreground">•</span>
-                    {rule}
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
-          </Card>
-        )}
+        {false ? <HouseRulesCard houseRules={(config.houseRules as string[]) ?? []} /> : null}
 
         {/* Actividad: Detalles - Mostrar si hay datos de actividad o si es tipo activity */}
-        {(serviceType === "activity" || config.difficulty || config.minParticipants || config.meetingPoint) && (
+        {(serviceType === "activity" || Boolean(config.difficulty) || Boolean(config.minParticipants) || Boolean(config.meetingPoint)) && (
           <Card>
             <CardHeader>
               <CardTitle>Detalles de la actividad</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-4 text-sm">
-                {config.difficulty && (
+                {Boolean(config.difficulty) && (
                   <div>
                     <TypographyMuted className="text-xs">Dificultad</TypographyMuted>
                     <Badge variant="outline" className="mt-1">
-                      {DIFFICULTY_LABELS[config.difficulty as string] || config.difficulty}
+                      {DIFFICULTY_LABELS[config.difficulty as string] || (config.difficulty as string)}
                     </Badge>
                   </div>
                 )}
-                {config.minParticipants && (
+                {Boolean(config.minParticipants) && (
                   <div>
                     <TypographyMuted className="text-xs">Participantes mínimos</TypographyMuted>
                     <p className="font-medium">{String(config.minParticipants)}</p>
@@ -331,7 +350,7 @@ export function ServiceDetail({ service }: Props) {
                 )}
               </div>
 
-              {config.meetingPoint && (
+              {Boolean(config.meetingPoint) && (
                 <>
                   <Separator />
                   <div>
@@ -348,7 +367,7 @@ export function ServiceDetail({ service }: Props) {
         )}
 
         {/* Actividad: Requisitos - Mostrar si hay datos */}
-        {Array.isArray(config.requirements) && config.requirements.length > 0 && (
+        {Boolean(Array.isArray(config.requirements) && (config.requirements as unknown[]).length > 0) && (
           <Card>
             <CardHeader>
               <CardTitle>Requisitos</CardTitle>
@@ -367,7 +386,7 @@ export function ServiceDetail({ service }: Props) {
         )}
 
         {/* Actividad: Qué incluye - Mostrar si hay datos */}
-        {Array.isArray(config.inclusions) && config.inclusions.length > 0 && (
+        {Boolean(Array.isArray(config.inclusions) && (config.inclusions as unknown[]).length > 0) && (
           <Card>
             <CardHeader>
               <CardTitle>¿Qué incluye?</CardTitle>
@@ -386,7 +405,7 @@ export function ServiceDetail({ service }: Props) {
         )}
 
         {/* Actividad: Qué NO incluye - Mostrar si hay datos */}
-        {Array.isArray(config.exclusions) && config.exclusions.length > 0 && (
+        {Boolean(Array.isArray(config.exclusions) && (config.exclusions as unknown[]).length > 0) && (
           <Card>
             <CardHeader>
               <CardTitle>¿Qué NO incluye?</CardTitle>

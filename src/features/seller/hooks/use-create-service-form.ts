@@ -31,7 +31,8 @@ export const useCreateServiceForm = ({ organizationId }: Props) => {
   const { data: session } = useSession();
 
   const form = useForm<CreateServiceVariables>({
-    resolver: zodResolver(createServiceSchema),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    resolver: zodResolver(createServiceSchema) as any,
     defaultValues: {
       ...defaultValues,
       organizationId,

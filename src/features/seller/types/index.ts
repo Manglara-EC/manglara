@@ -4,6 +4,8 @@ import type {
   AccommodationConfig,
   ActivityConfig,
   AvailabilityRules,
+  TimeBasedConfig,
+  DurationOption,
 } from "@/shared/lib/drizzle/schema";
 
 // Re-exportar tipos de configuración
@@ -12,6 +14,8 @@ export type {
   AccommodationConfig,
   ActivityConfig,
   AvailabilityRules,
+  TimeBasedConfig,
+  DurationOption,
 };
 
 // Tipos de servicio soportados
@@ -23,7 +27,7 @@ export const PRICE_UNITS = ["night", "person", "day", "flat_rate"] as const;
 export type PriceUnit = typeof PRICE_UNITS[number];
 
 // Políticas de cancelación
-export const CANCELLATION_POLICIES = ["flexible", "moderate", "strict"] as const;
+export const CANCELLATION_POLICIES = ["flexible", "moderate", "strict", "non_refundable"] as const;
 export type CancellationPolicy = typeof CANCELLATION_POLICIES[number];
 
 // Labels para UI
@@ -43,6 +47,7 @@ export const CANCELLATION_POLICY_LABELS: Record<CancellationPolicy, string> = {
   flexible: "Flexible (reembolso completo hasta 24h antes)",
   moderate: "Moderada (reembolso completo hasta 5 días antes)",
   strict: "Estricta (reembolso del 50% hasta 7 días antes)",
+  non_refundable: "No reembolsable",
 };
 
 export interface CreateProductVariables {
@@ -95,6 +100,7 @@ export interface UpdateProductVariables {
   price: string;
   stock?: number;
   images?: string[];
+  organizationId?: string;
 }
 
 export interface UpdateServiceVariables {
@@ -112,6 +118,7 @@ export interface UpdateServiceVariables {
   cancellationPolicy?: CancellationPolicy;
   cancellationWindowHours?: number;
   images?: string[];
+  organizationId?: string;
 }
 
 // Helper para obtener la unidad de precio recomendada por tipo de servicio

@@ -29,7 +29,6 @@ interface Props {
 }
 
 export function ItemCardWithCart({ item }: Props) {
-  const isProduct = item.type === "product";
   const imageUrl = item.images && item.images.length > 0 ? item.images[0] : null;
   const price = new Intl.NumberFormat("es-ES", {
     style: "currency",
@@ -41,7 +40,7 @@ export function ItemCardWithCart({ item }: Props) {
   const [open, setOpen] = useState(false);
 
   // Only show cart button for products
-  if (!isProduct) {
+  if (item.type !== "product") {
     return (
       <Link href={`/${item.type}s/${item.id}`}>
         <Card className="h-full transition-all hover:shadow-md">
@@ -84,7 +83,7 @@ export function ItemCardWithCart({ item }: Props) {
   }
 
   // Product card with cart functionality
-  const product = item as any; // Type assertion for product
+  const product = item; // Type assertion for product
   const existingItem = cart.items.find((cartItem) => cartItem.product.id === product.id);
   const currentQuantity = existingItem?.quantity ?? 0;
   const availableStock = product.stock !== undefined ? product.stock - currentQuantity : undefined;

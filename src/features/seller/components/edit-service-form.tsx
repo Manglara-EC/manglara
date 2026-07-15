@@ -57,7 +57,7 @@ export function EditServiceForm({ serviceId, service }: Props) {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+      <form onSubmit={form.handleSubmit(onSubmit as unknown as Parameters<typeof form.handleSubmit>[0])} className="space-y-8">
         {/* Información básica */}
         <Card>
           <CardHeader>
@@ -69,7 +69,7 @@ export function EditServiceForm({ serviceId, service }: Props) {
           <CardContent className="space-y-6">
             {/* Tipo de servicio */}
             <FormField
-              control={form.control}
+              control={form.control as unknown as React.ComponentProps<typeof FormField>["control"]}
               name="serviceType"
               render={({ field }) => (
                 <FormItem>
@@ -101,7 +101,7 @@ export function EditServiceForm({ serviceId, service }: Props) {
 
             {/* Nombre */}
             <FormField
-              control={form.control}
+              control={form.control as unknown as React.ComponentProps<typeof FormField>["control"]}
               name="name"
               render={({ field }) => (
                 <FormItem>
@@ -122,7 +122,7 @@ export function EditServiceForm({ serviceId, service }: Props) {
 
             {/* Descripción */}
             <FormField
-              control={form.control}
+              control={form.control as unknown as React.ComponentProps<typeof FormField>["control"]}
               name="description"
               render={({ field }) => (
                 <FormItem>
@@ -144,7 +144,7 @@ export function EditServiceForm({ serviceId, service }: Props) {
 
             {/* Ubicación */}
             <FormField
-              control={form.control}
+              control={form.control as unknown as React.ComponentProps<typeof FormField>["control"]}
               name="location"
               render={({ field }) => (
                 <FormItem>
@@ -180,7 +180,7 @@ export function EditServiceForm({ serviceId, service }: Props) {
             <div className="grid gap-6 md:grid-cols-2">
               {/* Precio */}
               <FormField
-                control={form.control}
+                control={form.control as unknown as React.ComponentProps<typeof FormField>["control"]}
                 name="price"
                 render={({ field }) => (
                   <FormItem>
@@ -206,7 +206,7 @@ export function EditServiceForm({ serviceId, service }: Props) {
 
               {/* Unidad de precio */}
               <FormField
-                control={form.control}
+                control={form.control as unknown as React.ComponentProps<typeof FormField>["control"]}
                 name="priceUnit"
                 render={({ field }) => (
                   <FormItem>
@@ -237,7 +237,7 @@ export function EditServiceForm({ serviceId, service }: Props) {
             <div className="grid gap-6 md:grid-cols-2">
               {/* Capacidad máxima */}
               <FormField
-                control={form.control}
+                control={form.control as unknown as React.ComponentProps<typeof FormField>["control"]}
                 name="maxCapacity"
                 render={({ field }) => (
                   <FormItem>
@@ -264,7 +264,7 @@ export function EditServiceForm({ serviceId, service }: Props) {
               {/* Duración (solo para actividades) */}
               {serviceType === "activity" && (
                 <FormField
-                  control={form.control}
+                  control={form.control as unknown as React.ComponentProps<typeof FormField>["control"]}
                   name="durationMinutes"
                   render={({ field }) => (
                     <FormItem>
@@ -292,11 +292,11 @@ export function EditServiceForm({ serviceId, service }: Props) {
 
         {/* Configuración específica por tipo */}
         {serviceType === "accommodation" && (
-          <AccommodationConfigFields form={form} />
+          <AccommodationConfigFields form={form as unknown as React.ComponentProps<typeof AccommodationConfigFields>["form"]} />
         )}
 
         {serviceType === "activity" && (
-          <ActivityConfigFields form={form} />
+          <ActivityConfigFields form={form as unknown as React.ComponentProps<typeof ActivityConfigFields>["form"]} />
         )}
 
         {/* Política de cancelación */}
@@ -309,7 +309,7 @@ export function EditServiceForm({ serviceId, service }: Props) {
           </CardHeader>
           <CardContent className="space-y-6">
             <FormField
-              control={form.control}
+              control={form.control as unknown as React.ComponentProps<typeof FormField>["control"]}
               name="cancellationPolicy"
               render={({ field }) => (
                 <FormItem>
@@ -337,7 +337,7 @@ export function EditServiceForm({ serviceId, service }: Props) {
             />
 
             <FormField
-              control={form.control}
+              control={form.control as unknown as React.ComponentProps<typeof FormField>["control"]}
               name="cancellationWindowHours"
               render={({ field }) => (
                 <FormItem>

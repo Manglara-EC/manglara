@@ -87,7 +87,7 @@ export async function getServiceById(
 
     const result: ServiceWithOrg = {
       ...foundService,
-      price: Number(foundService.price),
+      price: String(foundService.price),
       serviceConfig: foundService.serviceConfig ?? null,
       availabilityRules: foundService.availabilityRules ?? null,
       images: foundService.images ?? null,

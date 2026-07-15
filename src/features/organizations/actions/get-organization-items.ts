@@ -13,11 +13,11 @@ import type { PublicItem } from "@/features/items/types";
 
 type ErrorCode = "UNAUTHORIZED" | "FORBIDDEN" | "INTERNAL_SERVER_ERROR";
 
-interface OrganizationItem extends PublicItem {
+type OrganizationItem = PublicItem & {
   // For seller view: statistics
   sales?: number;
   views?: number; // Placeholder for future implementation
-}
+};
 
 export const getOrganizationItems = async (
   organizationId: string

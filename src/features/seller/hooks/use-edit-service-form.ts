@@ -42,7 +42,8 @@ export const useEditServiceForm = ({ serviceId, service }: Props) => {
   };
 
   const form = useForm<CreateServiceVariables>({
-    resolver: zodResolver(createServiceSchema),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    resolver: zodResolver(createServiceSchema) as any,
     defaultValues: initialValues,
   });
 
@@ -61,7 +62,7 @@ export const useEditServiceForm = ({ serviceId, service }: Props) => {
   const serviceType = form.watch("serviceType");
 
   const onSubmit = (variables: CreateServiceVariables) => {
-    updateService(variables);
+    updateService({ ...variables, serviceId });
   };
 
   // Helpers para configuración específica por tipo

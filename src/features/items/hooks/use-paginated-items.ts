@@ -24,7 +24,7 @@ interface UsePaginatedItemsReturn {
   isLoading: boolean;
   isError: boolean;
   error: Error | null;
-  refetch: () => Promise<any>;
+  refetch: () => Promise<unknown>;
 }
 
 /**
@@ -49,7 +49,7 @@ export const usePaginatedItems = ({
     error,
     refetch,
   } = useQuery({
-    queryKey: ["items", "paginated", params, currentPage],
+    queryKey: ["items", "paginated", params, currentPage, initialPageSize],
     queryFn: async () => {
       const { data: response, error: apiError } = await getVisibleItems({
         ...params,

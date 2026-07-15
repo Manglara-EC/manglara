@@ -70,7 +70,7 @@ export const useUserRole = (): UseUserRoleReturn => {
     // 3. Custom fields si se configuraron
     const rawRoleValue =
       (session.user?.role as string | undefined) ||
-      (session.user?.metadata as Record<string, string> | undefined)?.role ||
+      ((session.user as Record<string, unknown>)?.metadata as Record<string, string> | undefined)?.role ||
       undefined;
 
     setRawRole(rawRoleValue);

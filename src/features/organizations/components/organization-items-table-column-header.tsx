@@ -11,15 +11,15 @@ import {
   DropdownMenuTrigger,
 } from "@/shared/components/ui/dropdown-menu";
 
-interface Props {
-  column: Column<any, unknown>;
+interface Props<TData, TValue> {
+  column: Column<TData, TValue>;
   title: string;
 }
 
-export function OrganizationItemsTableColumnHeader({
+export function OrganizationItemsTableColumnHeader<TData, TValue>({
   column,
   title,
-}: Props) {
+}: Props<TData, TValue>) {
   if (!column.getCanSort()) {
     return <div className="ml-2.5">{title}</div>;
   }

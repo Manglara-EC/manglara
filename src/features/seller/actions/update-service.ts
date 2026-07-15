@@ -81,7 +81,7 @@ export async function updateService(
     const validation = createServiceSchema.safeParse(data);
 
     if (!validation.success) {
-      const firstError = validation.error.errors[0];
+      const firstError = validation.error.issues[0];
       return {
         error: {
           code: "VALIDATION_ERROR",
@@ -137,7 +137,7 @@ export async function updateService(
     const result: ServiceWithOrg = {
       ...updatedService,
       organizationName: orgData[0]?.name || "Organización desconocida",
-      price: Number(updatedService.price),
+      price: String(updatedService.price),
     };
 
     return { data: result };

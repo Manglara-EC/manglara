@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { Package, LoaderIcon } from "lucide-react";
 import { toast } from "sonner";
@@ -52,8 +52,16 @@ export function CheckoutSummary() {
     }
   };
 
-  if (cart.items.length === 0) {
-    router.push("/cart");
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+    if (cart.items.length === 0) {
+      router.push("/cart");
+    }
+  }, [cart.items.length, router]);
+
+  if (!isClient || cart.items.length === 0) {
     return null;
   }
 

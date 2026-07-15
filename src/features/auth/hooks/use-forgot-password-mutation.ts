@@ -10,7 +10,7 @@ import type { ForgotPasswordVariables } from "@/features/auth/types";
 export const useForgotPasswordMutation = () => {
   return useMutation({
     mutationFn: async (variables: ForgotPasswordVariables) => {
-      const { error } = await authClient.forgetPassword({
+      const { error } = await authClient.requestPasswordReset({
         email: variables.email,
         redirectTo: "/reset-password",
       });

@@ -213,73 +213,73 @@ export default async function ServiceDetailPage({ params }: Props) {
               <CardContent className="space-y-6">
                 {/* Información general en grid */}
                 <dl className="grid grid-cols-2 gap-4 text-sm">
-                  {config.maxCapacity && (
+                  {Boolean(config.maxCapacity) && (
                     <div>
                       <dt className="text-muted-foreground">Capacidad máxima</dt>
                       <dd className="font-medium">{String(config.maxCapacity)} personas</dd>
                     </div>
                   )}
-                  {config.durationMinutes && (
+                  {Boolean(config.durationMinutes) && (
                     <div>
                       <dt className="text-muted-foreground">Duración</dt>
                       <dd className="font-medium">{String(config.durationMinutes)} minutos</dd>
                     </div>
                   )}
-                  {config.checkInTime && (
+                  {Boolean(config.checkInTime) && (
                     <div>
                       <dt className="text-muted-foreground">Check-in</dt>
                       <dd className="font-medium">{String(config.checkInTime)}</dd>
                     </div>
                   )}
-                  {config.checkOutTime && (
+                  {Boolean(config.checkOutTime) && (
                     <div>
                       <dt className="text-muted-foreground">Check-out</dt>
                       <dd className="font-medium">{String(config.checkOutTime)}</dd>
                     </div>
                   )}
-                  {config.minNights && (
+                  {Boolean(config.minNights) && (
                     <div>
                       <dt className="text-muted-foreground">Noches mínimas</dt>
                       <dd className="font-medium">{String(config.minNights)}</dd>
                     </div>
                   )}
-                  {config.maxNights && (
+                  {Boolean(config.maxNights) && (
                     <div>
                       <dt className="text-muted-foreground">Noches máximas</dt>
                       <dd className="font-medium">{String(config.maxNights)}</dd>
                     </div>
                   )}
-                  {config.bedrooms && (
+                  {Boolean(config.bedrooms) && (
                     <div>
                       <dt className="text-muted-foreground">Habitaciones</dt>
                       <dd className="font-medium">{String(config.bedrooms)}</dd>
                     </div>
                   )}
-                  {config.bathrooms && (
+                  {Boolean(config.bathrooms) && (
                     <div>
                       <dt className="text-muted-foreground">Baños</dt>
                       <dd className="font-medium">{String(config.bathrooms)}</dd>
                     </div>
                   )}
-                  {config.beds && (
+                  {Boolean(config.beds) && (
                     <div>
                       <dt className="text-muted-foreground">Camas</dt>
                       <dd className="font-medium">{String(config.beds)}</dd>
                     </div>
                   )}
-                  {config.difficulty && (
+                  {Boolean(config.difficulty) && (
                     <div>
                       <dt className="text-muted-foreground">Dificultad</dt>
                       <dd className="font-medium capitalize">{String(config.difficulty)}</dd>
                     </div>
                   )}
-                  {config.minParticipants && (
+                  {Boolean(config.minParticipants) && (
                     <div>
                       <dt className="text-muted-foreground">Participantes mínimos</dt>
                       <dd className="font-medium">{String(config.minParticipants)}</dd>
                     </div>
                   )}
-                  {config.meetingPoint && (
+                  {Boolean(config.meetingPoint) && (
                     <div className="col-span-2">
                       <dt className="text-muted-foreground">Punto de encuentro</dt>
                       <dd className="font-medium">{String(config.meetingPoint)}</dd>
@@ -396,7 +396,7 @@ export default async function ServiceDetailPage({ params }: Props) {
               <Badge variant="outline">
                 {CANCELLATION_POLICY_LABELS[foundService.cancellationPolicy as keyof typeof CANCELLATION_POLICY_LABELS] || "Flexible"}
               </Badge>
-              {config.cancellationWindowHours && (
+              {Boolean(config.cancellationWindowHours) && (
                 <TypographyMuted className="mt-2 text-sm">
                   Se puede cancelar hasta {String(config.cancellationWindowHours)} horas antes
                 </TypographyMuted>

@@ -45,6 +45,7 @@ export default async function ProductDetailPage({
   const queryClient = new QueryClient();
 
   await queryClient.prefetchQuery({
+    // eslint-disable-next-line @tanstack/query/exhaustive-deps
     queryKey: ["product", id],
     queryFn: () => product,
   });

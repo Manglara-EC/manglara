@@ -41,7 +41,6 @@ interface Props {
 }
 
 export function ItemCard({ item }: Props) {
-  const isProduct = item.type === "product";
   const imageUrl = item.images && item.images.length > 0 ? item.images[0] : null;
   const price = new Intl.NumberFormat("es-ES", {
     style: "currency",
@@ -53,14 +52,14 @@ export function ItemCard({ item }: Props) {
   const [open, setOpen] = useState(false);
 
   // For services, show enhanced card without cart functionality
-  if (!isProduct) {
-    const serviceItem = item as PublicItem & { type: "service" };
-    const serviceType = (serviceItem as any).serviceType || "other";
-    const priceUnit = (serviceItem as any).priceUnit || "flat_rate";
-    const config = ((serviceItem as any).serviceConfig as Record<string, unknown>) ?? {};
-    const location = (serviceItem as any).location;
-    const durationMinutes = (serviceItem as any).durationMinutes;
-    const maxCapacity = (serviceItem as any).maxCapacity;
+  if (item.type !== "product") {
+    const serviceItem = item;
+    const serviceType = serviceItem.serviceType || "other";
+    const priceUnit = serviceItem.priceUnit || "flat_rate";
+    const config = (serviceItem.serviceConfig as Record<string, unknown>) ?? {};
+    const location = serviceItem.location;
+    const durationMinutes = serviceItem.durationMinutes;
+    const maxCapacity = serviceItem.maxCapacity;
 
     return (
       <Link href={`/${item.type}s/${item.id}`}>
@@ -123,7 +122,7 @@ export function ItemCard({ item }: Props) {
                   {maxCapacity} pers.
                 </span>
               )}
-              {serviceType === "accommodation" && config.bedrooms && (
+              {serviceType === "accommodation" && Boolean(config.bedrooms) && (
                 <span className="flex items-center gap-1">
                   🛏️ {String(config.bedrooms)} hab.
                 </span>
@@ -147,8 +146,7 @@ export function ItemCard({ item }: Props) {
     );
   }
 
-  // Product card with cart functionality
-  const product = item as any;
+  const product = item;
   const existingItem = cart.items.find((cartItem) => cartItem.product.id === product.id);
   const currentQuantity = existingItem?.quantity ?? 0;
   const availableStock = product.stock !== undefined ? product.stock - currentQuantity : undefined;

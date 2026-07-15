@@ -120,7 +120,7 @@ export default function RoleSystemDebugPage() {
                         {rawRole}
                       </p>
                       <p className="text-xs text-amber-600 mt-1">
-                        ℹ️ Fue normalizado de "{rawRole}" a "{role}"
+                        ℹ️ Fue normalizado de &apos;{rawRole}&apos; a &apos;{role}&apos;
                       </p>
                     </div>
                   )}
@@ -255,7 +255,7 @@ export default function RoleSystemDebugPage() {
                   <p className="text-sm font-bold mb-2">Ejemplo: canPerform</p>
                   <div className="space-y-1 text-sm font-mono">
                     <p>
-                      canPerform("{role}", "view_products") ={" "}
+                      {"canPerform('{role}', 'view_products') = "}
                       <span
                         className={
                           canPerform(role!, "view_products")
@@ -267,7 +267,7 @@ export default function RoleSystemDebugPage() {
                       </span>
                     </p>
                     <p>
-                      canPerform("{role}", "create_product") ={" "}
+                      {"canPerform('{role}', 'create_product') = "}
                       <span
                         className={
                           canPerform(role!, "create_product")
@@ -279,7 +279,7 @@ export default function RoleSystemDebugPage() {
                       </span>
                     </p>
                     <p>
-                      canPerform("{role}", "view_sales") ={" "}
+                      {"canPerform('{role}', 'view_sales') = "}
                       <span
                         className={
                           canPerform(role!, "view_sales")
