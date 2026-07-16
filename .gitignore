@@ -34,4 +34,11 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+<<<<<<< HEAD
+=======
+.npmrc
+pnpm-lock.yaml
+pnpm-workspace.yaml
+docs/
+>>>>>>> 073d35e (edit .gitignote)
 .agents/skills/
