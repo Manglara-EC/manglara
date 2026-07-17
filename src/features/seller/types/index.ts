@@ -6,6 +6,7 @@ import type {
   AvailabilityRules,
   TimeBasedConfig,
   DurationOption,
+  RentalConfig,
 } from "@/shared/lib/drizzle/schema";
 
 // Re-exportar tipos de configuración
@@ -16,30 +17,44 @@ export type {
   AvailabilityRules,
   TimeBasedConfig,
   DurationOption,
+  RentalConfig,
 };
 
 // Tipos de servicio soportados
-export const SERVICE_TYPES = ["accommodation", "activity"] as const;
-export type ServiceType = typeof SERVICE_TYPES[number];
+export const SERVICE_TYPES = ["accommodation", "activity", "rental"] as const;
+export type ServiceType = (typeof SERVICE_TYPES)[number];
 
 // Unidades de precio soportadas
-export const PRICE_UNITS = ["night", "person", "day", "flat_rate"] as const;
-export type PriceUnit = typeof PRICE_UNITS[number];
+export const PRICE_UNITS = [
+  "night",
+  "person",
+  "day",
+  "hour",
+  "flat_rate",
+] as const;
+export type PriceUnit = (typeof PRICE_UNITS)[number];
 
 // Políticas de cancelación
-export const CANCELLATION_POLICIES = ["flexible", "moderate", "strict", "non_refundable"] as const;
-export type CancellationPolicy = typeof CANCELLATION_POLICIES[number];
+export const CANCELLATION_POLICIES = [
+  "flexible",
+  "moderate",
+  "strict",
+  "non_refundable",
+] as const;
+export type CancellationPolicy = (typeof CANCELLATION_POLICIES)[number];
 
 // Labels para UI
 export const SERVICE_TYPE_LABELS: Record<ServiceType, string> = {
   accommodation: "Alojamiento",
   activity: "Actividad o experiencia",
+  rental: "Alquiler de equipos (Hamacas, carpas, etc.)",
 };
 
 export const PRICE_UNIT_LABELS: Record<PriceUnit, string> = {
   night: "Por noche",
   person: "Por persona",
-  day: "Por día",
+  day: "Por día completo (hasta el atardecer)",
+  hour: "Por hora",
   flat_rate: "Tarifa fija",
 };
 
@@ -58,36 +73,36 @@ export interface CreateProductVariables {
   images?: string[];
   sellerId: string;
   organizationId: string;
-} 
+}
 
 export interface CreateServiceVariables {
   // Campos básicos
   name: string;
   description?: string;
   serviceType: ServiceType;
-  
+
   // Precio
   price: string;
   priceUnit: PriceUnit;
-  
+
   // Configuración general
   durationMinutes?: number;
   maxCapacity?: number;
   location?: string;
-  
+
   // Configuración específica por tipo (JSON)
   serviceConfig?: ServiceConfig | null;
-  
+
   // Disponibilidad (JSON)
   availabilityRules?: AvailabilityRules | null;
-  
+
   // Cancelación
   cancellationPolicy?: CancellationPolicy;
   cancellationWindowHours?: number;
-  
+
   // Imágenes
   images?: string[];
-  
+
   // Relaciones
   sellerId: string;
   organizationId: string;
@@ -122,12 +137,16 @@ export interface UpdateServiceVariables {
 }
 
 // Helper para obtener la unidad de precio recomendada por tipo de servicio
-export const getRecommendedPriceUnit = (serviceType: ServiceType): PriceUnit => {
+export const getRecommendedPriceUnit = (
+  serviceType: ServiceType,
+): PriceUnit => {
   switch (serviceType) {
     case "accommodation":
       return "night";
     case "activity":
       return "person";
+    case "rental":
+      return "hour";
     default:
       return "flat_rate";
   }
@@ -136,11 +155,13 @@ export const getRecommendedPriceUnit = (serviceType: ServiceType): PriceUnit => 
 // Helper para obtener campos requeridos por tipo de servicio
 export const getRequiredFieldsByType = (serviceType: ServiceType): string[] => {
   const common = ["name", "price", "organizationId"];
-  
+
   switch (serviceType) {
     case "accommodation":
       return [...common, "maxCapacity", "location"];
     case "activity":
+      return [...common, "maxCapacity"];
+    case "rental":
       return [...common, "maxCapacity"];
     default:
       return common;

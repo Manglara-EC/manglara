@@ -24,9 +24,9 @@ import { Separator } from "@/shared/components/ui/separator";
 import { auth } from "@/shared/lib/better-auth/server";
 import { db } from "@/shared/lib/drizzle/server";
 import { service, organization, member } from "@/shared/lib/drizzle/schema";
-import { 
-  SERVICE_TYPE_LABELS, 
-  PRICE_UNIT_LABELS, 
+import {
+  SERVICE_TYPE_LABELS,
+  PRICE_UNIT_LABELS,
   CANCELLATION_POLICY_LABELS,
   type ServiceType,
   type PriceUnit,
@@ -42,7 +42,13 @@ interface Props {
   }>;
 }
 
-const STATUS_LABELS: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
+const STATUS_LABELS: Record<
+  string,
+  {
+    label: string;
+    variant: "default" | "secondary" | "destructive" | "outline";
+  }
+> = {
   pending: { label: "Pendiente", variant: "secondary" },
   approved: { label: "Aprobado", variant: "default" },
   rejected: { label: "Rechazado", variant: "destructive" },
@@ -50,10 +56,10 @@ const STATUS_LABELS: Record<string, { label: string; variant: "default" | "secon
 
 export default async function ServiceDetailPage({ params }: Props) {
   const { id } = await params;
-  
+
   // Verificar autenticación
   const session = await auth.api.getSession({ headers: await headers() });
-  
+
   if (!session?.user?.id) {
     redirect("/sign-in");
   }
@@ -72,6 +78,8 @@ export default async function ServiceDetailPage({ params }: Props) {
       priceUnit: service.priceUnit,
       serviceType: service.serviceType,
       location: service.location,
+      maxCapacity: service.maxCapacity,
+      cancellationWindowHours: service.cancellationWindowHours,
       serviceConfig: service.serviceConfig,
       availabilityRules: service.availabilityRules,
       cancellationPolicy: service.cancellationPolicy,
@@ -87,6 +95,7 @@ export default async function ServiceDetailPage({ params }: Props) {
     .where(eq(service.id, id))
     .limit(1);
 
+  console.log("serviceData:", serviceData);
   if (serviceData.length === 0) {
     return (
       <div className="space-y-4">
@@ -116,7 +125,7 @@ export default async function ServiceDetailPage({ params }: Props) {
 
   // Verificar permisos
   const canView = userRole === "admin" || foundService.sellerId === userId;
-  
+
   if (!canView) {
     // Verificar si es miembro de la organización
     const memberRecord = await db
@@ -134,6 +143,45 @@ export default async function ServiceDetailPage({ params }: Props) {
   const statusInfo = STATUS_LABELS[foundService.status || "pending"];
   const config = (foundService.serviceConfig as Record<string, unknown>) ?? {};
 
+  const getScheduleText = (rules: any): string => {
+    if (!rules?.schedule) return "";
+    const activeDays = Object.keys(rules.schedule).filter(
+      (day) =>
+        Array.isArray(rules.schedule[day]) && rules.schedule[day].length > 0,
+    );
+    if (activeDays.length === 0) return "";
+
+    const dayNames: Record<string, string> = {
+      monday: "Lunes",
+      tuesday: "Martes",
+      wednesday: "Miércoles",
+      thursday: "Jueves",
+      friday: "Viernes",
+      saturday: "Sábado",
+      sunday: "Domingo",
+    };
+
+    const firstDay = activeDays[0];
+    const slot = rules.schedule[firstDay][0];
+    const timeStr = slot ? ` de ${slot.start} a ${slot.end}` : "";
+
+    if (activeDays.length === 7) {
+      return `Todos los días${timeStr}`;
+    }
+
+    const isWeekdays =
+      activeDays.length === 5 &&
+      ["monday", "tuesday", "wednesday", "thursday", "friday"].every((d) =>
+        activeDays.includes(d),
+      );
+    if (isWeekdays) {
+      return `Lunes a Viernes${timeStr}`;
+    }
+
+    const names = activeDays.map((d) => dayNames[d] || d).join(", ");
+    return `${names}${timeStr}`;
+  };
+
   return (
     <div className="space-y-8">
       {/* Header */}
@@ -149,9 +197,7 @@ export default async function ServiceDetailPage({ params }: Props) {
               <TypographyH1>{foundService.name}</TypographyH1>
               <Badge variant={statusInfo.variant}>{statusInfo.label}</Badge>
             </div>
-            <TypographyMuted>
-              {foundService.organizationName}
-            </TypographyMuted>
+            <TypographyMuted>{foundService.organizationName}</TypographyMuted>
           </div>
         </div>
         {canEdit && (
@@ -182,23 +228,35 @@ export default async function ServiceDetailPage({ params }: Props) {
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <TypographyMuted className="text-sm">Tipo de servicio</TypographyMuted>
+                <TypographyMuted className="text-sm">
+                  Tipo de servicio
+                </TypographyMuted>
                 <Badge variant="outline" className="mt-1">
-                  {SERVICE_TYPE_LABELS[foundService.serviceType as ServiceType] || "Otro"}
+                  {SERVICE_TYPE_LABELS[
+                    foundService.serviceType as ServiceType
+                  ] || "Otro"}
                 </Badge>
               </div>
-              
+
               {foundService.description && (
                 <div>
-                  <TypographyMuted className="text-sm">Descripción</TypographyMuted>
-                  <TypographyP className="mt-1">{foundService.description}</TypographyP>
+                  <TypographyMuted className="text-sm">
+                    Descripción
+                  </TypographyMuted>
+                  <TypographyP className="mt-1">
+                    {foundService.description}
+                  </TypographyP>
                 </div>
               )}
 
               {foundService.location && (
                 <div>
-                  <TypographyMuted className="text-sm">Ubicación</TypographyMuted>
-                  <TypographyP className="mt-1">{foundService.location}</TypographyP>
+                  <TypographyMuted className="text-sm">
+                    Ubicación
+                  </TypographyMuted>
+                  <TypographyP className="mt-1">
+                    {foundService.location}
+                  </TypographyP>
                 </div>
               )}
             </CardContent>
@@ -213,158 +271,274 @@ export default async function ServiceDetailPage({ params }: Props) {
               <CardContent className="space-y-6">
                 {/* Información general en grid */}
                 <dl className="grid grid-cols-2 gap-4 text-sm">
-                  {Boolean(config.maxCapacity) && (
+                  {foundService.maxCapacity && (
                     <div>
-                      <dt className="text-muted-foreground">Capacidad máxima</dt>
-                      <dd className="font-medium">{String(config.maxCapacity)} personas</dd>
+                      <dt className="text-muted-foreground">
+                        {foundService.serviceType === "rental"
+                          ? "Hamacas totales (Stock)"
+                          : "Capacidad máxima"}
+                      </dt>
+                      <dd className="font-medium">
+                        {foundService.maxCapacity}{" "}
+                        {foundService.serviceType === "rental"
+                          ? "unidades"
+                          : "personas"}
+                      </dd>
                     </div>
                   )}
-                  {Boolean(config.durationMinutes) && (
-                    <div>
-                      <dt className="text-muted-foreground">Duración</dt>
-                      <dd className="font-medium">{String(config.durationMinutes)} minutos</dd>
-                    </div>
-                  )}
-                  {Boolean(config.checkInTime) && (
-                    <div>
-                      <dt className="text-muted-foreground">Check-in</dt>
-                      <dd className="font-medium">{String(config.checkInTime)}</dd>
-                    </div>
-                  )}
-                  {Boolean(config.checkOutTime) && (
-                    <div>
-                      <dt className="text-muted-foreground">Check-out</dt>
-                      <dd className="font-medium">{String(config.checkOutTime)}</dd>
-                    </div>
-                  )}
-                  {Boolean(config.minNights) && (
-                    <div>
-                      <dt className="text-muted-foreground">Noches mínimas</dt>
-                      <dd className="font-medium">{String(config.minNights)}</dd>
-                    </div>
-                  )}
-                  {Boolean(config.maxNights) && (
-                    <div>
-                      <dt className="text-muted-foreground">Noches máximas</dt>
-                      <dd className="font-medium">{String(config.maxNights)}</dd>
-                    </div>
-                  )}
-                  {Boolean(config.bedrooms) && (
-                    <div>
-                      <dt className="text-muted-foreground">Habitaciones</dt>
-                      <dd className="font-medium">{String(config.bedrooms)}</dd>
-                    </div>
-                  )}
-                  {Boolean(config.bathrooms) && (
-                    <div>
-                      <dt className="text-muted-foreground">Baños</dt>
-                      <dd className="font-medium">{String(config.bathrooms)}</dd>
-                    </div>
-                  )}
-                  {Boolean(config.beds) && (
-                    <div>
-                      <dt className="text-muted-foreground">Camas</dt>
-                      <dd className="font-medium">{String(config.beds)}</dd>
-                    </div>
-                  )}
-                  {Boolean(config.difficulty) && (
-                    <div>
-                      <dt className="text-muted-foreground">Dificultad</dt>
-                      <dd className="font-medium capitalize">{String(config.difficulty)}</dd>
-                    </div>
-                  )}
-                  {Boolean(config.minParticipants) && (
-                    <div>
-                      <dt className="text-muted-foreground">Participantes mínimos</dt>
-                      <dd className="font-medium">{String(config.minParticipants)}</dd>
-                    </div>
-                  )}
-                  {Boolean(config.meetingPoint) && (
-                    <div className="col-span-2">
-                      <dt className="text-muted-foreground">Punto de encuentro</dt>
-                      <dd className="font-medium">{String(config.meetingPoint)}</dd>
-                    </div>
+
+                  {foundService.serviceType === "rental" ? (
+                    <>
+                      {config.pricingMode && (
+                        <div>
+                          <dt className="text-muted-foreground">
+                            Modalidad de cobro
+                          </dt>
+                          <dd className="font-medium">
+                            {config.pricingMode === "daily"
+                              ? "Por día completo"
+                              : "Por hora"}
+                          </dd>
+                        </div>
+                      )}
+                      {config.pricingMode === "daily" && config.dailyPrice && (
+                        <div>
+                          <dt className="text-muted-foreground">
+                            Ganancia diaria objetivo
+                          </dt>
+                          <dd className="font-medium">
+                            ${Number(config.dailyPrice).toFixed(2)}
+                          </dd>
+                        </div>
+                      )}
+                      {config.hourlyPrice && (
+                        <div>
+                          <dt className="text-muted-foreground">
+                            Tarifa por hora equivalente
+                          </dt>
+                          <dd className="font-medium">
+                            ${Number(config.hourlyPrice).toFixed(2)}
+                          </dd>
+                        </div>
+                      )}
+                      {getScheduleText(foundService.availabilityRules) && (
+                        <div className="col-span-2">
+                          <dt className="text-muted-foreground">
+                            Horario y días de atención
+                          </dt>
+                          <dd className="font-medium">
+                            {getScheduleText(foundService.availabilityRules)}
+                          </dd>
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      {Boolean(config.durationMinutes) && (
+                        <div>
+                          <dt className="text-muted-foreground">Duración</dt>
+                          <dd className="font-medium">
+                            {String(config.durationMinutes)} minutos
+                          </dd>
+                        </div>
+                      )}
+                      {Boolean(config.checkInTime) && (
+                        <div>
+                          <dt className="text-muted-foreground">Check-in</dt>
+                          <dd className="font-medium">
+                            {String(config.checkInTime)}
+                          </dd>
+                        </div>
+                      )}
+                      {Boolean(config.checkOutTime) && (
+                        <div>
+                          <dt className="text-muted-foreground">Check-out</dt>
+                          <dd className="font-medium">
+                            {String(config.checkOutTime)}
+                          </dd>
+                        </div>
+                      )}
+                      {Boolean(config.minNights) && (
+                        <div>
+                          <dt className="text-muted-foreground">
+                            Noches mínimas
+                          </dt>
+                          <dd className="font-medium">
+                            {String(config.minNights)}
+                          </dd>
+                        </div>
+                      )}
+                      {Boolean(config.maxNights) && (
+                        <div>
+                          <dt className="text-muted-foreground">
+                            Noches máximas
+                          </dt>
+                          <dd className="font-medium">
+                            {String(config.maxNights)}
+                          </dd>
+                        </div>
+                      )}
+                      {Boolean(config.bedrooms) && (
+                        <div>
+                          <dt className="text-muted-foreground">
+                            Habitaciones
+                          </dt>
+                          <dd className="font-medium">
+                            {String(config.bedrooms)}
+                          </dd>
+                        </div>
+                      )}
+                      {Boolean(config.bathrooms) && (
+                        <div>
+                          <dt className="text-muted-foreground">Baños</dt>
+                          <dd className="font-medium">
+                            {String(config.bathrooms)}
+                          </dd>
+                        </div>
+                      )}
+                      {Boolean(config.beds) && (
+                        <div>
+                          <dt className="text-muted-foreground">Camas</dt>
+                          <dd className="font-medium">{String(config.beds)}</dd>
+                        </div>
+                      )}
+                      {Boolean(config.difficulty) && (
+                        <div>
+                          <dt className="text-muted-foreground">Dificultad</dt>
+                          <dd className="font-medium capitalize">
+                            {String(config.difficulty)}
+                          </dd>
+                        </div>
+                      )}
+                      {Boolean(config.minParticipants) && (
+                        <div>
+                          <dt className="text-muted-foreground">
+                            Participantes mínimos
+                          </dt>
+                          <dd className="font-medium">
+                            {String(config.minParticipants)}
+                          </dd>
+                        </div>
+                      )}
+                      {Boolean(config.meetingPoint) && (
+                        <div className="col-span-2">
+                          <dt className="text-muted-foreground">
+                            Punto de encuentro
+                          </dt>
+                          <dd className="font-medium">
+                            {String(config.meetingPoint)}
+                          </dd>
+                        </div>
+                      )}
+                    </>
                   )}
                 </dl>
 
                 {/* Amenidades (Alojamiento) */}
-                {Array.isArray(config.amenities) && config.amenities.length > 0 && (
-                  <>
-                    <Separator />
-                    <div>
-                      <TypographyMuted className="text-sm font-medium mb-2">Amenidades</TypographyMuted>
-                      <div className="flex flex-wrap gap-2">
-                        {(config.amenities as string[]).map((amenity) => (
-                          <Badge key={amenity} variant="secondary">{amenity}</Badge>
-                        ))}
+                {Array.isArray(config.amenities) &&
+                  config.amenities.length > 0 && (
+                    <>
+                      <Separator />
+                      <div>
+                        <TypographyMuted className="text-sm font-medium mb-2">
+                          Amenidades
+                        </TypographyMuted>
+                        <div className="flex flex-wrap gap-2">
+                          {(config.amenities as string[]).map((amenity) => (
+                            <Badge key={amenity} variant="secondary">
+                              {amenity}
+                            </Badge>
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                  </>
-                )}
+                    </>
+                  )}
 
                 {/* Reglas de la casa (Alojamiento) */}
-                {Array.isArray(config.houseRules) && config.houseRules.length > 0 && (
-                  <>
-                    <Separator />
-                    <div>
-                      <TypographyMuted className="text-sm font-medium mb-2">Reglas de la casa</TypographyMuted>
-                      <ul className="list-disc list-inside space-y-1">
-                        {(config.houseRules as string[]).map((rule, i) => (
-                          <li key={i} className="text-sm">{rule}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  </>
-                )}
+                {Array.isArray(config.houseRules) &&
+                  config.houseRules.length > 0 && (
+                    <>
+                      <Separator />
+                      <div>
+                        <TypographyMuted className="text-sm font-medium mb-2">
+                          Reglas de la casa
+                        </TypographyMuted>
+                        <ul className="list-disc list-inside space-y-1">
+                          {(config.houseRules as string[]).map((rule, i) => (
+                            <li key={i} className="text-sm">
+                              {rule}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </>
+                  )}
 
                 {/* Requisitos (Actividad) */}
-                {Array.isArray(config.requirements) && config.requirements.length > 0 && (
-                  <>
-                    <Separator />
-                    <div>
-                      <TypographyMuted className="text-sm font-medium mb-2">Requisitos</TypographyMuted>
-                      <ul className="list-disc list-inside space-y-1">
-                        {(config.requirements as string[]).map((item, i) => (
-                          <li key={i} className="text-sm">{item}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  </>
-                )}
+                {Array.isArray(config.requirements) &&
+                  config.requirements.length > 0 && (
+                    <>
+                      <Separator />
+                      <div>
+                        <TypographyMuted className="text-sm font-medium mb-2">
+                          Requisitos
+                        </TypographyMuted>
+                        <ul className="list-disc list-inside space-y-1">
+                          {(config.requirements as string[]).map((item, i) => (
+                            <li key={i} className="text-sm">
+                              {item}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </>
+                  )}
 
                 {/* Qué incluye (Actividad) */}
-                {Array.isArray(config.inclusions) && config.inclusions.length > 0 && (
-                  <>
-                    <Separator />
-                    <div>
-                      <TypographyMuted className="text-sm font-medium mb-2">¿Qué incluye?</TypographyMuted>
-                      <ul className="space-y-1">
-                        {(config.inclusions as string[]).map((item, i) => (
-                          <li key={i} className="text-sm flex items-center gap-2">
-                            <span className="text-green-600">✓</span> {item}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  </>
-                )}
+                {Array.isArray(config.inclusions) &&
+                  config.inclusions.length > 0 && (
+                    <>
+                      <Separator />
+                      <div>
+                        <TypographyMuted className="text-sm font-medium mb-2">
+                          ¿Qué incluye?
+                        </TypographyMuted>
+                        <ul className="space-y-1">
+                          {(config.inclusions as string[]).map((item, i) => (
+                            <li
+                              key={i}
+                              className="text-sm flex items-center gap-2"
+                            >
+                              <span className="text-green-600">✓</span> {item}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </>
+                  )}
 
                 {/* Qué NO incluye (Actividad) */}
-                {Array.isArray(config.exclusions) && config.exclusions.length > 0 && (
-                  <>
-                    <Separator />
-                    <div>
-                      <TypographyMuted className="text-sm font-medium mb-2">¿Qué NO incluye?</TypographyMuted>
-                      <ul className="space-y-1">
-                        {(config.exclusions as string[]).map((item, i) => (
-                          <li key={i} className="text-sm flex items-center gap-2">
-                            <span className="text-red-600">✗</span> {item}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  </>
-                )}
+                {Array.isArray(config.exclusions) &&
+                  config.exclusions.length > 0 && (
+                    <>
+                      <Separator />
+                      <div>
+                        <TypographyMuted className="text-sm font-medium mb-2">
+                          ¿Qué NO incluye?
+                        </TypographyMuted>
+                        <ul className="space-y-1">
+                          {(config.exclusions as string[]).map((item, i) => (
+                            <li
+                              key={i}
+                              className="text-sm flex items-center gap-2"
+                            >
+                              <span className="text-red-600">✗</span> {item}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </>
+                  )}
               </CardContent>
             </Card>
           )}
@@ -381,7 +555,10 @@ export default async function ServiceDetailPage({ params }: Props) {
               <div className="text-3xl font-bold">
                 ${Number(foundService.price).toFixed(2)}
                 <span className="text-base font-normal text-muted-foreground">
-                  {" "}/ {PRICE_UNIT_LABELS[foundService.priceUnit as PriceUnit] || foundService.priceUnit}
+                  {" "}
+                  /{" "}
+                  {PRICE_UNIT_LABELS[foundService.priceUnit as PriceUnit] ||
+                    foundService.priceUnit}
                 </span>
               </div>
             </CardContent>
@@ -394,11 +571,14 @@ export default async function ServiceDetailPage({ params }: Props) {
             </CardHeader>
             <CardContent>
               <Badge variant="outline">
-                {CANCELLATION_POLICY_LABELS[foundService.cancellationPolicy as keyof typeof CANCELLATION_POLICY_LABELS] || "Flexible"}
+                {CANCELLATION_POLICY_LABELS[
+                  foundService.cancellationPolicy as keyof typeof CANCELLATION_POLICY_LABELS
+                ] || "Flexible"}
               </Badge>
-              {Boolean(config.cancellationWindowHours) && (
+              {Boolean(foundService.cancellationWindowHours) && (
                 <TypographyMuted className="mt-2 text-sm">
-                  Se puede cancelar hasta {String(config.cancellationWindowHours)} horas antes
+                  Se puede cancelar hasta{" "}
+                  {String(foundService.cancellationWindowHours)} horas antes
                 </TypographyMuted>
               )}
             </CardContent>
@@ -412,12 +592,16 @@ export default async function ServiceDetailPage({ params }: Props) {
             <CardContent className="space-y-3 text-sm">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Creado</span>
-                <span>{foundService.createdAt?.toLocaleDateString("es-ES")}</span>
+                <span>
+                  {foundService.createdAt?.toLocaleDateString("es-ES")}
+                </span>
               </div>
               {foundService.updatedAt && (
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Actualizado</span>
-                  <span>{foundService.updatedAt.toLocaleDateString("es-ES")}</span>
+                  <span>
+                    {foundService.updatedAt.toLocaleDateString("es-ES")}
+                  </span>
                 </div>
               )}
             </CardContent>

@@ -5,7 +5,7 @@ import {
   boolean,
   integer,
   decimal,
-  json
+  json,
 } from "drizzle-orm/pg-core";
 
 export const user = pgTable("user", {
@@ -55,10 +55,10 @@ export const verification = pgTable("verification", {
   value: text("value").notNull(),
   expiresAt: timestamp("expires_at").notNull(),
   createdAt: timestamp("created_at").$defaultFn(
-    () => /* @__PURE__ */ new Date()
+    () => /* @__PURE__ */ new Date(),
   ),
   updatedAt: timestamp("updated_at").$defaultFn(
-    () => /* @__PURE__ */ new Date()
+    () => /* @__PURE__ */ new Date(),
   ),
 });
 
@@ -114,7 +114,7 @@ export const product = pgTable("product", {
   description: text("description"),
   price: decimal("price", { precision: 10, scale: 2 }).notNull(),
 
-  stock: integer("stock").default(0).notNull(), 
+  stock: integer("stock").default(0).notNull(),
   images: json("images").$type<string[]>(),
 
   sellerId: text("seller_id")
@@ -140,41 +140,45 @@ export const product = pgTable("product", {
 });
 
 export const service = pgTable("service", {
-  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
   name: text("name").notNull(),
   description: text("description"),
-  
+
   // Tipo de servicio: accommodation, time_based, activity, other
   serviceType: text("service_type").default("other").notNull(),
-  
+
   // Precio base y unidad
   price: decimal("price", { precision: 10, scale: 2 }).notNull(),
   // 'hour', 'day', 'night', 'person', 'session', 'flat_rate'
   priceUnit: text("price_unit").default("flat_rate").notNull(),
-  
+
   // Duración base en minutos (para servicios basados en tiempo)
   durationMinutes: integer("duration_minutes"),
-  
+
   // Capacidad máxima (personas por sesión, huéspedes, etc.)
   maxCapacity: integer("max_capacity").default(1).notNull(),
-  
+
   // Ubicación del servicio (solo texto)
   location: text("location"),
-  
+
   // Configuración flexible por tipo de servicio (JSON)
   // Para accommodation: { checkInTime, checkOutTime, minNights, maxNights, amenities }
   // Para time_based: { durationOptions: [{ minutes, price }], bufferMinutes }
   // Para activity: { difficulty, requirements, inclusions, exclusions }
   serviceConfig: json("service_config").$type<ServiceConfig | null>(),
-  
+
   // Reglas de disponibilidad (JSON)
   // { schedule: { monday: [{start, end}], ... }, blockedDates: [], exceptions: [] }
-  availabilityRules: json("availability_rules").$type<AvailabilityRules | null>(),
-  
+  availabilityRules: json(
+    "availability_rules",
+  ).$type<AvailabilityRules | null>(),
+
   // Reglas de cancelación
   cancellationPolicy: text("cancellation_policy").default("flexible"), // flexible, moderate, strict
   cancellationWindowHours: integer("cancellation_window_hours").default(24),
-  
+
   // Imágenes
   images: json("images").$type<string[]>(),
 
@@ -185,7 +189,7 @@ export const service = pgTable("service", {
   organizationId: text("organization_id")
     .notNull()
     .references(() => organization.id, { onDelete: "cascade" }),
-  
+
   // Estado de publicación
   status: text("status").default("pending").notNull(), // pending, approved, rejected
   deleted: boolean("deleted").default(false).notNull(),
@@ -195,8 +199,12 @@ export const service = pgTable("service", {
   approvedAt: timestamp("approved_at"),
   rejectionReason: text("rejection_reason"),
 
-  createdAt: timestamp("created_at").$defaultFn(() => new Date()).notNull(),
-  updatedAt: timestamp("updated_at").$defaultFn(() => new Date()).notNull(),
+  createdAt: timestamp("created_at")
+    .$defaultFn(() => new Date())
+    .notNull(),
+  updatedAt: timestamp("updated_at")
+    .$defaultFn(() => new Date())
+    .notNull(),
 });
 
 // Tipos para configuraciones de servicios (usados en el schema)
@@ -206,6 +214,17 @@ export interface DurationOption {
   label?: string;
 }
 
+// Configuración específica para servicios de tipo "hammock"
+export interface HammockConfig {
+  hourlyPrice: string;
+  dailyPrice: string;
+}
+
+export interface RentalConfig {
+  pricingMode?: "hourly" | "daily";
+  hourlyPrice?: string;
+  dailyPrice?: string;
+}
 export interface AccommodationConfig {
   checkInTime?: string; // "15:00"
   checkOutTime?: string; // "11:00"
@@ -233,11 +252,16 @@ export interface ActivityConfig {
   meetingPoint?: string;
 }
 
-export type ServiceConfig = AccommodationConfig | TimeBasedConfig | ActivityConfig | Record<string, unknown>;
+export type ServiceConfig =
+  | AccommodationConfig
+  | TimeBasedConfig
+  | ActivityConfig
+  | RentalConfig
+  | Record<string, unknown>;
 
 export interface TimeSlot {
   start: string; // "09:00"
-  end: string;   // "18:00"
+  end: string; // "18:00"
 }
 
 export interface AvailabilityRules {
@@ -270,45 +294,15 @@ export const request = pgTable("request", {
   message: text("message").notNull(),
   read: boolean("read").default(false).notNull(),
 
-  productId: text("product_id").references(() => product.id, { onDelete: "cascade" }),
-  serviceId: text("service_id").references(() => service.id, { onDelete: "cascade" }),
+  productId: text("product_id").references(() => product.id, {
+    onDelete: "cascade",
+  }),
+  serviceId: text("service_id").references(() => service.id, {
+    onDelete: "cascade",
+  }),
   referenceType: text("reference_type").notNull(), // 'product' or 'service'
 
   createdAt: timestamp("created_at")
     .$defaultFn(() => new Date())
     .notNull(),
-});
-
-export const transactionHeader = pgTable("transaction_header", {
-  id: text("id")
-    .primaryKey()
-    .$defaultFn(() => crypto.randomUUID()),
-  totalAmount: decimal("total_amount", { precision: 12, scale: 2 }).notNull(),
-  createdAt: timestamp("created_at")
-    .$defaultFn(() => new Date())
-    .notNull(),
-  customerId: text("customer_id")
-    .notNull()
-    .references(() => user.id),
-  sellerId: text("seller_id")
-    .notNull()
-    .references(() => user.id),
-  status: text("status").notNull(),
-});
-
-export const lineItem = pgTable("line_item", {
-  id: text("id")
-    .primaryKey()
-    .$defaultFn(() => crypto.randomUUID()),
-  transactionId: text("transaction_id")
-    .notNull()
-    .references(() => transactionHeader.id, { onDelete: "cascade" }),
-  itemId: text("item_id")
-    .notNull()
-    .references(() => product.id),
-  unitPrice: decimal("unit_price", { precision: 12, scale: 2 }).notNull(),
-  quantity: integer("quantity").notNull(),
-  discount: decimal("discount", { precision: 12, scale: 2 }).notNull(),
-  taxes: decimal("taxes", { precision: 12, scale: 2 }).notNull(),
-  totalAmount: decimal("total_amount", { precision: 12, scale: 2 }).notNull(),
 });

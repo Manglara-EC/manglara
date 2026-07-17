@@ -5,7 +5,18 @@ import { eq, and, desc, getTableColumns, sql, inArray, sum } from "drizzle-orm";
 
 import { auth } from "@/shared/lib/better-auth/server";
 import { db } from "@/shared/lib/drizzle/server";
-import { product, service, organization, user, member, lineItem, transactionHeader } from "@/shared/lib/drizzle/schema";
+import {
+  product,
+  service,
+  organization,
+  user,
+  member,
+} from "@/shared/lib/drizzle/schema";
+import {
+  transactionHeader,
+  transactionLine,
+  productLine,
+} from "@/shared/lib/drizzle/transactions";
 import { tryCatch } from "@/shared/utils/try-catch";
 import type { ActionResponse } from "@/shared/types";
 
@@ -20,7 +31,7 @@ type OrganizationItem = PublicItem & {
 };
 
 export const getOrganizationItems = async (
-  organizationId: string
+  organizationId: string,
 ): Promise<ActionResponse<OrganizationItem[], ErrorCode>> => {
   const session = await auth.api.getSession({
     headers: await headers(),
@@ -41,21 +52,21 @@ export const getOrganizationItems = async (
     db.query.member.findFirst({
       where: and(
         eq(member.userId, session.user.id),
-        eq(member.organizationId, organizationId)
+        eq(member.organizationId, organizationId),
       ),
-    })
+    }),
   );
 
   // Check if user is admin (global admin role)
   const isSystemAdmin = session.user.role === "admin";
   const isSystemSeller = session.user.role === "seller";
-  
+
   // Organization roles: owner, admin, member
   const isOrgOwner = membership?.role === "owner";
   const isOrgAdmin = membership?.role === "admin";
   const isOrgMember = membership?.role === "member";
   const isMemberOfOrg = !!membership;
-  
+
   // Permissions:
   // - System admins: See all items
   // - Org owners/admins: See all items of the organization
@@ -91,10 +102,10 @@ export const getOrganizationItems = async (
         .where(
           and(
             eq(product.organizationId, organizationId),
-            eq(product.deleted, false)
-          )
+            eq(product.deleted, false),
+          ),
         )
-        .orderBy(desc(product.createdAt))
+        .orderBy(desc(product.createdAt)),
     );
 
     if (productsError) {
@@ -112,7 +123,7 @@ export const getOrganizationItems = async (
         ...products.map((p) => ({
           ...p,
           type: "product" as const,
-        }))
+        })),
       );
     }
 
@@ -129,10 +140,10 @@ export const getOrganizationItems = async (
         .where(
           and(
             eq(service.organizationId, organizationId),
-            eq(service.deleted, false)
-          )
+            eq(service.deleted, false),
+          ),
         )
-        .orderBy(desc(service.createdAt))
+        .orderBy(desc(service.createdAt)),
     );
 
     if (servicesError) {
@@ -150,7 +161,7 @@ export const getOrganizationItems = async (
         ...services.map((s) => ({
           ...s,
           type: "service" as const,
-        }))
+        })),
       );
     }
   } else if (canSeeOwnItems) {
@@ -169,10 +180,10 @@ export const getOrganizationItems = async (
           and(
             eq(product.organizationId, organizationId),
             eq(product.sellerId, session.user.id),
-            eq(product.deleted, false)
-          )
+            eq(product.deleted, false),
+          ),
         )
-        .orderBy(desc(product.createdAt))
+        .orderBy(desc(product.createdAt)),
     );
 
     if (productsError) {
@@ -188,23 +199,33 @@ export const getOrganizationItems = async (
     if (products) {
       // Get sales statistics for each product
       const productIds = products.map((p) => p.id);
-      
+
       if (productIds.length > 0) {
         const { data: salesData, error: salesError } = await tryCatch(
           db
             .select({
-              itemId: lineItem.itemId,
-              totalSales: sql<number>`COALESCE(SUM(${lineItem.quantity}), 0)`.as('total_sales'),
+              itemId: productLine.productId,
+              totalSales:
+                sql<number>`COALESCE(SUM(${transactionLine.quantity}), 0)`.as(
+                  "total_sales",
+                ),
             })
-            .from(lineItem)
-            .innerJoin(transactionHeader, eq(lineItem.transactionId, transactionHeader.id))
+            .from(productLine)
+            .innerJoin(
+              transactionLine,
+              eq(productLine.transactionLineId, transactionLine.id),
+            )
+            .innerJoin(
+              transactionHeader,
+              eq(transactionLine.transactionId, transactionHeader.id),
+            )
             .where(
               and(
-                inArray(lineItem.itemId, productIds),
-                eq(transactionHeader.status, "completed")
-              )
+                inArray(productLine.productId, productIds),
+                eq(transactionHeader.status, "completed"),
+              ),
             )
-            .groupBy(lineItem.itemId)
+            .groupBy(productLine.productId),
         );
 
         const salesMap = new Map<string, number>();
@@ -220,7 +241,7 @@ export const getOrganizationItems = async (
             type: "product" as const,
             sales: salesMap.get(p.id) ?? 0,
             views: 0, // Placeholder for future implementation
-          }))
+          })),
         );
       } else {
         items.push(
@@ -229,7 +250,7 @@ export const getOrganizationItems = async (
             type: "product" as const,
             sales: 0,
             views: 0,
-          }))
+          })),
         );
       }
     }

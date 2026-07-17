@@ -8,7 +8,12 @@ import { useSession } from "@/shared/hooks/use-session";
 
 import { createServiceSchema } from "@/features/seller/schemas/create-service";
 import { useUpdateServiceMutation } from "@/features/seller/hooks/use-update-service-mutation";
-import type { CreateServiceVariables, ServiceType, PriceUnit, ServiceWithOrg } from "@/features/seller/types";
+import type {
+  CreateServiceVariables,
+  ServiceType,
+  PriceUnit,
+  ServiceWithOrg,
+} from "@/features/seller/types";
 import { getRecommendedPriceUnit } from "@/features/seller/types";
 
 interface Props {
@@ -20,9 +25,11 @@ export const useEditServiceForm = ({ serviceId, service }: Props) => {
   const { data: session } = useSession();
 
   // Convertir el servicio a los valores del formulario
-  const serviceConfig = (service.serviceConfig as Record<string, unknown>) ?? {};
-  const availabilityRules = (service.availabilityRules as Record<string, unknown>) ?? {};
-  
+  const serviceConfig =
+    (service.serviceConfig as Record<string, unknown>) ?? {};
+  const availabilityRules =
+    (service.availabilityRules as Record<string, unknown>) ?? {};
+
   const initialValues: CreateServiceVariables = {
     organizationId: service.organizationId,
     sellerId: service.sellerId || "",
@@ -31,13 +38,18 @@ export const useEditServiceForm = ({ serviceId, service }: Props) => {
     serviceType: (service.serviceType as ServiceType) || "other",
     price: service.price?.toString() || "",
     priceUnit: (service.priceUnit as PriceUnit) || "flat_rate",
-    maxCapacity: (serviceConfig.maxCapacity as number) || 1,
+    maxCapacity: service.maxCapacity || 1,
     durationMinutes: (serviceConfig.durationMinutes as number) || undefined,
     location: service.location || "",
     serviceConfig: serviceConfig,
     availabilityRules: availabilityRules,
-    cancellationPolicy: (service.cancellationPolicy as "flexible" | "moderate" | "strict" | "non_refundable") || "flexible",
-    cancellationWindowHours: (serviceConfig.cancellationWindowHours as number) || 24,
+    cancellationPolicy:
+      (service.cancellationPolicy as
+        | "flexible"
+        | "moderate"
+        | "strict"
+        | "non_refundable") || "flexible",
+    cancellationWindowHours: service.cancellationWindowHours ?? 24,
     images: [],
   };
 

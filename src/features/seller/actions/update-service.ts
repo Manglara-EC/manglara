@@ -7,19 +7,33 @@ import { auth } from "@/shared/lib/better-auth/server";
 import { db } from "@/shared/lib/drizzle/server";
 import { service, organization, member } from "@/shared/lib/drizzle/schema";
 import { tryCatch } from "@/shared/utils/try-catch";
-import { createServiceSchema, validateServiceByType } from "@/features/seller/schemas/create-service";
-import type { UpdateServiceVariables, ServiceWithOrg } from "@/features/seller/types";
+import {
+  createServiceSchema,
+  validateServiceByType,
+} from "@/features/seller/schemas/create-service";
+import type {
+  UpdateServiceVariables,
+  ServiceWithOrg,
+} from "@/features/seller/types";
 
 export async function updateService(
   serviceId: string,
-  data: UpdateServiceVariables
-): Promise<{ data?: ServiceWithOrg; error?: { code: string; message: string } }> {
+  data: UpdateServiceVariables,
+): Promise<{
+  data?: ServiceWithOrg;
+  error?: { code: string; message: string };
+}> {
   try {
     // 1. Verificar autenticación
     const session = await auth.api.getSession({ headers: await headers() });
 
     if (!session?.user?.id) {
-      return { error: { code: "UNAUTHENTICATED", message: "Debes iniciar sesión para actualizar servicios" } };
+      return {
+        error: {
+          code: "UNAUTHENTICATED",
+          message: "Debes iniciar sesión para actualizar servicios",
+        },
+      };
     }
 
     const userId = session.user.id;
@@ -27,7 +41,12 @@ export async function updateService(
 
     // 2. Verificar rol de seller o admin
     if (userRole !== "seller" && userRole !== "admin") {
-      return { error: { code: "FORBIDDEN", message: "Solo los vendedores pueden actualizar servicios" } };
+      return {
+        error: {
+          code: "FORBIDDEN",
+          message: "Solo los vendedores pueden actualizar servicios",
+        },
+      };
     }
 
     // 3. Verificar que el servicio existe y pertenece al usuario
@@ -42,18 +61,28 @@ export async function updateService(
       .limit(1);
 
     if (existingService.length === 0) {
-      return { error: { code: "NOT_FOUND", message: "Servicio no encontrado" } };
+      return {
+        error: { code: "NOT_FOUND", message: "Servicio no encontrado" },
+      };
     }
 
     const serviceData = existingService[0];
 
     // 4. Verificar que el usuario creó este servicio o es admin
     if (serviceData.sellerId !== userId && userRole !== "admin") {
-      return { error: { code: "FORBIDDEN", message: "No tienes permiso para editar este servicio" } };
+      return {
+        error: {
+          code: "FORBIDDEN",
+          message: "No tienes permiso para editar este servicio",
+        },
+      };
     }
 
     // 5. Si se está cambiando la organización, verificar membresía
-    if (data.organizationId && data.organizationId !== serviceData.organizationId) {
+    if (
+      data.organizationId &&
+      data.organizationId !== serviceData.organizationId
+    ) {
       // Verificar que la organización existe y tiene rol de vendedor
       const org = await db
         .select({ id: organization.id, slug: organization.slug })
@@ -62,18 +91,30 @@ export async function updateService(
         .limit(1);
 
       if (org.length === 0) {
-        return { error: { code: "NOT_FOUND", message: "Organización no encontrada" } };
+        return {
+          error: { code: "NOT_FOUND", message: "Organización no encontrada" },
+        };
       }
 
       // Verificar membresía del usuario en la nueva organización
       const memberRecord = await db
         .select({ role: member.role })
         .from(member)
-        .where(and(eq(member.organizationId, data.organizationId), eq(member.userId, userId)))
+        .where(
+          and(
+            eq(member.organizationId, data.organizationId),
+            eq(member.userId, userId),
+          ),
+        )
         .limit(1);
 
       if (memberRecord.length === 0) {
-        return { error: { code: "FORBIDDEN", message: "No eres miembro de esta organización" } };
+        return {
+          error: {
+            code: "FORBIDDEN",
+            message: "No eres miembro de esta organización",
+          },
+        };
       }
     }
 
@@ -115,6 +156,8 @@ export async function updateService(
         priceUnit: validatedData.priceUnit,
         serviceType: validatedData.serviceType,
         location: validatedData.location,
+        maxCapacity: validatedData.maxCapacity,
+        cancellationWindowHours: validatedData.cancellationWindowHours,
         serviceConfig: validatedData.serviceConfig,
         availabilityRules: validatedData.availabilityRules,
         cancellationPolicy: validatedData.cancellationPolicy,
@@ -143,6 +186,11 @@ export async function updateService(
     return { data: result };
   } catch (error) {
     console.error("Error updating service:", error);
-    return { error: { code: "INTERNAL_ERROR", message: "Error interno al actualizar el servicio" } };
+    return {
+      error: {
+        code: "INTERNAL_ERROR",
+        message: "Error interno al actualizar el servicio",
+      },
+    };
   }
 }

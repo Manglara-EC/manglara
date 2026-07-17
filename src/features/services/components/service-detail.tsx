@@ -2,11 +2,11 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { 
-  ArrowLeftIcon, 
-  Wrench, 
-  MapPinIcon, 
-  ClockIcon, 
+import {
+  ArrowLeftIcon,
+  Wrench,
+  MapPinIcon,
+  ClockIcon,
   UsersIcon,
   CalendarIcon,
   BedDoubleIcon,
@@ -15,7 +15,12 @@ import {
 } from "lucide-react";
 
 import { Button } from "@/shared/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/shared/components/ui/card";
 import { Badge } from "@/shared/components/ui/badge";
 import { Separator } from "@/shared/components/ui/separator";
 import {
@@ -26,6 +31,7 @@ import {
 } from "@/shared/components/ui/typography";
 
 import type { PublicService } from "@/features/services/types";
+import type { AvailabilityRules } from "@/shared/lib/drizzle/schema";
 
 function AmenitiesCard({ amenities }: { amenities: string[] }) {
   return (
@@ -36,7 +42,9 @@ function AmenitiesCard({ amenities }: { amenities: string[] }) {
       <CardContent>
         <div className="flex flex-wrap gap-2">
           {amenities.map((amenity, i) => (
-            <Badge key={i} variant="secondary">{amenity}</Badge>
+            <Badge key={i} variant="secondary">
+              {amenity}
+            </Badge>
           ))}
         </div>
       </CardContent>
@@ -71,12 +79,14 @@ interface Props {
 const SERVICE_TYPE_LABELS: Record<string, string> = {
   accommodation: "Alojamiento",
   activity: "Actividad o experiencia",
+  rental: "Alquiler de equipos",
 };
 
 const PRICE_UNIT_LABELS: Record<string, string> = {
   night: "por noche",
   person: "por persona",
-  day: "por día",
+  day: "por día completo (hasta el atardecer)",
+  hour: "por hora",
   flat_rate: "tarifa fija",
 };
 
@@ -93,26 +103,91 @@ const CANCELLATION_LABELS: Record<string, string> = {
   strict: "Estricta - Reembolso del 50% hasta 7 días antes",
 };
 
+const getScheduleText = (
+  rules: AvailabilityRules | null | undefined,
+): string => {
+  if (!rules?.schedule) return "";
+  const schedule = rules.schedule as Record<
+    string,
+    { start: string; end: string }[] | undefined
+  >;
+  const activeDays = Object.keys(schedule).filter(
+    (day) => Array.isArray(schedule[day]) && (schedule[day]?.length ?? 0) > 0,
+  );
+  if (activeDays.length === 0) return "";
+
+  const dayNames: Record<string, string> = {
+    monday: "Lunes",
+    tuesday: "Martes",
+    wednesday: "Miércoles",
+    thursday: "Jueves",
+    friday: "Viernes",
+    saturday: "Sábado",
+    sunday: "Domingo",
+  };
+
+  const firstDay = activeDays[0];
+  const slots = schedule[firstDay];
+  const slot = slots ? slots[0] : null;
+  const timeStr = slot ? ` de ${slot.start} a ${slot.end}` : "";
+
+  if (activeDays.length === 7) {
+    return `Todos los días${timeStr}`;
+  }
+
+  const isWeekdays =
+    activeDays.length === 5 &&
+    ["monday", "tuesday", "wednesday", "thursday", "friday"].every((d) =>
+      activeDays.includes(d),
+    );
+  if (isWeekdays) {
+    return `Lunes a Viernes${timeStr}`;
+  }
+
+  const names = activeDays.map((d) => dayNames[d] || d).join(", ");
+  return `${names}${timeStr}`;
+};
+
 export function ServiceDetail({ service }: Props) {
   const price = new Intl.NumberFormat("es-ES", {
     style: "currency",
     currency: "EUR",
   }).format(Number(service.price));
 
-  const imageUrl = service.images && service.images.length > 0 ? service.images[0] : null;
-  const config = (service.serviceConfig as Record<string, unknown>) ?? {};
+  interface ServiceConfigProps {
+    pricingMode?: string;
+    dailyPrice?: string;
+    hourlyPrice?: string;
+    maxCapacity?: number;
+    maxNights?: number;
+    minParticipants?: number;
+    amenities?: string[];
+    houseRules?: string[];
+    minNights?: number;
+    checkInTime?: string;
+    checkOutTime?: string;
+    bedrooms?: number;
+    bathrooms?: number;
+    beds?: number;
+    difficulty?: string;
+    requirements?: string[];
+    inclusions?: string[];
+    exclusions?: string[];
+    meetingPoint?: string;
+  }
+
+  const imageUrl =
+    service.images && service.images.length > 0 ? service.images[0] : null;
+  const config = ((service.serviceConfig as Record<string, unknown>) ??
+    {}) as ServiceConfigProps;
   const serviceType = service.serviceType || "other";
 
-  const hasAccommodationAmenities = (
-    serviceType === "accommodation" &&
+  const hasAccommodationAmenities = (serviceType === "accommodation" &&
     Array.isArray(config.amenities) &&
-    (config.amenities as unknown[])?.length > 0
-  ) as boolean;
-  const hasAccommodationHouseRules = (
-    serviceType === "accommodation" &&
+    (config.amenities as unknown[])?.length > 0) as boolean;
+  const hasAccommodationHouseRules = (serviceType === "accommodation" &&
     Array.isArray(config.houseRules) &&
-    (config.houseRules as unknown[])?.length > 0
-  ) as boolean;
+    (config.houseRules as unknown[])?.length > 0) as boolean;
 
   return (
     <div className="flex flex-col gap-6">
@@ -147,7 +222,9 @@ export function ServiceDetail({ service }: Props) {
             <div className="space-y-4">
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <TypographyH1 className="text-2xl md:text-3xl">{service.name}</TypographyH1>
+                  <TypographyH1 className="text-2xl md:text-3xl">
+                    {service.name}
+                  </TypographyH1>
                   <TypographyMuted className="text-sm">
                     Por {service.sellerName} · {service.organizationName}
                   </TypographyMuted>
@@ -159,7 +236,9 @@ export function ServiceDetail({ service }: Props) {
 
               {service.description && (
                 <div>
-                  <TypographyH3 className="text-lg mb-2">Descripción</TypographyH3>
+                  <TypographyH3 className="text-lg mb-2">
+                    Descripción
+                  </TypographyH3>
                   <TypographyP className="whitespace-pre-wrap text-muted-foreground">
                     {service.description}
                   </TypographyP>
@@ -180,32 +259,88 @@ export function ServiceDetail({ service }: Props) {
         <Card className="h-fit">
           <CardHeader>
             <div className="text-center">
-              <span className="text-3xl font-bold">{price}</span>
-              <TypographyMuted className="block">
-                {PRICE_UNIT_LABELS[service.priceUnit || "flat_rate"]}
-              </TypographyMuted>
+              {serviceType === "rental" ? (
+                <div>
+                  <span className="text-3xl font-bold">{price}</span>
+                  <TypographyMuted className="block">
+                    {PRICE_UNIT_LABELS["hour"]}
+                  </TypographyMuted>
+                  {config.pricingMode === "daily" && config.dailyPrice && (
+                    <Badge
+                      variant="secondary"
+                      className="mt-2 text-xs font-semibold"
+                    >
+                      O bien{" "}
+                      {new Intl.NumberFormat("es-ES", {
+                        style: "currency",
+                        currency: "EUR",
+                      }).format(Number(config.dailyPrice))}{" "}
+                      por día completo
+                    </Badge>
+                  )}
+                </div>
+              ) : (
+                <div>
+                  <span className="text-3xl font-bold">{price}</span>
+                  <TypographyMuted className="block">
+                    {PRICE_UNIT_LABELS[service.priceUnit || "flat_rate"]}
+                  </TypographyMuted>
+                </div>
+              )}
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
             {/* Info rápida */}
             <div className="space-y-2 text-sm">
-              {service.maxCapacity && service.maxCapacity > 1 && (
-                <div className="flex items-center gap-2">
-                  <UsersIcon className="h-4 w-4 text-muted-foreground" />
-                  <span>Hasta {service.maxCapacity} personas</span>
-                </div>
-              )}
-              {service.durationMinutes && (
-                <div className="flex items-center gap-2">
-                  <ClockIcon className="h-4 w-4 text-muted-foreground" />
-                  <span>{service.durationMinutes} minutos</span>
-                </div>
-              )}
-              {Boolean(config.minNights) && (
-                <div className="flex items-center gap-2">
-                  <CalendarIcon className="h-4 w-4 text-muted-foreground" />
-                  <span>Mín. {String(config.minNights)} noches</span>
-                </div>
+              {serviceType === "rental" ? (
+                <>
+                  {service.maxCapacity && (
+                    <div className="flex items-center gap-2">
+                      <UsersIcon className="h-4 w-4 text-muted-foreground" />
+                      <span>
+                        {service.maxCapacity}{" "}
+                        {service.maxCapacity === 1
+                          ? "hamaca disponible"
+                          : "hamacas disponibles"}{" "}
+                        en total
+                      </span>
+                    </div>
+                  )}
+                  {getScheduleText(service.availabilityRules) && (
+                    <div className="flex items-start gap-2">
+                      <ClockIcon className="h-4 w-4 text-muted-foreground mt-0.5" />
+                      <span>
+                        <span className="font-semibold block text-xs">
+                          Horario de atención:
+                        </span>
+                        <span className="text-muted-foreground text-xs">
+                          {getScheduleText(service.availabilityRules)}
+                        </span>
+                      </span>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <>
+                  {service.maxCapacity && service.maxCapacity > 1 && (
+                    <div className="flex items-center gap-2">
+                      <UsersIcon className="h-4 w-4 text-muted-foreground" />
+                      <span>Hasta {service.maxCapacity} personas</span>
+                    </div>
+                  )}
+                  {service.durationMinutes && (
+                    <div className="flex items-center gap-2">
+                      <ClockIcon className="h-4 w-4 text-muted-foreground" />
+                      <span>{service.durationMinutes} minutos</span>
+                    </div>
+                  )}
+                  {Boolean(config.minNights) && (
+                    <div className="flex items-center gap-2">
+                      <CalendarIcon className="h-4 w-4 text-muted-foreground" />
+                      <span>Mín. {String(config.minNights)} noches</span>
+                    </div>
+                  )}
+                </>
               )}
             </div>
 
@@ -213,14 +348,16 @@ export function ServiceDetail({ service }: Props) {
 
             {/* Política de cancelación */}
             <div className="text-sm">
-              <TypographyMuted className="font-medium">Cancelación</TypographyMuted>
+              <TypographyMuted className="font-medium">
+                Cancelación
+              </TypographyMuted>
               <p className="text-xs text-muted-foreground mt-1">
                 {CANCELLATION_LABELS[service.cancellationPolicy || "flexible"]}
               </p>
             </div>
 
             <Button className="w-full" size="lg">
-              Reservar ahora
+              {serviceType === "rental" ? "Alquilar ahora" : "Reservar ahora"}
             </Button>
           </CardContent>
         </Card>
@@ -271,14 +408,22 @@ export function ServiceDetail({ service }: Props) {
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     {Boolean(config.checkInTime) && (
                       <div>
-                        <TypographyMuted className="text-xs">Check-in</TypographyMuted>
-                        <p className="font-medium">{String(config.checkInTime)}</p>
+                        <TypographyMuted className="text-xs">
+                          Check-in
+                        </TypographyMuted>
+                        <p className="font-medium">
+                          {String(config.checkInTime)}
+                        </p>
                       </div>
                     )}
                     {Boolean(config.checkOutTime) && (
                       <div>
-                        <TypographyMuted className="text-xs">Check-out</TypographyMuted>
-                        <p className="font-medium">{String(config.checkOutTime)}</p>
+                        <TypographyMuted className="text-xs">
+                          Check-out
+                        </TypographyMuted>
+                        <p className="font-medium">
+                          {String(config.checkOutTime)}
+                        </p>
                       </div>
                     )}
                   </div>
@@ -291,14 +436,22 @@ export function ServiceDetail({ service }: Props) {
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     {Boolean(config.minNights) && (
                       <div>
-                        <TypographyMuted className="text-xs">Estancia mínima</TypographyMuted>
-                        <p className="font-medium">{String(config.minNights)} noches</p>
+                        <TypographyMuted className="text-xs">
+                          Estancia mínima
+                        </TypographyMuted>
+                        <p className="font-medium">
+                          {String(config.minNights)} noches
+                        </p>
                       </div>
                     )}
                     {Boolean(config.maxNights) && (
                       <div>
-                        <TypographyMuted className="text-xs">Estancia máxima</TypographyMuted>
-                        <p className="font-medium">{String(config.maxNights)} noches</p>
+                        <TypographyMuted className="text-xs">
+                          Estancia máxima
+                        </TypographyMuted>
+                        <p className="font-medium">
+                          {String(config.maxNights)} noches
+                        </p>
                       </div>
                     )}
                   </div>
@@ -309,13 +462,20 @@ export function ServiceDetail({ service }: Props) {
         )}
 
         {/* Alojamiento: Amenidades */}
-        {false ? <AmenitiesCard amenities={(config.amenities as string[]) ?? []} /> : null}
+        {false ? (
+          <AmenitiesCard amenities={(config.amenities as string[]) ?? []} />
+        ) : null}
 
         {/* Alojamiento: Reglas de la casa */}
-        {false ? <HouseRulesCard houseRules={(config.houseRules as string[]) ?? []} /> : null}
+        {false ? (
+          <HouseRulesCard houseRules={(config.houseRules as string[]) ?? []} />
+        ) : null}
 
         {/* Actividad: Detalles - Mostrar si hay datos de actividad o si es tipo activity */}
-        {(serviceType === "activity" || Boolean(config.difficulty) || Boolean(config.minParticipants) || Boolean(config.meetingPoint)) && (
+        {(serviceType === "activity" ||
+          Boolean(config.difficulty) ||
+          Boolean(config.minParticipants) ||
+          Boolean(config.meetingPoint)) && (
           <Card>
             <CardHeader>
               <CardTitle>Detalles de la actividad</CardTitle>
@@ -324,28 +484,43 @@ export function ServiceDetail({ service }: Props) {
               <div className="grid grid-cols-2 gap-4 text-sm">
                 {Boolean(config.difficulty) && (
                   <div>
-                    <TypographyMuted className="text-xs">Dificultad</TypographyMuted>
+                    <TypographyMuted className="text-xs">
+                      Dificultad
+                    </TypographyMuted>
                     <Badge variant="outline" className="mt-1">
-                      {DIFFICULTY_LABELS[config.difficulty as string] || (config.difficulty as string)}
+                      {DIFFICULTY_LABELS[config.difficulty as string] ||
+                        (config.difficulty as string)}
                     </Badge>
                   </div>
                 )}
                 {Boolean(config.minParticipants) && (
                   <div>
-                    <TypographyMuted className="text-xs">Participantes mínimos</TypographyMuted>
-                    <p className="font-medium">{String(config.minParticipants)}</p>
+                    <TypographyMuted className="text-xs">
+                      Participantes mínimos
+                    </TypographyMuted>
+                    <p className="font-medium">
+                      {String(config.minParticipants)}
+                    </p>
                   </div>
                 )}
                 {service.maxCapacity && (
                   <div>
-                    <TypographyMuted className="text-xs">Capacidad máxima</TypographyMuted>
-                    <p className="font-medium">{service.maxCapacity} personas</p>
+                    <TypographyMuted className="text-xs">
+                      Capacidad máxima
+                    </TypographyMuted>
+                    <p className="font-medium">
+                      {service.maxCapacity} personas
+                    </p>
                   </div>
                 )}
                 {service.durationMinutes && (
                   <div>
-                    <TypographyMuted className="text-xs">Duración</TypographyMuted>
-                    <p className="font-medium">{service.durationMinutes} minutos</p>
+                    <TypographyMuted className="text-xs">
+                      Duración
+                    </TypographyMuted>
+                    <p className="font-medium">
+                      {service.durationMinutes} minutos
+                    </p>
                   </div>
                 )}
               </div>
@@ -354,7 +529,9 @@ export function ServiceDetail({ service }: Props) {
                 <>
                   <Separator />
                   <div>
-                    <TypographyMuted className="text-xs">Punto de encuentro</TypographyMuted>
+                    <TypographyMuted className="text-xs">
+                      Punto de encuentro
+                    </TypographyMuted>
                     <p className="text-sm flex items-center gap-2 mt-1">
                       <MapPinIcon className="h-4 w-4 text-muted-foreground" />
                       {String(config.meetingPoint)}
@@ -367,7 +544,10 @@ export function ServiceDetail({ service }: Props) {
         )}
 
         {/* Actividad: Requisitos - Mostrar si hay datos */}
-        {Boolean(Array.isArray(config.requirements) && (config.requirements as unknown[]).length > 0) && (
+        {Boolean(
+          Array.isArray(config.requirements) &&
+            (config.requirements as unknown[]).length > 0,
+        ) && (
           <Card>
             <CardHeader>
               <CardTitle>Requisitos</CardTitle>
@@ -386,7 +566,10 @@ export function ServiceDetail({ service }: Props) {
         )}
 
         {/* Actividad: Qué incluye - Mostrar si hay datos */}
-        {Boolean(Array.isArray(config.inclusions) && (config.inclusions as unknown[]).length > 0) && (
+        {Boolean(
+          Array.isArray(config.inclusions) &&
+            (config.inclusions as unknown[]).length > 0,
+        ) && (
           <Card>
             <CardHeader>
               <CardTitle>¿Qué incluye?</CardTitle>
@@ -405,7 +588,10 @@ export function ServiceDetail({ service }: Props) {
         )}
 
         {/* Actividad: Qué NO incluye - Mostrar si hay datos */}
-        {Boolean(Array.isArray(config.exclusions) && (config.exclusions as unknown[]).length > 0) && (
+        {Boolean(
+          Array.isArray(config.exclusions) &&
+            (config.exclusions as unknown[]).length > 0,
+        ) && (
           <Card>
             <CardHeader>
               <CardTitle>¿Qué NO incluye?</CardTitle>

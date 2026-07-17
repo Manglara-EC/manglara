@@ -6,7 +6,14 @@ import { useSession } from "@/shared/hooks/use-session";
 
 import { createServiceSchema } from "@/features/seller/schemas/create-service";
 import { useCreateServiceMutation } from "@/features/seller/hooks/use-create-service-mutation";
-import type { CreateServiceVariables, ServiceType, PriceUnit, ActivityConfig, AccommodationConfig } from "@/features/seller/types";
+import type {
+  CreateServiceVariables,
+  ServiceType,
+  PriceUnit,
+  ActivityConfig,
+  AccommodationConfig,
+  RentalConfig,
+} from "@/features/seller/types";
 import { getRecommendedPriceUnit } from "@/features/seller/types";
 
 interface Props {
@@ -52,17 +59,21 @@ export const useCreateServiceForm = ({ organizationId }: Props) => {
   // Actualizar unidad de precio y configuración cuando cambie el tipo de servicio
   const serviceType = form.watch("serviceType");
   const prevServiceTypeRef = useRef<string | undefined>(undefined);
-  
+
   useEffect(() => {
     const recommendedUnit = getRecommendedPriceUnit(serviceType as ServiceType);
     form.setValue("priceUnit", recommendedUnit as PriceUnit);
-    
+
     // Solo inicializar serviceConfig cuando cambie el tipo de servicio
     if (prevServiceTypeRef.current !== serviceType) {
       prevServiceTypeRef.current = serviceType;
-      
-      let defaultConfig: ActivityConfig | AccommodationConfig | Record<string, unknown> = {};
-      
+
+      let defaultConfig:
+        | ActivityConfig
+        | AccommodationConfig
+        | RentalConfig
+        | Record<string, unknown> = {};
+
       switch (serviceType) {
         case "activity":
           defaultConfig = {
@@ -87,10 +98,17 @@ export const useCreateServiceForm = ({ organizationId }: Props) => {
             houseRules: [],
           } as AccommodationConfig;
           break;
+        case "rental":
+          defaultConfig = {
+            pricingMode: "hourly",
+            hourlyPrice: "",
+            dailyPrice: "",
+          } as RentalConfig;
+          break;
         default:
           defaultConfig = {};
       }
-      
+
       form.setValue("serviceConfig", defaultConfig, { shouldDirty: true });
     }
   }, [serviceType, form]);
@@ -102,12 +120,20 @@ export const useCreateServiceForm = ({ organizationId }: Props) => {
   // Helpers para configuración específica por tipo
   const updateServiceConfig = (config: Record<string, unknown>) => {
     const currentConfig = form.getValues("serviceConfig") ?? {};
-    form.setValue("serviceConfig", { ...currentConfig, ...config }, { shouldDirty: true });
+    form.setValue(
+      "serviceConfig",
+      { ...currentConfig, ...config },
+      { shouldDirty: true },
+    );
   };
 
   const updateAvailabilityRules = (rules: Record<string, unknown>) => {
     const currentRules = form.getValues("availabilityRules") ?? {};
-    form.setValue("availabilityRules", { ...currentRules, ...rules }, { shouldDirty: true });
+    form.setValue(
+      "availabilityRules",
+      { ...currentRules, ...rules },
+      { shouldDirty: true },
+    );
   };
 
   return {

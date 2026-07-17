@@ -5,7 +5,10 @@ loadEnvConfig(process.cwd());
 
 export default defineConfig({
   out: "./src/shared/lib/drizzle/migrations",
-  schema: "./src/shared/lib/drizzle/schema.ts",
+  schema: [
+    "./src/shared/lib/drizzle/schema.ts",
+    "./src/shared/lib/drizzle/transactions.ts"
+  ],
   dialect: "postgresql",
   dbCredentials: {
     url: process.env.DATABASE_URL!,
