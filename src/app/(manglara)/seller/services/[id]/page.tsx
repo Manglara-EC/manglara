@@ -30,6 +30,7 @@ import {
   CANCELLATION_POLICY_LABELS,
   type ServiceType,
   type PriceUnit,
+  type AvailabilityRules,
 } from "@/features/seller/types";
 
 export const metadata: Metadata = {
@@ -139,15 +140,50 @@ export default async function ServiceDetailPage({ params }: Props) {
     }
   }
 
+  interface ServiceConfigProps {
+    pricingMode?: string;
+    dailyPrice?: string;
+    hourlyPrice?: string;
+    maxCapacity?: number;
+    maxNights?: number;
+    minParticipants?: number;
+    amenities?: string[];
+    houseRules?: string[];
+    minNights?: number;
+    checkInTime?: string;
+    checkOutTime?: string;
+    bedrooms?: number;
+    bathrooms?: number;
+    beds?: number;
+    difficulty?: string;
+    requirements?: string[];
+    inclusions?: string[];
+    exclusions?: string[];
+    meetingPoint?: string;
+    allowedVehicles?: string[];
+    isRoofed?: boolean;
+    hasSecurity?: boolean;
+    hasCameras?: boolean;
+    isGated?: boolean;
+    surfaceType?: string;
+    durationMinutes?: number;
+  }
+
   const canEdit = userRole === "admin" || foundService.sellerId === userId;
   const statusInfo = STATUS_LABELS[foundService.status || "pending"];
-  const config = (foundService.serviceConfig as Record<string, unknown>) ?? {};
+  const config = ((foundService.serviceConfig as Record<string, unknown>) ??
+    {}) as ServiceConfigProps;
 
-  const getScheduleText = (rules: any): string => {
+  const getScheduleText = (
+    rules: AvailabilityRules | null | undefined,
+  ): string => {
     if (!rules?.schedule) return "";
-    const activeDays = Object.keys(rules.schedule).filter(
-      (day) =>
-        Array.isArray(rules.schedule[day]) && rules.schedule[day].length > 0,
+    const schedule = rules.schedule as Record<
+      string,
+      { start: string; end: string }[] | undefined
+    >;
+    const activeDays = Object.keys(schedule).filter(
+      (day) => Array.isArray(schedule[day]) && (schedule[day]?.length ?? 0) > 0,
     );
     if (activeDays.length === 0) return "";
 
@@ -276,11 +312,14 @@ export default async function ServiceDetailPage({ params }: Props) {
                       <dt className="text-muted-foreground">
                         {foundService.serviceType === "rental"
                           ? "Hamacas totales (Stock)"
-                          : "Capacidad máxima"}
+                          : foundService.serviceType === "parking"
+                            ? "Plazas totales (Stock)"
+                            : "Capacidad máxima"}
                       </dt>
                       <dd className="font-medium">
                         {foundService.maxCapacity}{" "}
-                        {foundService.serviceType === "rental"
+                        {foundService.serviceType === "rental" ||
+                        foundService.serviceType === "parking"
                           ? "unidades"
                           : "personas"}
                       </dd>
@@ -325,6 +364,72 @@ export default async function ServiceDetailPage({ params }: Props) {
                         <div className="col-span-2">
                           <dt className="text-muted-foreground">
                             Horario y días de atención
+                          </dt>
+                          <dd className="font-medium">
+                            {getScheduleText(foundService.availabilityRules)}
+                          </dd>
+                        </div>
+                      )}
+                    </>
+                  ) : foundService.serviceType === "parking" ? (
+                    <>
+                      {config.hourlyPrice && (
+                        <div>
+                          <dt className="text-muted-foreground">
+                            Tarifa por hora
+                          </dt>
+                          <dd className="font-medium">
+                            ${Number(config.hourlyPrice).toFixed(2)}
+                          </dd>
+                        </div>
+                      )}
+                      {config.dailyPrice && (
+                        <div>
+                          <dt className="text-muted-foreground">
+                            Tarifa plana diaria
+                          </dt>
+                          <dd className="font-medium">
+                            ${Number(config.dailyPrice).toFixed(2)}
+                          </dd>
+                        </div>
+                      )}
+                      {Array.isArray(config.allowedVehicles) && (
+                        <div className="col-span-2">
+                          <dt className="text-muted-foreground">
+                            Vehículos permitidos
+                          </dt>
+                          <dd className="font-medium capitalize">
+                            {config.allowedVehicles.join(", ")}
+                          </dd>
+                        </div>
+                      )}
+                      <div className="col-span-2">
+                        <dt className="text-muted-foreground">
+                          Seguridad e Infraestructura
+                        </dt>
+                        <dd className="font-medium">
+                          {[
+                            config.isRoofed && "Techado",
+                            config.hasSecurity && "Vigilante",
+                            config.hasCameras && "Cámaras CCTV",
+                            config.isGated && "Enrejado/Cerrado",
+                          ]
+                            .filter(Boolean)
+                            .join(", ") || "Ninguno"}
+                        </dd>
+                      </div>
+                      {config.surfaceType && (
+                        <div>
+                          <dt className="text-muted-foreground">Suelo</dt>
+                          <dd className="font-medium capitalize">
+                            {config.surfaceType}
+                          </dd>
+                        </div>
+                      )}
+                      {getScheduleText(foundService.availabilityRules) && (
+                        <div className="col-span-2">
+                          <dt className="text-muted-foreground">
+                            Horario del estacionamiento
                           </dt>
                           <dd className="font-medium">
                             {getScheduleText(foundService.availabilityRules)}

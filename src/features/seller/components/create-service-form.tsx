@@ -43,6 +43,7 @@ import {
 import { AccommodationConfigFields } from "@/features/seller/components/accommodation-config-fields";
 import { ActivityConfigFields } from "@/features/seller/components/activity-config-fields";
 import { RentalConfigFields } from "@/features/seller/components/rental-config-fields";
+import { ParkingConfigFields } from "@/features/seller/components/parking-config-fields";
 
 interface Props {
   organizationId: string;
@@ -186,7 +187,7 @@ export function CreateServiceForm({ organizationId }: Props) {
         </Card>
 
         {/* Precios y capacidad */}
-        {serviceType !== "rental" && (
+        {serviceType !== "rental" && serviceType !== "parking" && (
           <Card>
             <CardHeader>
               <CardTitle>Precio y capacidad</CardTitle>
@@ -357,6 +358,16 @@ export function CreateServiceForm({ organizationId }: Props) {
             form={
               form as unknown as React.ComponentProps<
                 typeof RentalConfigFields
+              >["form"]
+            }
+          />
+        )}
+
+        {serviceType === "parking" && (
+          <ParkingConfigFields
+            form={
+              form as unknown as React.ComponentProps<
+                typeof ParkingConfigFields
               >["form"]
             }
           />

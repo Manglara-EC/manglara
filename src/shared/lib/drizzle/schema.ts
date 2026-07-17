@@ -225,6 +225,17 @@ export interface RentalConfig {
   hourlyPrice?: string;
   dailyPrice?: string;
 }
+
+export interface ParkingConfig {
+  hourlyPrice?: string;
+  dailyPrice?: string;
+  allowedVehicles: ("car" | "motorcycle" | "bicycle" | "bus")[];
+  isRoofed: boolean;
+  hasSecurity: boolean;
+  hasCameras: boolean;
+  isGated: boolean;
+  surfaceType: "paved" | "dirt" | "sand";
+}
 export interface AccommodationConfig {
   checkInTime?: string; // "15:00"
   checkOutTime?: string; // "11:00"
@@ -257,6 +268,7 @@ export type ServiceConfig =
   | TimeBasedConfig
   | ActivityConfig
   | RentalConfig
+  | ParkingConfig
   | Record<string, unknown>;
 
 export interface TimeSlot {

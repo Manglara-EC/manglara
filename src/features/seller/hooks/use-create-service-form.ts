@@ -13,6 +13,7 @@ import type {
   ActivityConfig,
   AccommodationConfig,
   RentalConfig,
+  ParkingConfig,
 } from "@/features/seller/types";
 import { getRecommendedPriceUnit } from "@/features/seller/types";
 
@@ -72,6 +73,7 @@ export const useCreateServiceForm = ({ organizationId }: Props) => {
         | ActivityConfig
         | AccommodationConfig
         | RentalConfig
+        | ParkingConfig
         | Record<string, unknown> = {};
 
       switch (serviceType) {
@@ -104,6 +106,18 @@ export const useCreateServiceForm = ({ organizationId }: Props) => {
             hourlyPrice: "",
             dailyPrice: "",
           } as RentalConfig;
+          break;
+        case "parking":
+          defaultConfig = {
+            hourlyPrice: "",
+            dailyPrice: "",
+            allowedVehicles: ["car"],
+            isRoofed: false,
+            hasSecurity: false,
+            hasCameras: false,
+            isGated: false,
+            surfaceType: "dirt",
+          } as ParkingConfig;
           break;
         default:
           defaultConfig = {};

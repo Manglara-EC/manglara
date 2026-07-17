@@ -7,6 +7,7 @@ import type {
   TimeBasedConfig,
   DurationOption,
   RentalConfig,
+  ParkingConfig,
 } from "@/shared/lib/drizzle/schema";
 
 // Re-exportar tipos de configuración
@@ -18,10 +19,16 @@ export type {
   TimeBasedConfig,
   DurationOption,
   RentalConfig,
+  ParkingConfig,
 };
 
 // Tipos de servicio soportados
-export const SERVICE_TYPES = ["accommodation", "activity", "rental"] as const;
+export const SERVICE_TYPES = [
+  "accommodation",
+  "activity",
+  "rental",
+  "parking",
+] as const;
 export type ServiceType = (typeof SERVICE_TYPES)[number];
 
 // Unidades de precio soportadas
@@ -48,6 +55,7 @@ export const SERVICE_TYPE_LABELS: Record<ServiceType, string> = {
   accommodation: "Alojamiento",
   activity: "Actividad o experiencia",
   rental: "Alquiler de equipos (Hamacas, carpas, etc.)",
+  parking: "Estacionamiento (Parqueadero)",
 };
 
 export const PRICE_UNIT_LABELS: Record<PriceUnit, string> = {
@@ -147,6 +155,8 @@ export const getRecommendedPriceUnit = (
       return "person";
     case "rental":
       return "hour";
+    case "parking":
+      return "hour";
     default:
       return "flat_rate";
   }
@@ -163,6 +173,8 @@ export const getRequiredFieldsByType = (serviceType: ServiceType): string[] => {
       return [...common, "maxCapacity"];
     case "rental":
       return [...common, "maxCapacity"];
+    case "parking":
+      return [...common, "maxCapacity", "location"];
     default:
       return common;
   }

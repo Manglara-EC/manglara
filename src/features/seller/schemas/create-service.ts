@@ -110,7 +110,7 @@ export const createServiceSchema = z.object({
 
   // Tipo de servicio
   serviceType: z
-    .enum(["accommodation", "activity", "rental"])
+    .enum(["accommodation", "activity", "rental", "parking"])
     .default("activity"),
 
   // Precio base
@@ -198,6 +198,26 @@ export const validateServiceByType = (
       }
       if (data.maxCapacity < 1) {
         errors.push("La cantidad disponible debe ser al menos 1");
+      }
+      break;
+
+    case "parking":
+      const parkingConfig = data.serviceConfig as {
+        hourlyPrice?: string;
+        dailyPrice?: string;
+        allowedVehicles?: string[];
+      } | null;
+      if (!parkingConfig || (!parkingConfig.hourlyPrice && !parkingConfig.dailyPrice)) {
+        errors.push("Debes ingresar al menos una tarifa (por hora o por día completo)");
+      }
+      if (!parkingConfig?.allowedVehicles || parkingConfig.allowedVehicles.length === 0) {
+        errors.push("Debes seleccionar al menos un tipo de vehículo permitido");
+      }
+      if (!data.location) {
+        errors.push("La ubicación del estacionamiento es requerida");
+      }
+      if (data.maxCapacity < 1) {
+        errors.push("La cantidad de plazas disponibles debe ser al menos 1");
       }
       break;
   }

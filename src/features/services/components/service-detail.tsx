@@ -174,6 +174,12 @@ export function ServiceDetail({ service }: Props) {
     inclusions?: string[];
     exclusions?: string[];
     meetingPoint?: string;
+    allowedVehicles?: ("car" | "motorcycle" | "bicycle" | "bus")[];
+    isRoofed?: boolean;
+    hasSecurity?: boolean;
+    hasCameras?: boolean;
+    isGated?: boolean;
+    surfaceType?: string;
   }
 
   const imageUrl =
@@ -279,6 +285,47 @@ export function ServiceDetail({ service }: Props) {
                     </Badge>
                   )}
                 </div>
+              ) : serviceType === "parking" ? (
+                <div>
+                  {config.hourlyPrice ? (
+                    <div>
+                      <span className="text-3xl font-bold">
+                        {new Intl.NumberFormat("es-ES", {
+                          style: "currency",
+                          currency: "EUR",
+                        }).format(Number(config.hourlyPrice))}
+                      </span>
+                      <TypographyMuted className="block">
+                        por hora
+                      </TypographyMuted>
+                      {config.dailyPrice && (
+                        <Badge
+                          variant="secondary"
+                          className="mt-2 text-xs font-semibold"
+                        >
+                          O bien{" "}
+                          {new Intl.NumberFormat("es-ES", {
+                            style: "currency",
+                            currency: "EUR",
+                          }).format(Number(config.dailyPrice))}{" "}
+                          por día completo
+                        </Badge>
+                      )}
+                    </div>
+                  ) : (
+                    <div>
+                      <span className="text-3xl font-bold">
+                        {new Intl.NumberFormat("es-ES", {
+                          style: "currency",
+                          currency: "EUR",
+                        }).format(Number(config.dailyPrice))}
+                      </span>
+                      <TypographyMuted className="block">
+                        por día completo
+                      </TypographyMuted>
+                    </div>
+                  )}
+                </div>
               ) : (
                 <div>
                   <span className="text-3xl font-bold">{price}</span>
@@ -312,6 +359,33 @@ export function ServiceDetail({ service }: Props) {
                       <span>
                         <span className="font-semibold block text-xs">
                           Horario de atención:
+                        </span>
+                        <span className="text-muted-foreground text-xs">
+                          {getScheduleText(service.availabilityRules)}
+                        </span>
+                      </span>
+                    </div>
+                  )}
+                </>
+              ) : serviceType === "parking" ? (
+                <>
+                  {service.maxCapacity && (
+                    <div className="flex items-center gap-2">
+                      <UsersIcon className="h-4 w-4 text-muted-foreground" />
+                      <span>
+                        {service.maxCapacity}{" "}
+                        {service.maxCapacity === 1
+                          ? "plaza de parqueo disponible"
+                          : "plazas de parqueo disponibles"}
+                      </span>
+                    </div>
+                  )}
+                  {getScheduleText(service.availabilityRules) && (
+                    <div className="flex items-start gap-2">
+                      <ClockIcon className="h-4 w-4 text-muted-foreground mt-0.5" />
+                      <span>
+                        <span className="font-semibold block text-xs">
+                          Horario del estacionamiento:
                         </span>
                         <span className="text-muted-foreground text-xs">
                           {getScheduleText(service.availabilityRules)}
@@ -357,7 +431,11 @@ export function ServiceDetail({ service }: Props) {
             </div>
 
             <Button className="w-full" size="lg">
-              {serviceType === "rental" ? "Alquilar ahora" : "Reservar ahora"}
+              {serviceType === "rental"
+                ? "Alquilar ahora"
+                : serviceType === "parking"
+                  ? "Reservar plaza"
+                  : "Reservar ahora"}
             </Button>
           </CardContent>
         </Card>
@@ -365,6 +443,123 @@ export function ServiceDetail({ service }: Props) {
 
       {/* Detalles según tipo de servicio */}
       <div className="grid gap-6 lg:grid-cols-2">
+        {/* Estacionamiento: Características específicas */}
+        {serviceType === "parking" && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Wrench className="h-5 w-5" />
+                Características del Estacionamiento
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {/* Vehículos permitidos */}
+              {Array.isArray(config.allowedVehicles) &&
+                config.allowedVehicles.length > 0 && (
+                  <div>
+                    <TypographyMuted className="text-sm font-medium mb-2">
+                      Vehículos permitidos
+                    </TypographyMuted>
+                    <div className="flex flex-wrap gap-2">
+                      {config.allowedVehicles.map((vehicle) => {
+                        const labels: Record<string, string> = {
+                          car: "🚗 Carros/SUVs",
+                          motorcycle: "🏍️ Motocicletas",
+                          bicycle: "🚲 Bicicletas",
+                          bus: "🚌 Buses/Pesados",
+                        };
+                        return (
+                          <Badge
+                            key={vehicle}
+                            variant="secondary"
+                            className="px-3 py-1"
+                          >
+                            {labels[vehicle] || vehicle}
+                          </Badge>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+              <Separator />
+
+              {/* Características de seguridad e infraestructura */}
+              <div>
+                <TypographyMuted className="text-sm font-medium mb-2">
+                  Seguridad e Infraestructura
+                </TypographyMuted>
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={
+                        config.isRoofed
+                          ? "text-green-600 font-bold"
+                          : "text-muted-foreground"
+                      }
+                    >
+                      {config.isRoofed ? "✓ Techado / Sombra" : "✗ Sin techo"}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={
+                        config.hasSecurity
+                          ? "text-green-600 font-bold"
+                          : "text-muted-foreground"
+                      }
+                    >
+                      {config.hasSecurity
+                        ? "✓ Vigilante físico"
+                        : "✗ Sin vigilancia física"}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={
+                        config.hasCameras
+                          ? "text-green-600 font-bold"
+                          : "text-muted-foreground"
+                      }
+                    >
+                      {config.hasCameras ? "✓ Cámaras CCTV" : "✗ Sin cámaras"}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={
+                        config.isGated
+                          ? "text-green-600 font-bold"
+                          : "text-muted-foreground"
+                      }
+                    >
+                      {config.isGated ? "✓ Lote cerrado / Rejas" : "✗ Abierto"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Tipo de Suelo */}
+              {config.surfaceType && (
+                <div>
+                  <TypographyMuted className="text-sm font-medium mb-1">
+                    Superficie del Suelo
+                  </TypographyMuted>
+                  <span className="text-sm font-semibold capitalize">
+                    {config.surfaceType === "paved"
+                      ? "Asfaltado / Pavimentado"
+                      : config.surfaceType === "dirt"
+                        ? "Tierra / Grava"
+                        : "Arena"}
+                  </span>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
         {/* Alojamiento: Características */}
         {serviceType === "accommodation" && (
           <Card>
