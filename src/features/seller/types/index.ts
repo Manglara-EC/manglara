@@ -79,7 +79,7 @@ export interface CreateProductVariables {
   price: string;
   stock: number;
   images?: string[];
-  sellerId: string;
+  sellerId?: string;
   organizationId: string;
 }
 

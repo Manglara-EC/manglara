@@ -29,6 +29,6 @@ export const createProductSchema = z.object({
     }),
 
   images: z.array(z.url()).optional(),
-  sellerId: z.string().min(1, { message: "Seller ID es requerido" }),
+  sellerId: z.string().optional(),
   organizationId: z.string().min(1, { message: "Organization ID es requerido" }),
 });
