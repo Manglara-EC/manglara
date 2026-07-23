@@ -39,7 +39,12 @@ interface Props {
   currentStatus: string;
 }
 
-export function ItemApprovalActions({ itemId, itemType, itemName, currentStatus }: Props) {
+export function ItemApprovalActions({
+  itemId,
+  itemType,
+  itemName,
+  currentStatus,
+}: Props) {
   const queryClient = useQueryClient();
   const [rejectReason, setRejectReason] = useState("");
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
@@ -51,7 +56,9 @@ export function ItemApprovalActions({ itemId, itemType, itemName, currentStatus 
         toast.error(result.error.message);
         return;
       }
-      toast.success(`${itemType === "product" ? "Producto" : "Servicio"} aprobado correctamente`);
+      toast.success(
+        `${itemType === "product" ? "Producto" : "Servicio"} aprobado correctamente`,
+      );
       queryClient.invalidateQueries({ queryKey: ["organization"] });
     },
     onError: () => {
@@ -66,7 +73,9 @@ export function ItemApprovalActions({ itemId, itemType, itemName, currentStatus 
         toast.error(result.error.message);
         return;
       }
-      toast.success(`${itemType === "product" ? "Producto" : "Servicio"} rechazado`);
+      toast.success(
+        `${itemType === "product" ? "Producto" : "Servicio"} rechazado`,
+      );
       setRejectDialogOpen(false);
       setRejectReason("");
       queryClient.invalidateQueries({ queryKey: ["organization"] });
@@ -115,9 +124,12 @@ export function ItemApprovalActions({ itemId, itemType, itemName, currentStatus 
         </AlertDialogTrigger>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>¿Aprobar este {itemType === "product" ? "producto" : "servicio"}?</AlertDialogTitle>
+            <AlertDialogTitle>
+              ¿Aprobar este {itemType === "product" ? "producto" : "servicio"}?
+            </AlertDialogTitle>
             <AlertDialogDescription>
-              Vas a aprobar &quot;{itemName}&quot;. Una vez aprobado, estará visible para los compradores.
+              Vas a aprobar &quot;{itemName}&quot;. Una vez aprobado, estará
+              visible para los compradores.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -150,9 +162,12 @@ export function ItemApprovalActions({ itemId, itemType, itemName, currentStatus 
         </DialogTrigger>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Rechazar {itemType === "product" ? "producto" : "servicio"}</DialogTitle>
+            <DialogTitle>
+              Rechazar {itemType === "product" ? "producto" : "servicio"}
+            </DialogTitle>
             <DialogDescription>
-              Vas a rechazar &quot;{itemName}&quot;. Por favor indica la razón del rechazo para que el vendedor pueda corregirlo.
+              Vas a rechazar &quot;{itemName}&quot;. Por favor indica la razón
+              del rechazo para que el vendedor pueda corregirlo.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-2">
@@ -166,7 +181,10 @@ export function ItemApprovalActions({ itemId, itemType, itemName, currentStatus 
             />
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setRejectDialogOpen(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setRejectDialogOpen(false)}
+            >
               Cancelar
             </Button>
             <Button
@@ -174,7 +192,9 @@ export function ItemApprovalActions({ itemId, itemType, itemName, currentStatus 
               onClick={() => rejectMutation.mutate()}
               disabled={!rejectReason.trim() || rejectMutation.isPending}
             >
-              {rejectMutation.isPending && <LoaderIcon className="mr-2 h-4 w-4 animate-spin" />}
+              {rejectMutation.isPending && (
+                <LoaderIcon className="mr-2 h-4 w-4 animate-spin" />
+              )}
               Rechazar
             </Button>
           </DialogFooter>

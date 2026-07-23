@@ -36,7 +36,9 @@ export default async function StoriesLayout({
           <div className="flex justify-end mb-4">
             <CartButton />
           </div>
-          <main className="h-full w-full flex-1 overflow-y-auto">{children}</main>
+          <main className="h-full w-full flex-1 overflow-y-auto">
+            {children}
+          </main>
         </div>
       </div>
     </HydrationBoundary>

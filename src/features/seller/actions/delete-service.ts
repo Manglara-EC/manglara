@@ -17,7 +17,7 @@ type ErrorCode =
   | "INTERNAL_SERVER_ERROR";
 
 export async function deleteService(
-  serviceId: string
+  serviceId: string,
 ): Promise<ActionResponse<{ id: string }, ErrorCode>> {
   // 1. Verificar autenticación
   const session = await auth.api.getSession({
@@ -52,7 +52,7 @@ export async function deleteService(
   const { data: existingService, error: fetchError } = await tryCatch(
     db.query.service.findFirst({
       where: eq(service.id, serviceId),
-    })
+    }),
   );
 
   if (fetchError || !existingService) {
@@ -82,7 +82,8 @@ export async function deleteService(
       data: null,
       error: {
         code: "CANNOT_DELETE_APPROVED",
-        message: "Solo puedes eliminar servicios que estén pendientes de aprobación",
+        message:
+          "Solo puedes eliminar servicios que estén pendientes de aprobación",
       },
     };
   }
@@ -95,7 +96,7 @@ export async function deleteService(
         deleted: true,
         updatedAt: new Date(),
       })
-      .where(eq(service.id, serviceId))
+      .where(eq(service.id, serviceId)),
   );
 
   if (deleteError) {

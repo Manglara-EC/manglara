@@ -14,7 +14,14 @@ import { useCart } from "@/features/cart/context/cart-context";
 
 export function CartView() {
   const router = useRouter();
-  const { cart, updateQuantity, removeItem, getTotalItems, getTotalPrice, clearCart } = useCart();
+  const {
+    cart,
+    updateQuantity,
+    removeItem,
+    getTotalItems,
+    getTotalPrice,
+    clearCart,
+  } = useCart();
 
   const totalPrice = new Intl.NumberFormat("es-ES", {
     style: "currency",
@@ -103,7 +110,7 @@ export function CartView() {
                               onClick={() =>
                                 updateQuantity(
                                   item.product.id,
-                                  item.quantity - 1
+                                  item.quantity - 1,
                                 )
                               }
                             >
@@ -119,7 +126,7 @@ export function CartView() {
                               onClick={() =>
                                 updateQuantity(
                                   item.product.id,
-                                  item.quantity + 1
+                                  item.quantity + 1,
                                 )
                               }
                               disabled={
@@ -167,7 +174,11 @@ export function CartView() {
                 <span className="text-lg font-semibold">{totalPrice}</span>
               </div>
             </div>
-            <Button className="w-full" size="lg" onClick={handleProceedToCheckout}>
+            <Button
+              className="w-full"
+              size="lg"
+              onClick={handleProceedToCheckout}
+            >
               Proceder al pago
             </Button>
           </CardContent>

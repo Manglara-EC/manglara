@@ -14,15 +14,15 @@ import type { RejectProductVariables } from "@/features/owner/types";
 import type { Product } from "@/shared/types";
 import { markRequestAsReadByItem } from "@/shared/actions/mark-notification-as-read";
 
-type ErrorCode = 
-  | "UNAUTHORIZED" 
-  | "FORBIDDEN" 
+type ErrorCode =
+  | "UNAUTHORIZED"
+  | "FORBIDDEN"
   | "NOT_FOUND"
   | "VALIDATION_ERROR"
   | "INTERNAL_SERVER_ERROR";
 
 export const rejectProduct = async (
-  variables: RejectProductVariables
+  variables: RejectProductVariables,
 ): Promise<ActionResponse<Product, ErrorCode>> => {
   const session = await auth.api.getSession({
     headers: await headers(),
@@ -39,7 +39,7 @@ export const rejectProduct = async (
   }
 
   const validation = rejectProductSchema.safeParse(variables);
-  
+
   if (!validation.success) {
     return {
       data: null,
@@ -53,7 +53,7 @@ export const rejectProduct = async (
   const { data: prod, error: prodError } = await tryCatch(
     db.query.product.findFirst({
       where: eq(product.id, variables.productId),
-    })
+    }),
   );
 
   if (prodError || !prod) {
@@ -71,9 +71,9 @@ export const rejectProduct = async (
       where: and(
         eq(member.userId, session.user.id),
         eq(member.organizationId, prod.organizationId),
-        eq(member.role, "owner")
+        eq(member.role, "owner"),
       ),
-    })
+    }),
   );
 
   if (membershipError || !membership) {
@@ -95,7 +95,7 @@ export const rejectProduct = async (
         updatedAt: new Date(),
       })
       .where(eq(product.id, variables.productId))
-      .returning()
+      .returning(),
   );
 
   if (updateError || !updated || updated.length === 0) {
@@ -111,7 +111,7 @@ export const rejectProduct = async (
   await markRequestAsReadByItem({
     userId: session.user.id,
     itemId: variables.productId,
-    type: "product"
+    type: "product",
   });
 
   await tryCatch(
@@ -124,7 +124,7 @@ export const rejectProduct = async (
       serviceId: null,
       referenceType: "product",
       createdAt: new Date(),
-    })
+    }),
   );
 
   return {

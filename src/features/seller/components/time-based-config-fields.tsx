@@ -20,7 +20,11 @@ import {
   CardTitle,
 } from "@/shared/components/ui/card";
 
-import type { CreateServiceVariables, TimeBasedConfig, DurationOption } from "@/features/seller/types";
+import type {
+  CreateServiceVariables,
+  TimeBasedConfig,
+  DurationOption,
+} from "@/features/seller/types";
 
 interface Props {
   form: UseFormReturn<CreateServiceVariables>;
@@ -29,13 +33,18 @@ interface Props {
 export function TimeBasedConfigFields({ form }: Props) {
   const config = (form.watch("serviceConfig") as TimeBasedConfig) || {};
   const [durationOptions, setDurationOptions] = useState<DurationOption[]>(
-    config.durationOptions || []
+    config.durationOptions || [],
   );
 
   // Helper para actualizar serviceConfig
   const updateConfig = (key: keyof TimeBasedConfig, value: unknown) => {
-    const currentConfig = (form.getValues("serviceConfig") as TimeBasedConfig) ?? {};
-    form.setValue("serviceConfig", { ...currentConfig, [key]: value }, { shouldDirty: true });
+    const currentConfig =
+      (form.getValues("serviceConfig") as TimeBasedConfig) ?? {};
+    form.setValue(
+      "serviceConfig",
+      { ...currentConfig, [key]: value },
+      { shouldDirty: true },
+    );
   };
 
   // Agregar opción de duración
@@ -52,7 +61,7 @@ export function TimeBasedConfigFields({ form }: Props) {
   const updateDurationOption = (
     index: number,
     field: keyof DurationOption,
-    value: string | number
+    value: string | number,
   ) => {
     const newOptions = [...durationOptions];
     newOptions[index] = { ...newOptions[index], [field]: value };
@@ -85,7 +94,9 @@ export function TimeBasedConfigFields({ form }: Props) {
                 type="number"
                 min={0}
                 value={config.bufferMinutes || 0}
-                onChange={(e) => updateConfig("bufferMinutes", parseInt(e.target.value) || 0)}
+                onChange={(e) =>
+                  updateConfig("bufferMinutes", parseInt(e.target.value) || 0)
+                }
               />
             </FormControl>
             <FormDescription>
@@ -100,7 +111,12 @@ export function TimeBasedConfigFields({ form }: Props) {
                 type="number"
                 min={1}
                 value={config.simultaneousBookings || 1}
-                onChange={(e) => updateConfig("simultaneousBookings", parseInt(e.target.value) || 1)}
+                onChange={(e) =>
+                  updateConfig(
+                    "simultaneousBookings",
+                    parseInt(e.target.value) || 1,
+                  )
+                }
               />
             </FormControl>
             <FormDescription>
@@ -153,7 +169,7 @@ export function TimeBasedConfigFields({ form }: Props) {
                           updateDurationOption(
                             index,
                             "minutes",
-                            parseInt(e.target.value) || 1
+                            parseInt(e.target.value) || 1,
                           )
                         }
                       />

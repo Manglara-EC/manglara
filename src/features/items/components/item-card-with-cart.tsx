@@ -6,7 +6,13 @@ import { Package, Wrench, ShoppingCart } from "lucide-react";
 import Image from "next/image";
 import { toast } from "sonner";
 
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/shared/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/shared/components/ui/card";
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
 import {
@@ -29,7 +35,8 @@ interface Props {
 }
 
 export function ItemCardWithCart({ item }: Props) {
-  const imageUrl = item.images && item.images.length > 0 ? item.images[0] : null;
+  const imageUrl =
+    item.images && item.images.length > 0 ? item.images[0] : null;
   const price = new Intl.NumberFormat("es-ES", {
     style: "currency",
     currency: "EUR",
@@ -62,7 +69,9 @@ export function ItemCardWithCart({ item }: Props) {
           </CardHeader>
           <CardContent className="flex flex-col gap-2">
             <div className="flex items-start justify-between gap-2">
-              <CardTitle className="line-clamp-2 text-lg">{item.name}</CardTitle>
+              <CardTitle className="line-clamp-2 text-lg">
+                {item.name}
+              </CardTitle>
               <Badge variant="secondary">Servicio</Badge>
             </div>
             {item.description && (
@@ -84,9 +93,12 @@ export function ItemCardWithCart({ item }: Props) {
 
   // Product card with cart functionality
   const product = item; // Type assertion for product
-  const existingItem = cart.items.find((cartItem) => cartItem.product.id === product.id);
+  const existingItem = cart.items.find(
+    (cartItem) => cartItem.product.id === product.id,
+  );
   const currentQuantity = existingItem?.quantity ?? 0;
-  const availableStock = product.stock !== undefined ? product.stock - currentQuantity : undefined;
+  const availableStock =
+    product.stock !== undefined ? product.stock - currentQuantity : undefined;
   const maxQuantity = availableStock !== undefined ? availableStock : 999;
 
   const handleAddToCart = (e: React.MouseEvent) => {
@@ -105,7 +117,9 @@ export function ItemCardWithCart({ item }: Props) {
 
     const success = addItem(product, quantity);
     if (success) {
-      toast.success(`${quantity} ${quantity === 1 ? "unidad" : "unidades"} agregada${quantity > 1 ? "s" : ""} al carrito`);
+      toast.success(
+        `${quantity} ${quantity === 1 ? "unidad" : "unidades"} agregada${quantity > 1 ? "s" : ""} al carrito`,
+      );
       setOpen(false);
       setQuantity(1);
     } else {
@@ -159,7 +173,11 @@ export function ItemCardWithCart({ item }: Props) {
         ) : (
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-              <Button className="w-full" size="sm" onClick={(e) => e.stopPropagation()}>
+              <Button
+                className="w-full"
+                size="sm"
+                onClick={(e) => e.stopPropagation()}
+              >
                 <ShoppingCart className="mr-2 h-4 w-4" />
                 Agregar al carrito
               </Button>
@@ -196,7 +214,9 @@ export function ItemCardWithCart({ item }: Props) {
                   )}
                   {currentQuantity > 0 && (
                     <p className="text-sm text-muted-foreground">
-                      Ya tienes {currentQuantity} {currentQuantity === 1 ? "unidad" : "unidades"} en el carrito
+                      Ya tienes {currentQuantity}{" "}
+                      {currentQuantity === 1 ? "unidad" : "unidades"} en el
+                      carrito
                     </p>
                   )}
                 </div>
@@ -205,7 +225,10 @@ export function ItemCardWithCart({ item }: Props) {
                 <Button variant="outline" onClick={() => setOpen(false)}>
                   Cancelar
                 </Button>
-                <Button onClick={handleAddToCart} disabled={availableStock !== undefined && availableStock <= 0}>
+                <Button
+                  onClick={handleAddToCart}
+                  disabled={availableStock !== undefined && availableStock <= 0}
+                >
                   Agregar
                 </Button>
               </DialogFooter>

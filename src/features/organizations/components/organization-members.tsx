@@ -10,7 +10,10 @@ interface Props {
   readOnly?: boolean;
 }
 
-export const OrganizationMembers = ({ organizationId, readOnly = false }: Props) => {
+export const OrganizationMembers = ({
+  organizationId,
+  readOnly = false,
+}: Props) => {
   const { total } = useOrganizationMembers({ organizationId });
 
   return (

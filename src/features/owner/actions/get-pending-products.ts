@@ -5,7 +5,12 @@ import { eq, and, desc, inArray, getTableColumns } from "drizzle-orm";
 
 import { auth } from "@/shared/lib/better-auth/server";
 import { db } from "@/shared/lib/drizzle/server";
-import { product, organization, member, user } from "@/shared/lib/drizzle/schema";
+import {
+  product,
+  organization,
+  member,
+  user,
+} from "@/shared/lib/drizzle/schema";
 import { tryCatch } from "@/shared/utils/try-catch";
 import type { ActionResponse } from "@/shared/types";
 
@@ -13,7 +18,7 @@ import type { PendingProductWithDetails } from "@/features/owner/types";
 
 type ErrorCode = "UNAUTHORIZED" | "FORBIDDEN" | "INTERNAL_SERVER_ERROR";
 
-export const getPendingProducts = async (): Promise <
+export const getPendingProducts = async (): Promise<
   ActionResponse<PendingProductWithDetails[], ErrorCode>
 > => {
   const session = await auth.api.getSession({
@@ -33,11 +38,8 @@ export const getPendingProducts = async (): Promise <
   // Get organizations where user is owner
   const { data: myOrganizations, error: orgError } = await tryCatch(
     db.query.member.findMany({
-      where: and(
-        eq(member.userId, session.user.id),
-        eq(member.role, "owner")
-      ),
-    })
+      where: and(eq(member.userId, session.user.id), eq(member.role, "owner")),
+    }),
   );
 
   if (orgError) {
@@ -50,7 +52,7 @@ export const getPendingProducts = async (): Promise <
     };
   }
 
-  const orgIds = myOrganizations?.map(m => m.organizationId) ?? [];
+  const orgIds = myOrganizations?.map((m) => m.organizationId) ?? [];
 
   if (orgIds.length === 0) {
     return { data: [], error: null };
@@ -72,10 +74,10 @@ export const getPendingProducts = async (): Promise <
         and(
           inArray(product.organizationId, orgIds),
           eq(product.status, "pending"),
-          eq(product.deleted, false)
-        )
+          eq(product.deleted, false),
+        ),
       )
-      .orderBy(desc(product.createdAt))
+      .orderBy(desc(product.createdAt)),
   );
 
   if (productsError) {

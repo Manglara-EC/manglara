@@ -17,7 +17,10 @@ import { ScrollArea, ScrollBar } from "@/shared/components/ui/scroll-area";
 
 import { MembersTablePagination } from "@/features/organizations/components/members-table-pagination";
 import { MembersTableToolbar } from "@/features/organizations/components/members-table-toolbar";
-import { columns, readOnlyColumns } from "@/features/organizations/components/members-table-columns";
+import {
+  columns,
+  readOnlyColumns,
+} from "@/features/organizations/components/members-table-columns";
 import { useMembersTable } from "@/features/organizations/hooks/use-members-table";
 
 interface Props {

@@ -61,18 +61,24 @@ export function OrganizationItemsTable({ organizationId }: Props) {
                 Array.from({ length: pagination.pageSize }).map(
                   (_, rowIndex) => (
                     <TableRow key={rowIndex} className="h-12">
-                      {table.getAllColumns().slice(0, -1).map((_, columnIndex) => (
-                        <TableCell key={columnIndex}>
-                          <Skeleton className="h-4 w-full" />
-                        </TableCell>
-                      ))}
+                      {table
+                        .getAllColumns()
+                        .slice(0, -1)
+                        .map((_, columnIndex) => (
+                          <TableCell key={columnIndex}>
+                            <Skeleton className="h-4 w-full" />
+                          </TableCell>
+                        ))}
                     </TableRow>
                   ),
                 )}
 
               {isError && (
                 <TableRow>
-                  <TableCell colSpan={table.getAllColumns().length} className="h-24">
+                  <TableCell
+                    colSpan={table.getAllColumns().length}
+                    className="h-24"
+                  >
                     <div className="flex flex-col items-center justify-center gap-2">
                       Algo salió mal 😢
                       <Button

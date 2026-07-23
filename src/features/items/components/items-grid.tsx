@@ -47,12 +47,10 @@ export function ItemsGrid({ params, pageSize = 50 }: Props) {
   if (isError) {
     return (
       <div className="flex flex-col items-center justify-center gap-4 py-12">
-        <p className="text-muted-foreground">Algo salió mal al cargar los items 😢</p>
-        <Button
-          variant="outline"
-          type="button"
-          onClick={() => refetch()}
-        >
+        <p className="text-muted-foreground">
+          Algo salió mal al cargar los items 😢
+        </p>
+        <Button variant="outline" type="button" onClick={() => refetch()}>
           <RotateCcwIcon />
           Reintentar
         </Button>
@@ -91,4 +89,3 @@ export function ItemsGrid({ params, pageSize = 50 }: Props) {
     </div>
   );
 }
-

@@ -20,7 +20,7 @@ export const useDeleteProductMutation = () => {
     },
     onSuccess: () => {
       toast.success("Producto eliminado correctamente");
-      
+
       // Invalidar queries relacionadas
       queryClient.invalidateQueries({ queryKey: ["seller", "products"] });
       queryClient.invalidateQueries({ queryKey: ["my-products"] });

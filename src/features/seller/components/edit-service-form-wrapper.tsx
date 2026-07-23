@@ -3,7 +3,11 @@
 import { AlertCircleIcon, LoaderIcon, ArrowLeftIcon } from "lucide-react";
 import Link from "next/link";
 
-import { Alert, AlertDescription, AlertTitle } from "@/shared/components/ui/alert";
+import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+} from "@/shared/components/ui/alert";
 import { Button } from "@/shared/components/ui/button";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { Card, CardContent, CardHeader } from "@/shared/components/ui/card";
@@ -16,7 +20,13 @@ interface Props {
 }
 
 export function EditServiceFormWrapper({ serviceId }: Props) {
-  const { data: service, isLoading, isError, error, refetch } = useService(serviceId);
+  const {
+    data: service,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useService(serviceId);
 
   if (isLoading) {
     return <EditServiceFormSkeleton />;

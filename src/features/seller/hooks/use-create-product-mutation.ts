@@ -26,8 +26,10 @@ export const useCreateProductMutation = () => {
       queryClient.invalidateQueries({ queryKey: ["seller", "products"] });
       queryClient.invalidateQueries({ queryKey: ["my-products"] });
       queryClient.invalidateQueries({ queryKey: ["my-combined-items"] });
-      queryClient.invalidateQueries({ queryKey: ["organization", data?.organizationId, "items"] });
-      
+      queryClient.invalidateQueries({
+        queryKey: ["organization", data?.organizationId, "items"],
+      });
+
       toast.success("Producto creado exitosamente 🎉", {
         description: "Tu producto está pendiente de aprobación.",
       });
@@ -37,7 +39,8 @@ export const useCreateProductMutation = () => {
     },
     onError: (error: { code: string; message: string }) => {
       toast.error("No se pudo crear el producto 😢", {
-        description: error.message || "Por favor, inténtelo de nuevo más tarde.",
+        description:
+          error.message || "Por favor, inténtelo de nuevo más tarde.",
       });
     },
   });

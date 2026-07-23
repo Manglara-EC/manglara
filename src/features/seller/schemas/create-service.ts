@@ -207,10 +207,18 @@ export const validateServiceByType = (
         dailyPrice?: string;
         allowedVehicles?: string[];
       } | null;
-      if (!parkingConfig || (!parkingConfig.hourlyPrice && !parkingConfig.dailyPrice)) {
-        errors.push("Debes ingresar al menos una tarifa (por hora o por día completo)");
+      if (
+        !parkingConfig ||
+        (!parkingConfig.hourlyPrice && !parkingConfig.dailyPrice)
+      ) {
+        errors.push(
+          "Debes ingresar al menos una tarifa (por hora o por día completo)",
+        );
       }
-      if (!parkingConfig?.allowedVehicles || parkingConfig.allowedVehicles.length === 0) {
+      if (
+        !parkingConfig?.allowedVehicles ||
+        parkingConfig.allowedVehicles.length === 0
+      ) {
         errors.push("Debes seleccionar al menos un tipo de vehículo permitido");
       }
       if (!data.location) {

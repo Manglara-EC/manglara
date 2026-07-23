@@ -8,11 +8,11 @@ export const useProduct = (productId: string) => {
     queryKey: ["seller", "product", productId],
     queryFn: async () => {
       const result = await getProductById(productId);
-      
+
       if (result.error) {
         throw new Error(result.error.message);
       }
-      
+
       return result.data;
     },
     enabled: !!productId,

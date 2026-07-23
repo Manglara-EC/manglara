@@ -14,14 +14,14 @@ import type { CreateProductVariables } from "@/features/seller/types";
 import type { Product } from "@/shared/types";
 import { notifyOwnerOfNewItem } from "@/shared/actions/send-item-notification";
 
-type ErrorCode = 
-  | "UNAUTHORIZED" 
-  | "FORBIDDEN" 
+type ErrorCode =
+  | "UNAUTHORIZED"
+  | "FORBIDDEN"
   | "VALIDATION_ERROR"
   | "INTERNAL_SERVER_ERROR";
 
 export const createProduct = async (
-  variables: CreateProductVariables
+  variables: CreateProductVariables,
 ): Promise<ActionResponse<Product, ErrorCode>> => {
   const session = await auth.api.getSession({
     headers: await headers(),
@@ -53,9 +53,9 @@ export const createProduct = async (
     db.query.member.findFirst({
       where: and(
         eq(member.userId, session.user.id),
-        eq(member.organizationId, variables.organizationId)
+        eq(member.organizationId, variables.organizationId),
       ),
-    })
+    }),
   );
 
   if (membershipError || !membership) {
@@ -79,14 +79,17 @@ export const createProduct = async (
   }
 
   const { data: newProduct, error: productError } = await tryCatch(
-    db.insert(product).values({
-      id: crypto.randomUUID(),
-      status: "pending",
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      ...validation.data,
-      sellerId: session.user.id
-    }).returning()
+    db
+      .insert(product)
+      .values({
+        id: crypto.randomUUID(),
+        status: "pending",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        ...validation.data,
+        sellerId: session.user.id,
+      })
+      .returning(),
   );
 
   if (productError || !newProduct || newProduct.length === 0) {
@@ -103,7 +106,7 @@ export const createProduct = async (
     organizationId: variables.organizationId,
     itemName: newProduct[0].name,
     itemId: newProduct[0].id,
-    type: "product", 
+    type: "product",
   });
 
   return {

@@ -5,7 +5,10 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 import { updateProduct } from "@/features/seller/actions/update-product";
-import type { UpdateProductVariables, ProductWithOrg } from "@/features/seller/types";
+import type {
+  UpdateProductVariables,
+  ProductWithOrg,
+} from "@/features/seller/types";
 
 interface UseUpdateProductMutationOptions {
   productId: string;
@@ -35,14 +38,16 @@ export const useUpdateProductMutation = ({
       toast.success("Producto actualizado correctamente", {
         description: "Tu producto está pendiente de aprobación nuevamente.",
       });
-      
+
       // Invalidar queries relacionadas
       queryClient.invalidateQueries({ queryKey: ["seller", "products"] });
-      queryClient.invalidateQueries({ queryKey: ["seller", "product", productId] });
+      queryClient.invalidateQueries({
+        queryKey: ["seller", "product", productId],
+      });
       queryClient.invalidateQueries({ queryKey: ["my-products"] });
       queryClient.invalidateQueries({ queryKey: ["my-combined-items"] });
       queryClient.invalidateQueries({ queryKey: ["products"] });
-      
+
       onSuccess?.(data);
       router.push("/seller/products");
     },

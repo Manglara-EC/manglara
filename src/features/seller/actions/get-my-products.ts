@@ -15,7 +15,7 @@ import type { ProductWithOrg } from "@/features/seller/types";
 
 type ErrorCode = "UNAUTHORIZED" | "INTERNAL_SERVER_ERROR";
 
-export const getMyProducts = async (): Promise <
+export const getMyProducts = async (): Promise<
   ActionResponse<ProductWithOrg[], ErrorCode>
 > => {
   const session = await auth.api.getSession({
@@ -41,12 +41,9 @@ export const getMyProducts = async (): Promise <
       .from(product)
       .innerJoin(organization, eq(product.organizationId, organization.id))
       .where(
-        and(
-          eq(product.sellerId, session.user.id),
-          eq(product.deleted, false)
-        )
+        and(eq(product.sellerId, session.user.id), eq(product.deleted, false)),
       )
-      .orderBy(desc(product.createdAt))
+      .orderBy(desc(product.createdAt)),
   );
 
   if (productsError) {

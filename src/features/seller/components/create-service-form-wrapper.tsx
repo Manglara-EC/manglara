@@ -10,7 +10,13 @@ import {
   SelectValue,
 } from "@/shared/components/ui/select";
 import { Label } from "@/shared/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/shared/components/ui/card";
 
 import { CreateServiceForm } from "@/features/seller/components/create-service-form";
 
@@ -27,7 +33,7 @@ interface Props {
 
 export function CreateServiceFormWrapper({ organizations }: Props) {
   const [selectedOrganizationId, setSelectedOrganizationId] = useState<string>(
-    organizations.length === 1 ? organizations[0].id : ""
+    organizations.length === 1 ? organizations[0].id : "",
   );
 
   if (!selectedOrganizationId) {
@@ -68,7 +74,9 @@ export function CreateServiceFormWrapper({ organizations }: Props) {
     );
   }
 
-  const selectedOrg = organizations.find((o) => o.id === selectedOrganizationId);
+  const selectedOrg = organizations.find(
+    (o) => o.id === selectedOrganizationId,
+  );
 
   return (
     <div className="space-y-6">
@@ -78,8 +86,12 @@ export function CreateServiceFormWrapper({ organizations }: Props) {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="font-medium">Publicando en: {selectedOrg?.name}</p>
-                <p className="text-sm text-muted-foreground">Tu rol: {selectedOrg?.userRole}</p>
+                <p className="font-medium">
+                  Publicando en: {selectedOrg?.name}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  Tu rol: {selectedOrg?.userRole}
+                </p>
               </div>
               <Select
                 value={selectedOrganizationId}

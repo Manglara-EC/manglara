@@ -207,7 +207,9 @@ export function ConditionalMenuItem({
 
   // Obtenemos el item y verificamos si está permitido
   const menuItems = getMenuItemsForRole(role);
-  const item = menuItems.find((m) => m.id === itemId || m.subItems?.some((s) => s.id === itemId));
+  const item = menuItems.find(
+    (m) => m.id === itemId || m.subItems?.some((s) => s.id === itemId),
+  );
 
   if (!item) return null;
 

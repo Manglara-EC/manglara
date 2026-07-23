@@ -15,9 +15,7 @@ export default function SellerSalesPage() {
     <div className="space-y-8">
       <div>
         <TypographyH1>Ventas</TypographyH1>
-        <TypographyMuted>
-          Historial de ventas y transacciones
-        </TypographyMuted>
+        <TypographyMuted>Historial de ventas y transacciones</TypographyMuted>
       </div>
 
       {/* Placeholder */}

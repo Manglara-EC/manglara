@@ -10,14 +10,14 @@ import { tryCatch } from "@/shared/utils/try-catch";
 import type { ActionResponse } from "@/shared/types";
 import type { Product } from "@/shared/types";
 
-type ErrorCode = 
-  | "UNAUTHORIZED" 
-  | "FORBIDDEN" 
+type ErrorCode =
+  | "UNAUTHORIZED"
+  | "FORBIDDEN"
   | "NOT_FOUND"
   | "INTERNAL_SERVER_ERROR";
 
 export const deleteProduct = async (
-  productId: string
+  productId: string,
 ): Promise<ActionResponse<Product, ErrorCode>> => {
   const session = await auth.api.getSession({
     headers: await headers(),
@@ -37,7 +37,7 @@ export const deleteProduct = async (
   const { data: existingProduct, error: productError } = await tryCatch(
     db.query.product.findFirst({
       where: eq(product.id, productId),
-    })
+    }),
   );
 
   if (productError || !existingProduct) {
@@ -61,9 +61,9 @@ export const deleteProduct = async (
         where: and(
           eq(member.userId, session.user.id),
           eq(member.organizationId, existingProduct.organizationId),
-          eq(member.role, "owner")
+          eq(member.role, "owner"),
         ),
-      })
+      }),
     );
 
     if (!membership) {
@@ -86,7 +86,7 @@ export const deleteProduct = async (
         updatedAt: new Date(),
       })
       .where(eq(product.id, productId))
-      .returning()
+      .returning(),
   );
 
   if (deleteError || !deletedProduct || deletedProduct.length === 0) {

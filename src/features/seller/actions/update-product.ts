@@ -7,18 +7,29 @@ import { auth } from "@/shared/lib/better-auth/server";
 import { db } from "@/shared/lib/drizzle/server";
 import { product, organization, member } from "@/shared/lib/drizzle/schema";
 import { updateProductSchema } from "@/features/seller/schemas/update-product";
-import type { UpdateProductVariables, ProductWithOrg } from "@/features/seller/types";
+import type {
+  UpdateProductVariables,
+  ProductWithOrg,
+} from "@/features/seller/types";
 
 export async function updateProduct(
   productId: string,
-  data: UpdateProductVariables
-): Promise<{ data?: ProductWithOrg; error?: { code: string; message: string } }> {
+  data: UpdateProductVariables,
+): Promise<{
+  data?: ProductWithOrg;
+  error?: { code: string; message: string };
+}> {
   try {
     // 1. Verificar autenticación
     const session = await auth.api.getSession({ headers: await headers() });
 
     if (!session?.user?.id) {
-      return { error: { code: "UNAUTHENTICATED", message: "Debes iniciar sesión para actualizar productos" } };
+      return {
+        error: {
+          code: "UNAUTHENTICATED",
+          message: "Debes iniciar sesión para actualizar productos",
+        },
+      };
     }
 
     const userId = session.user.id;
@@ -26,7 +37,12 @@ export async function updateProduct(
 
     // 2. Verificar rol de seller o admin
     if (userRole !== "seller" && userRole !== "admin") {
-      return { error: { code: "FORBIDDEN", message: "Solo los vendedores pueden actualizar productos" } };
+      return {
+        error: {
+          code: "FORBIDDEN",
+          message: "Solo los vendedores pueden actualizar productos",
+        },
+      };
     }
 
     // 3. Verificar que el producto existe y pertenece al usuario
@@ -41,18 +57,28 @@ export async function updateProduct(
       .limit(1);
 
     if (existingProduct.length === 0) {
-      return { error: { code: "NOT_FOUND", message: "Producto no encontrado" } };
+      return {
+        error: { code: "NOT_FOUND", message: "Producto no encontrado" },
+      };
     }
 
     const productData = existingProduct[0];
 
     // 4. Verificar que el usuario creó este producto o es admin
     if (productData.sellerId !== userId && userRole !== "admin") {
-      return { error: { code: "FORBIDDEN", message: "No tienes permiso para editar este producto" } };
+      return {
+        error: {
+          code: "FORBIDDEN",
+          message: "No tienes permiso para editar este producto",
+        },
+      };
     }
 
     // 5. Si se está cambiando la organización, verificar membresía
-    if (data.organizationId && data.organizationId !== productData.organizationId) {
+    if (
+      data.organizationId &&
+      data.organizationId !== productData.organizationId
+    ) {
       // Verificar que la organización existe
       const org = await db
         .select({ id: organization.id })
@@ -61,18 +87,30 @@ export async function updateProduct(
         .limit(1);
 
       if (org.length === 0) {
-        return { error: { code: "NOT_FOUND", message: "Organización no encontrada" } };
+        return {
+          error: { code: "NOT_FOUND", message: "Organización no encontrada" },
+        };
       }
 
       // Verificar membresía del usuario en la nueva organización
       const memberRecord = await db
         .select({ role: member.role })
         .from(member)
-        .where(and(eq(member.organizationId, data.organizationId), eq(member.userId, userId)))
+        .where(
+          and(
+            eq(member.organizationId, data.organizationId),
+            eq(member.userId, userId),
+          ),
+        )
         .limit(1);
 
       if (memberRecord.length === 0) {
-        return { error: { code: "FORBIDDEN", message: "No eres miembro de esta organización" } };
+        return {
+          error: {
+            code: "FORBIDDEN",
+            message: "No eres miembro de esta organización",
+          },
+        };
       }
     }
 
@@ -126,6 +164,11 @@ export async function updateProduct(
     return { data: result };
   } catch (error) {
     console.error("Error updating product:", error);
-    return { error: { code: "INTERNAL_ERROR", message: "Error interno al actualizar el producto" } };
+    return {
+      error: {
+        code: "INTERNAL_ERROR",
+        message: "Error interno al actualizar el producto",
+      },
+    };
   }
 }

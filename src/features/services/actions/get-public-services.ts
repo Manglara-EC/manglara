@@ -25,7 +25,7 @@ export interface GetPublicServicesResponse {
 export const getPublicServices = async (
   page: number = 1,
   pageSize: number = 50,
-  organizationId?: string
+  organizationId?: string,
 ): Promise<ActionResponse<GetPublicServicesResponse, ErrorCode>> => {
   // Validar parámetros de paginación
   const validationResult = paginationParamsSchema.safeParse({
@@ -73,13 +73,13 @@ export const getPublicServices = async (
         .where(and(...whereConditions))
         .orderBy(desc(service.createdAt))
         .limit(validPageSize)
-        .offset(offset)
+        .offset(offset),
     ),
     tryCatch(
       db
         .select({ count: count() })
         .from(service)
-        .where(and(...whereConditions))
+        .where(and(...whereConditions)),
     ),
   ]);
 

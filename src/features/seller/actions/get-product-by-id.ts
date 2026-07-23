@@ -9,14 +9,19 @@ import { product, organization, member } from "@/shared/lib/drizzle/schema";
 import type { ProductWithOrg } from "@/features/seller/types";
 
 export async function getProductById(
-  productId: string
-): Promise<{ data?: ProductWithOrg; error?: { code: string; message: string } }> {
+  productId: string,
+): Promise<{
+  data?: ProductWithOrg;
+  error?: { code: string; message: string };
+}> {
   try {
     // 1. Verificar autenticación
     const session = await auth.api.getSession({ headers: await headers() });
 
     if (!session?.user?.id) {
-      return { error: { code: "UNAUTHENTICATED", message: "Debes iniciar sesión" } };
+      return {
+        error: { code: "UNAUTHENTICATED", message: "Debes iniciar sesión" },
+      };
     }
 
     const userId = session.user.id;
@@ -48,7 +53,9 @@ export async function getProductById(
       .limit(1);
 
     if (productData.length === 0) {
-      return { error: { code: "NOT_FOUND", message: "Producto no encontrado" } };
+      return {
+        error: { code: "NOT_FOUND", message: "Producto no encontrado" },
+      };
     }
 
     const foundProduct = productData[0];
@@ -65,13 +72,18 @@ export async function getProductById(
           .where(
             and(
               eq(member.organizationId, foundProduct.organizationId),
-              eq(member.userId, userId)
-            )
+              eq(member.userId, userId),
+            ),
           )
           .limit(1);
 
         if (memberRecord.length === 0) {
-          return { error: { code: "FORBIDDEN", message: "No tienes permiso para ver este producto" } };
+          return {
+            error: {
+              code: "FORBIDDEN",
+              message: "No tienes permiso para ver este producto",
+            },
+          };
         }
       }
     }
@@ -85,6 +97,11 @@ export async function getProductById(
     return { data: result };
   } catch (error) {
     console.error("Error getting product:", error);
-    return { error: { code: "INTERNAL_ERROR", message: "Error interno al obtener el producto" } };
+    return {
+      error: {
+        code: "INTERNAL_ERROR",
+        message: "Error interno al obtener el producto",
+      },
+    };
   }
 }

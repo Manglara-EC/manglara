@@ -26,7 +26,10 @@ import {
   CardTitle,
 } from "@/shared/components/ui/card";
 
-import type { CreateServiceVariables, ActivityConfig } from "@/features/seller/types";
+import type {
+  CreateServiceVariables,
+  ActivityConfig,
+} from "@/features/seller/types";
 
 interface Props {
   form: UseFormReturn<CreateServiceVariables>;
@@ -47,12 +50,12 @@ export function ActivityConfigFields({ form }: Props) {
     const cfg = form.getValues("serviceConfig") as ActivityConfig;
     return (cfg?.requirements || []).join(", ");
   });
-  
+
   const [inclusionsText, setInclusionsText] = useState(() => {
     const cfg = form.getValues("serviceConfig") as ActivityConfig;
     return (cfg?.inclusions || []).join(", ");
   });
-  
+
   const [exclusionsText, setExclusionsText] = useState(() => {
     const cfg = form.getValues("serviceConfig") as ActivityConfig;
     return (cfg?.exclusions || []).join(", ");
@@ -60,8 +63,13 @@ export function ActivityConfigFields({ form }: Props) {
 
   // Helper para actualizar serviceConfig
   const updateConfig = (key: keyof ActivityConfig, value: unknown) => {
-    const currentConfig = (form.getValues("serviceConfig") as ActivityConfig) ?? {};
-    form.setValue("serviceConfig", { ...currentConfig, [key]: value }, { shouldDirty: true });
+    const currentConfig =
+      (form.getValues("serviceConfig") as ActivityConfig) ?? {};
+    form.setValue(
+      "serviceConfig",
+      { ...currentConfig, [key]: value },
+      { shouldDirty: true },
+    );
   };
 
   // Procesar texto a array
@@ -114,7 +122,9 @@ export function ActivityConfigFields({ form }: Props) {
                 type="number"
                 min={1}
                 value={config.minParticipants || 1}
-                onChange={(e) => updateConfig("minParticipants", parseInt(e.target.value) || 1)}
+                onChange={(e) =>
+                  updateConfig("minParticipants", parseInt(e.target.value) || 1)
+                }
               />
             </FormControl>
             <FormDescription>

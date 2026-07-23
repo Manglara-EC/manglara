@@ -22,8 +22,10 @@ export const useCreateServiceMutation = () => {
     onSuccess: (data) => {
       // Invalidar queries relacionadas
       queryClient.invalidateQueries({ queryKey: ["seller", "services"] });
-      queryClient.invalidateQueries({ queryKey: ["organization", data?.organizationId, "items"] });
-      
+      queryClient.invalidateQueries({
+        queryKey: ["organization", data?.organizationId, "items"],
+      });
+
       toast.success("Servicio creado exitosamente 🎉", {
         description: "Tu servicio está pendiente de aprobación.",
       });
@@ -33,7 +35,8 @@ export const useCreateServiceMutation = () => {
     },
     onError: (error: { code: string; message: string }) => {
       toast.error("No se pudo crear el servicio 😢", {
-        description: error.message || "Por favor, inténtelo de nuevo más tarde.",
+        description:
+          error.message || "Por favor, inténtelo de nuevo más tarde.",
       });
     },
   });

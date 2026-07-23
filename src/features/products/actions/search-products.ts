@@ -7,12 +7,15 @@ import { product, organization, user } from "@/shared/lib/drizzle/schema";
 import { tryCatch } from "@/shared/utils/try-catch";
 import type { ActionResponse } from "@/shared/types";
 
-import type { PublicProduct, ProductSearchParams } from "@/features/products/types";
+import type {
+  PublicProduct,
+  ProductSearchParams,
+} from "@/features/products/types";
 
 type ErrorCode = "INTERNAL_SERVER_ERROR";
 
 export const searchProducts = async (
-  params: ProductSearchParams
+  params: ProductSearchParams,
 ): Promise<ActionResponse<PublicProduct[], ErrorCode>> => {
   const {
     query,
@@ -57,7 +60,7 @@ export const searchProducts = async (
       .where(and(...whereConditions))
       .orderBy(desc(product.createdAt))
       .limit(limit)
-      .offset(offset)
+      .offset(offset),
   );
 
   if (productsError) {

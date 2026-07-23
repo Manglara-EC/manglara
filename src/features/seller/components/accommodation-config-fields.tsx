@@ -19,7 +19,10 @@ import {
   CardTitle,
 } from "@/shared/components/ui/card";
 
-import type { CreateServiceVariables, AccommodationConfig } from "@/features/seller/types";
+import type {
+  CreateServiceVariables,
+  AccommodationConfig,
+} from "@/features/seller/types";
 
 interface Props {
   form: UseFormReturn<CreateServiceVariables>;
@@ -31,7 +34,7 @@ export function AccommodationConfigFields({ form }: Props) {
     const config = form.getValues("serviceConfig") as AccommodationConfig;
     return (config?.amenities || []).join(", ");
   });
-  
+
   const [houseRulesText, setHouseRulesText] = useState(() => {
     const config = form.getValues("serviceConfig") as AccommodationConfig;
     return (config?.houseRules || []).join(", ");
@@ -39,8 +42,13 @@ export function AccommodationConfigFields({ form }: Props) {
 
   // Helper para actualizar serviceConfig
   const updateConfig = (key: keyof AccommodationConfig, value: unknown) => {
-    const currentConfig = (form.getValues("serviceConfig") as AccommodationConfig) ?? {};
-    form.setValue("serviceConfig", { ...currentConfig, [key]: value }, { shouldDirty: true });
+    const currentConfig =
+      (form.getValues("serviceConfig") as AccommodationConfig) ?? {};
+    form.setValue(
+      "serviceConfig",
+      { ...currentConfig, [key]: value },
+      { shouldDirty: true },
+    );
   };
 
   // Procesar texto a array (solo cuando pierde el foco)
@@ -102,12 +110,12 @@ export function AccommodationConfigFields({ form }: Props) {
                 type="number"
                 min={1}
                 value={config.minNights || 1}
-                onChange={(e) => updateConfig("minNights", parseInt(e.target.value) || 1)}
+                onChange={(e) =>
+                  updateConfig("minNights", parseInt(e.target.value) || 1)
+                }
               />
             </FormControl>
-            <FormDescription>
-              Estancia mínima requerida
-            </FormDescription>
+            <FormDescription>Estancia mínima requerida</FormDescription>
           </FormItem>
 
           <FormItem>
@@ -117,12 +125,12 @@ export function AccommodationConfigFields({ form }: Props) {
                 type="number"
                 min={1}
                 value={config.maxNights || 30}
-                onChange={(e) => updateConfig("maxNights", parseInt(e.target.value) || 30)}
+                onChange={(e) =>
+                  updateConfig("maxNights", parseInt(e.target.value) || 30)
+                }
               />
             </FormControl>
-            <FormDescription>
-              Estancia máxima permitida
-            </FormDescription>
+            <FormDescription>Estancia máxima permitida</FormDescription>
           </FormItem>
         </div>
 
@@ -135,7 +143,9 @@ export function AccommodationConfigFields({ form }: Props) {
                 type="number"
                 min={0}
                 value={config.bedrooms || 1}
-                onChange={(e) => updateConfig("bedrooms", parseInt(e.target.value) || 1)}
+                onChange={(e) =>
+                  updateConfig("bedrooms", parseInt(e.target.value) || 1)
+                }
               />
             </FormControl>
           </FormItem>
@@ -148,7 +158,9 @@ export function AccommodationConfigFields({ form }: Props) {
                 min={0}
                 step={0.5}
                 value={config.bathrooms || 1}
-                onChange={(e) => updateConfig("bathrooms", parseFloat(e.target.value) || 1)}
+                onChange={(e) =>
+                  updateConfig("bathrooms", parseFloat(e.target.value) || 1)
+                }
               />
             </FormControl>
           </FormItem>
@@ -160,7 +172,9 @@ export function AccommodationConfigFields({ form }: Props) {
                 type="number"
                 min={0}
                 value={config.beds || 1}
-                onChange={(e) => updateConfig("beds", parseInt(e.target.value) || 1)}
+                onChange={(e) =>
+                  updateConfig("beds", parseInt(e.target.value) || 1)
+                }
               />
             </FormControl>
           </FormItem>

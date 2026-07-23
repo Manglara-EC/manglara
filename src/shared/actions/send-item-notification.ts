@@ -24,9 +24,9 @@ export const notifyOwnerOfNewItem = async ({
     db.query.member.findFirst({
       where: and(
         eq(member.organizationId, organizationId),
-        eq(member.role, "owner")
+        eq(member.role, "owner"),
       ),
-    })
+    }),
   );
 
   if (!ownerMembership) return;
@@ -39,11 +39,11 @@ export const notifyOwnerOfNewItem = async ({
       id: crypto.randomUUID(),
       userId: ownerMembership.userId,
       type: `${type}_request`,
-      message: `New ${type} pending approval: ${itemName}`, 
+      message: `New ${type} pending approval: ${itemName}`,
       productId: productId,
       serviceId: serviceId,
       referenceType: type,
       createdAt: new Date(),
-    })
+    }),
   );
 };

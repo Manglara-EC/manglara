@@ -10,7 +10,11 @@ import { service, product } from "@/shared/lib/drizzle/schema";
 import { tryCatch } from "@/shared/utils/try-catch";
 import type { ActionResponse } from "@/shared/types";
 
-type ErrorCode = "UNAUTHORIZED" | "FORBIDDEN" | "NOT_FOUND" | "INTERNAL_SERVER_ERROR";
+type ErrorCode =
+  | "UNAUTHORIZED"
+  | "FORBIDDEN"
+  | "NOT_FOUND"
+  | "INTERNAL_SERVER_ERROR";
 
 interface ApproveItemInput {
   itemId: string;
@@ -18,7 +22,7 @@ interface ApproveItemInput {
 }
 
 export const approveItem = async (
-  input: ApproveItemInput
+  input: ApproveItemInput,
 ): Promise<ActionResponse<{ success: boolean }, ErrorCode>> => {
   const session = await auth.api.getSession({
     headers: await headers(),
@@ -58,7 +62,7 @@ export const approveItem = async (
           rejectionReason: null,
           updatedAt: new Date(),
         })
-        .where(eq(service.id, itemId))
+        .where(eq(service.id, itemId)),
     );
 
     if (error) {
@@ -82,7 +86,7 @@ export const approveItem = async (
           rejectionReason: null,
           updatedAt: new Date(),
         })
-        .where(eq(product.id, itemId))
+        .where(eq(product.id, itemId)),
     );
 
     if (error) {

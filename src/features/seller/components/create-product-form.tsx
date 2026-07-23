@@ -240,9 +240,7 @@ export function CreateProductForm({ organizationId, onSuccess }: Props) {
           <Link href="/seller/products">Cancelar</Link>
         </Button>
         <Button type="submit" disabled={isLoading}>
-          {isLoading && (
-            <LoaderIcon className="mr-2 h-4 w-4 animate-spin" />
-          )}
+          {isLoading && <LoaderIcon className="mr-2 h-4 w-4 animate-spin" />}
           Crear producto
         </Button>
       </div>

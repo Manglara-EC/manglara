@@ -7,12 +7,15 @@ import { service, organization, user } from "@/shared/lib/drizzle/schema";
 import { tryCatch } from "@/shared/utils/try-catch";
 import type { ActionResponse } from "@/shared/types";
 
-import type { PublicService, ServiceSearchParams } from "@/features/services/types";
+import type {
+  PublicService,
+  ServiceSearchParams,
+} from "@/features/services/types";
 
 type ErrorCode = "INTERNAL_SERVER_ERROR";
 
 export const searchServices = async (
-  params: ServiceSearchParams
+  params: ServiceSearchParams,
 ): Promise<ActionResponse<PublicService[], ErrorCode>> => {
   const {
     query,
@@ -57,7 +60,7 @@ export const searchServices = async (
       .where(and(...whereConditions))
       .orderBy(desc(service.createdAt))
       .limit(limit)
-      .offset(offset)
+      .offset(offset),
   );
 
   if (servicesError) {

@@ -5,7 +5,12 @@ import { eq, and, desc, inArray, getTableColumns } from "drizzle-orm";
 
 import { auth } from "@/shared/lib/better-auth/server";
 import { db } from "@/shared/lib/drizzle/server";
-import { service, organization, member, user } from "@/shared/lib/drizzle/schema";
+import {
+  service,
+  organization,
+  member,
+  user,
+} from "@/shared/lib/drizzle/schema";
 import { tryCatch } from "@/shared/utils/try-catch";
 import type { ActionResponse } from "@/shared/types";
 
@@ -13,7 +18,7 @@ import type { PendingServiceWithDetails } from "@/features/owner/types";
 
 type ErrorCode = "UNAUTHORIZED" | "FORBIDDEN" | "INTERNAL_SERVER_ERROR";
 
-export const getPendingServices = async (): Promise <
+export const getPendingServices = async (): Promise<
   ActionResponse<PendingServiceWithDetails[], ErrorCode>
 > => {
   const session = await auth.api.getSession({
@@ -32,11 +37,8 @@ export const getPendingServices = async (): Promise <
 
   const { data: myOrganizations, error: orgError } = await tryCatch(
     db.query.member.findMany({
-      where: and(
-        eq(member.userId, session.user.id),
-        eq(member.role, "owner")
-      ),
-    })
+      where: and(eq(member.userId, session.user.id), eq(member.role, "owner")),
+    }),
   );
 
   if (orgError) {
@@ -49,7 +51,7 @@ export const getPendingServices = async (): Promise <
     };
   }
 
-  const orgIds = myOrganizations?.map(m => m.organizationId) ?? [];
+  const orgIds = myOrganizations?.map((m) => m.organizationId) ?? [];
 
   if (orgIds.length === 0) {
     return { data: [], error: null };
@@ -70,10 +72,10 @@ export const getPendingServices = async (): Promise <
         and(
           inArray(service.organizationId, orgIds),
           eq(service.status, "pending"),
-          eq(service.deleted, false)
-        )
+          eq(service.deleted, false),
+        ),
       )
-      .orderBy(desc(service.createdAt))
+      .orderBy(desc(service.createdAt)),
   );
 
   if (servicesError) {

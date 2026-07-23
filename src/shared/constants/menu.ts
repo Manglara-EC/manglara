@@ -171,17 +171,17 @@ export const MENU_CONFIG: MenuItem[] = [
 export const getMenuItemsForRole = (userRole: UserRole | null): MenuItem[] => {
   if (!userRole) return [];
 
-  return MENU_CONFIG.filter((item) =>
-    item.allowedRoles.includes(userRole)
-  ).map((item) => ({
-    ...item,
-    // Recursivamente filtra subitems
-    subItems: item.subItems
-      ? item.subItems.filter((subItem) =>
-          subItem.allowedRoles.includes(userRole)
-        )
-      : undefined,
-  }));
+  return MENU_CONFIG.filter((item) => item.allowedRoles.includes(userRole)).map(
+    (item) => ({
+      ...item,
+      // Recursivamente filtra subitems
+      subItems: item.subItems
+        ? item.subItems.filter((subItem) =>
+            subItem.allowedRoles.includes(userRole),
+          )
+        : undefined,
+    }),
+  );
 };
 
 /**
@@ -205,7 +205,10 @@ export const getMenuItemById = (id: string): MenuItem | undefined => {
 /**
  * Verifica si un item está visible para un rol específico
  */
-export const isMenuItemVisible = (itemId: string, userRole: UserRole | null): boolean => {
+export const isMenuItemVisible = (
+  itemId: string,
+  userRole: UserRole | null,
+): boolean => {
   if (!userRole) return false;
 
   const item = getMenuItemById(itemId);

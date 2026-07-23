@@ -1,5 +1,5 @@
-import { DeleteObjectCommand, NoSuchKey, S3Client } from '@aws-sdk/client-s3';
-import { Upload } from '@aws-sdk/lib-storage';
+import { DeleteObjectCommand, NoSuchKey, S3Client } from "@aws-sdk/client-s3";
+import { Upload } from "@aws-sdk/lib-storage";
 
 export const BASE_URL =
   process.env.VERCEL_ENV === "production"
@@ -11,7 +11,7 @@ export const BASE_URL =
 export const RATE_LIMIT_ERROR_CODE = 429;
 
 const r2Client = new S3Client({
-  region: 'auto',
+  region: "auto",
   endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
   credentials: {
     accessKeyId: process.env.R2_ACCESS_KEY_ID!,
@@ -20,7 +20,11 @@ const r2Client = new S3Client({
   forcePathStyle: true,
 });
 
-export async function uploadImage(key: string, body: Buffer, contentType: string) {
+export async function uploadImage(
+  key: string,
+  body: Buffer,
+  contentType: string,
+) {
   const upload = new Upload({
     client: r2Client,
     params: {
@@ -39,10 +43,15 @@ export async function deleteImage(key: string) {
       new DeleteObjectCommand({
         Bucket: process.env.R2_BUCKET_NAME!,
         Key: key,
-      })
+      }),
     );
   } catch (error) {
-    if (!(error instanceof NoSuchKey || (error as { name?: string }).name === 'NoSuchKey')) {
+    if (
+      !(
+        error instanceof NoSuchKey ||
+        (error as { name?: string }).name === "NoSuchKey"
+      )
+    ) {
       throw error;
     }
   }
@@ -53,6 +62,6 @@ export function getPublicImageUrl(key: string) {
 }
 
 export function buildImageKey(folder: string, filename: string) {
-  const sanitized = filename.toLowerCase().replace(/[^a-z0-9.]/g, '-');
+  const sanitized = filename.toLowerCase().replace(/[^a-z0-9.]/g, "-");
   return `${folder}/${crypto.randomUUID()}-${sanitized}`;
 }

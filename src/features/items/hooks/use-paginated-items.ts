@@ -42,13 +42,7 @@ export const usePaginatedItems = ({
 }: UsePaginatedItemsProps): UsePaginatedItemsReturn => {
   const [currentPage, setCurrentPage] = useState(1);
 
-  const {
-    data,
-    isLoading,
-    isError,
-    error,
-    refetch,
-  } = useQuery({
+  const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ["items", "paginated", params, currentPage, initialPageSize],
     queryFn: async () => {
       const { data: response, error: apiError } = await getVisibleItems({

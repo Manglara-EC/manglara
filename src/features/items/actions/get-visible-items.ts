@@ -1,9 +1,23 @@
 "use server";
 
-import { eq, and, desc, getTableColumns, ilike, gte, lte, count } from "drizzle-orm";
+import {
+  eq,
+  and,
+  desc,
+  getTableColumns,
+  ilike,
+  gte,
+  lte,
+  count,
+} from "drizzle-orm";
 
 import { db } from "@/shared/lib/drizzle/server";
-import { product, service, organization, user } from "@/shared/lib/drizzle/schema";
+import {
+  product,
+  service,
+  organization,
+  user,
+} from "@/shared/lib/drizzle/schema";
 import { tryCatch } from "@/shared/utils/try-catch";
 import type { ActionResponse } from "@/shared/types";
 import {
@@ -23,7 +37,7 @@ export interface GetVisibleItemsResponse {
 }
 
 export const getVisibleItems = async (
-  params?: ItemSearchParams
+  params?: ItemSearchParams,
 ): Promise<ActionResponse<GetVisibleItemsResponse, ErrorCode>> => {
   const {
     query,
@@ -97,13 +111,13 @@ export const getVisibleItems = async (
           .where(and(...productConditions))
           .orderBy(desc(product.createdAt))
           .limit(validPageSize)
-          .offset(offset)
+          .offset(offset),
       ),
       tryCatch(
         db
           .select({ count: count() })
           .from(product)
-          .where(and(...productConditions))
+          .where(and(...productConditions)),
       ),
     ]);
 
@@ -122,7 +136,7 @@ export const getVisibleItems = async (
         ...products.map((p) => ({
           ...p,
           type: "product" as const,
-        }))
+        })),
       );
     }
 
@@ -169,13 +183,13 @@ export const getVisibleItems = async (
           .where(and(...serviceConditions))
           .orderBy(desc(service.createdAt))
           .limit(validPageSize)
-          .offset(offset)
+          .offset(offset),
       ),
       tryCatch(
         db
           .select({ count: count() })
           .from(service)
-          .where(and(...serviceConditions))
+          .where(and(...serviceConditions)),
       ),
     ]);
 
@@ -194,7 +208,7 @@ export const getVisibleItems = async (
         ...services.map((s) => ({
           ...s,
           type: "service" as const,
-        }))
+        })),
       );
     }
 
@@ -218,4 +232,3 @@ export const getVisibleItems = async (
     error: null,
   };
 };
-

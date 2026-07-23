@@ -5,11 +5,20 @@ import { eq } from "drizzle-orm";
 
 import { auth } from "@/shared/lib/better-auth/server";
 import { db } from "@/shared/lib/drizzle/server";
-import { service, product, organization, user } from "@/shared/lib/drizzle/schema";
+import {
+  service,
+  product,
+  organization,
+  user,
+} from "@/shared/lib/drizzle/schema";
 import { tryCatch } from "@/shared/utils/try-catch";
 import type { ActionResponse } from "@/shared/types";
 
-type ErrorCode = "UNAUTHORIZED" | "FORBIDDEN" | "NOT_FOUND" | "INTERNAL_SERVER_ERROR";
+type ErrorCode =
+  | "UNAUTHORIZED"
+  | "FORBIDDEN"
+  | "NOT_FOUND"
+  | "INTERNAL_SERVER_ERROR";
 
 interface GetItemInput {
   itemId: string;
@@ -41,7 +50,7 @@ export interface ItemDetail {
 }
 
 export const getItemForAdmin = async (
-  input: GetItemInput
+  input: GetItemInput,
 ): Promise<ActionResponse<ItemDetail, ErrorCode>> => {
   const session = await auth.api.getSession({
     headers: await headers(),
@@ -98,7 +107,7 @@ export const getItemForAdmin = async (
         .innerJoin(organization, eq(service.organizationId, organization.id))
         .innerJoin(user, eq(service.sellerId, user.id))
         .where(eq(service.id, itemId))
-        .limit(1)
+        .limit(1),
     );
 
     if (error || !serviceData || serviceData.length === 0) {
@@ -146,7 +155,7 @@ export const getItemForAdmin = async (
         .innerJoin(organization, eq(product.organizationId, organization.id))
         .innerJoin(user, eq(product.sellerId, user.id))
         .where(eq(product.id, itemId))
-        .limit(1)
+        .limit(1),
     );
 
     if (error || !productData || productData.length === 0) {

@@ -12,7 +12,12 @@ import { useUserRole } from "@/shared/hooks/use-user-role";
 import { useSession } from "@/shared/hooks/use-session";
 import { getMenuItemsForRole } from "@/shared/constants/menu";
 import { canPerform, ROLE_PERMISSIONS } from "@/shared/constants/roles";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/shared/components/ui/card";
 import { Badge } from "@/shared/components/ui/badge";
 import { RoleBasedMenu } from "@/shared/components/role-based-menu";
 
@@ -107,7 +112,9 @@ export default function RoleSystemDebugPage() {
                   <div>
                     <p className="text-sm text-gray-600">Rol (normalizado)</p>
                     <div className="flex items-center gap-2 mt-1">
-                      <p className="font-mono font-bold text-lg">{role || "—"}</p>
+                      <p className="font-mono font-bold text-lg">
+                        {role || "—"}
+                      </p>
                       {role && (
                         <Badge variant="default">{role.toUpperCase()}</Badge>
                       )}
@@ -115,12 +122,15 @@ export default function RoleSystemDebugPage() {
                   </div>
                   {rawRole && rawRole !== role && (
                     <div>
-                      <p className="text-sm text-gray-600">Rol (raw/original)</p>
+                      <p className="text-sm text-gray-600">
+                        Rol (raw/original)
+                      </p>
                       <p className="font-mono text-sm text-gray-500">
                         {rawRole}
                       </p>
                       <p className="text-xs text-amber-600 mt-1">
-                        ℹ️ Fue normalizado de &apos;{rawRole}&apos; a &apos;{role}&apos;
+                        ℹ️ Fue normalizado de &apos;{rawRole}&apos; a &apos;
+                        {role}&apos;
                       </p>
                     </div>
                   )}
@@ -159,7 +169,9 @@ export default function RoleSystemDebugPage() {
                             </Badge>
                           )}
                         </div>
-                        <p className="text-sm text-gray-600 mt-1">{item.href}</p>
+                        <p className="text-sm text-gray-600 mt-1">
+                          {item.href}
+                        </p>
                         {item.description && (
                           <p className="text-xs text-gray-500 mt-1">
                             {item.description}
@@ -299,8 +311,8 @@ export default function RoleSystemDebugPage() {
             <Card className="bg-blue-50 border-blue-200">
               <CardContent className="pt-6">
                 <p className="text-sm text-gray-700">
-                  💡 <strong>Tip:</strong> Si algo no se ve correctamente, revisa
-                  el archivo{" "}
+                  💡 <strong>Tip:</strong> Si algo no se ve correctamente,
+                  revisa el archivo{" "}
                   <code className="bg-gray-200 px-2 py-1 rounded text-xs">
                     ROLE_BASED_MENU_CHECKLIST.md
                   </code>{" "}

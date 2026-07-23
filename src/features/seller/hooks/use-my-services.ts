@@ -7,11 +7,11 @@ export const useMyServices = () => {
     queryKey: ["seller", "services"],
     queryFn: async () => {
       const result = await getMyServices();
-      
+
       if (result.error) {
         throw new Error(result.error.message);
       }
-      
+
       return result.data ?? [];
     },
   });

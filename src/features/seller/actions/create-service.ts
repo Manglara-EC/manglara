@@ -12,20 +12,23 @@ import { tryCatch } from "@/shared/utils/try-catch";
 import type { ActionResponse } from "@/shared/types";
 import type { Service } from "@/shared/types";
 
-import { createServiceSchema, validateServiceByType } from "@/features/seller/schemas/create-service";
+import {
+  createServiceSchema,
+  validateServiceByType,
+} from "@/features/seller/schemas/create-service";
 import type { CreateServiceVariables } from "@/features/seller/types";
 import { notifyOwnerOfNewItem } from "@/shared/actions/send-item-notification";
 
-type ErrorCode = 
-  | "UNAUTHORIZED" 
-  | "FORBIDDEN" 
+type ErrorCode =
+  | "UNAUTHORIZED"
+  | "FORBIDDEN"
   | "NOT_SELLER"
   | "VALIDATION_ERROR"
   | "SERVICE_TYPE_VALIDATION_ERROR"
   | "INTERNAL_SERVER_ERROR";
 
 export const createService = async (
-  variables: CreateServiceVariables
+  variables: CreateServiceVariables,
 ): Promise<ActionResponse<Service, ErrorCode>> => {
   // 1. Verificar autenticación
   const session = await auth.api.getSession({
@@ -61,7 +64,9 @@ export const createService = async (
       data: null,
       error: {
         code: "VALIDATION_ERROR",
-        message: validation.error.issues.map((issue) => issue.message).join(", "),
+        message: validation.error.issues
+          .map((issue) => issue.message)
+          .join(", "),
       },
     };
   }
@@ -83,9 +88,9 @@ export const createService = async (
     db.query.member.findFirst({
       where: and(
         eq(member.userId, session.user.id),
-        eq(member.organizationId, variables.organizationId)
+        eq(member.organizationId, variables.organizationId),
       ),
-    })
+    }),
   );
 
   if (membershipError || !membership) {
@@ -124,7 +129,7 @@ export const createService = async (
 
   // 7. Insertar en base de datos
   const { data: newService, error: serviceError } = await tryCatch(
-    db.insert(service).values(serviceData).returning()
+    db.insert(service).values(serviceData).returning(),
   );
 
   if (serviceError || !newService || newService.length === 0) {
@@ -143,7 +148,7 @@ export const createService = async (
     organizationId: variables.organizationId,
     itemName: newService[0].name,
     itemId: newService[0].id,
-    type: "service", 
+    type: "service",
   });
 
   return {

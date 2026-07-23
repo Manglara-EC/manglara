@@ -1,7 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/shared/components/ui/card";
 import { Badge } from "@/shared/components/ui/badge";
 import { Building2Icon, ChevronRightIcon, UsersIcon } from "lucide-react";
 import type { Organization } from "@/features/organizations/types";
@@ -43,7 +48,10 @@ const getRoleLabel = (role: string | null) => {
   }
 };
 
-export function AllOrganizationsList({ organizations, error }: AllOrganizationsListProps) {
+export function AllOrganizationsList({
+  organizations,
+  error,
+}: AllOrganizationsListProps) {
   if (error) {
     return (
       <Card className="border-red-200 bg-red-50">
@@ -131,7 +139,8 @@ function OrganizationCard({ org }: { org: PublicOrganization }) {
                 )}
                 <span className="text-xs text-muted-foreground flex items-center gap-1">
                   <UsersIcon className="h-3 w-3" />
-                  {org.memberCount} {org.memberCount === 1 ? "miembro" : "miembros"}
+                  {org.memberCount}{" "}
+                  {org.memberCount === 1 ? "miembro" : "miembros"}
                 </span>
               </div>
             </div>

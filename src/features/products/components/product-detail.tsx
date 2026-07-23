@@ -3,7 +3,13 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeftIcon, Package, Plus, Minus, ShoppingCart } from "lucide-react";
+import {
+  ArrowLeftIcon,
+  Package,
+  Plus,
+  Minus,
+  ShoppingCart,
+} from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/shared/components/ui/button";
@@ -31,11 +37,15 @@ export function ProductDetail({ product }: Props) {
     currency: "EUR",
   }).format(Number(product.price));
 
-  const imageUrl = product.images && product.images.length > 0 ? product.images[0] : null;
+  const imageUrl =
+    product.images && product.images.length > 0 ? product.images[0] : null;
 
-  const existingItem = cart.items.find((item) => item.product.id === product.id);
+  const existingItem = cart.items.find(
+    (item) => item.product.id === product.id,
+  );
   const currentQuantity = existingItem?.quantity ?? 0;
-  const availableStock = product.stock !== undefined ? product.stock - currentQuantity : undefined;
+  const availableStock =
+    product.stock !== undefined ? product.stock - currentQuantity : undefined;
   const maxQuantity = availableStock !== undefined ? availableStock : 999;
 
   const handleAddToCart = () => {
@@ -51,7 +61,9 @@ export function ProductDetail({ product }: Props) {
 
     const success = addItem(product, quantity);
     if (success) {
-      toast.success(`${quantity} ${quantity === 1 ? "unidad" : "unidades"} agregada${quantity > 1 ? "s" : ""} al carrito`);
+      toast.success(
+        `${quantity} ${quantity === 1 ? "unidad" : "unidades"} agregada${quantity > 1 ? "s" : ""} al carrito`,
+      );
       setQuantity(1);
     } else {
       toast.error("No hay suficiente stock disponible");
@@ -150,7 +162,9 @@ export function ProductDetail({ product }: Props) {
                     size="icon"
                     className="h-10 w-10"
                     onClick={handleIncreaseQuantity}
-                    disabled={availableStock !== undefined && quantity >= availableStock}
+                    disabled={
+                      availableStock !== undefined && quantity >= availableStock
+                    }
                   >
                     <Plus className="h-4 w-4" />
                   </Button>

@@ -11,7 +11,10 @@ import { OrganizationItemsTableColumnHeader } from "@/features/organizations/com
 import { ItemApprovalActions } from "@/features/admin/components/item-approval-actions";
 import type { OrganizationItem } from "@/features/organizations/types";
 
-export const getOrganizationItemsColumns = (isSeller: boolean = false, isAdmin: boolean = false): ColumnDef<OrganizationItem>[] => [
+export const getOrganizationItemsColumns = (
+  isSeller: boolean = false,
+  isAdmin: boolean = false,
+): ColumnDef<OrganizationItem>[] => [
   {
     accessorKey: "name",
     header: ({ column }) => (
@@ -20,12 +23,12 @@ export const getOrganizationItemsColumns = (isSeller: boolean = false, isAdmin: 
     cell: ({ row }) => {
       const item = row.original;
       const isProduct = item.type === "product";
-      
+
       // Para admin, enlazar a la página de detalle de admin
-      const href = isAdmin 
+      const href = isAdmin
         ? `/admin/items/${item.type}/${item.id}`
         : `/${item.type}s/${item.id}`;
-      
+
       return (
         <div className="ml-2.5 flex items-center gap-2">
           {isProduct ? (
@@ -33,10 +36,7 @@ export const getOrganizationItemsColumns = (isSeller: boolean = false, isAdmin: 
           ) : (
             <Wrench className="h-4 w-4 text-muted-foreground" />
           )}
-          <Link
-            href={href}
-            className="font-medium hover:underline"
-          >
+          <Link href={href} className="font-medium hover:underline">
             {item.name}
           </Link>
         </div>
@@ -69,12 +69,8 @@ export const getOrganizationItemsColumns = (isSeller: boolean = false, isAdmin: 
         style: "currency",
         currency: "USD",
       }).format(Number(row.original.price));
-      
-      return (
-        <div className="ml-2.5 font-medium">
-          {price}
-        </div>
-      );
+
+      return <div className="ml-2.5 font-medium">{price}</div>;
     },
   },
   {
@@ -84,79 +80,85 @@ export const getOrganizationItemsColumns = (isSeller: boolean = false, isAdmin: 
     ),
     cell: ({ row }) => {
       const status = row.original.status;
-      const statusMap: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
+      const statusMap: Record<
+        string,
+        {
+          label: string;
+          variant: "default" | "secondary" | "destructive" | "outline";
+        }
+      > = {
         pending: { label: "Pendiente", variant: "outline" },
         approved: { label: "Aprobado", variant: "default" },
         rejected: { label: "Rechazado", variant: "destructive" },
       };
-      
-      const statusInfo = statusMap[status] || { label: status, variant: "secondary" as const };
-      
+
+      const statusInfo = statusMap[status] || {
+        label: status,
+        variant: "secondary" as const,
+      };
+
       return (
         <div className="ml-2.5">
-          <Badge variant={statusInfo.variant}>
-            {statusInfo.label}
-          </Badge>
+          <Badge variant={statusInfo.variant}>{statusInfo.label}</Badge>
         </div>
       );
     },
   },
   // Columnas de seller (stock y ventas)
-  ...(isSeller ? [
-    {
-      accessorKey: "stock",
-      header: ({ column }) => (
-        <OrganizationItemsTableColumnHeader column={column} title="Stock" />
-      ),
-      cell: ({ row }) => {
-        const item = row.original;
-        if (item.type !== "product") return <div className="ml-2.5">-</div>;
-        return (
-          <div className="ml-2.5 font-medium">
-            {item.stock ?? 0}
-          </div>
-        );
-      },
-    } as ColumnDef<OrganizationItem>,
-    {
-      accessorKey: "sales",
-      header: ({ column }) => (
-        <OrganizationItemsTableColumnHeader column={column} title="Ventas" />
-      ),
-      cell: ({ row }) => {
-        const item = row.original;
-        if (item.type !== "product") return <div className="ml-2.5">-</div>;
-        return (
-          <div className="ml-2.5 font-medium">
-            {item.sales ?? 0}
-          </div>
-        );
-      },
-    } as ColumnDef<OrganizationItem>,
-  ] : []),
-  // Columna de acciones para admin
-  ...(isAdmin ? [
-    {
-      id: "actions",
-      header: () => <div className="text-center">Acciones</div>,
-      cell: ({ row }) => {
-        const item = row.original;
-        return (
-          <div className="flex items-center justify-center gap-2">
-            <ItemApprovalActions
-              itemId={item.id}
-              itemType={item.type}
-              itemName={item.name}
-              currentStatus={item.status}
+  ...(isSeller
+    ? [
+        {
+          accessorKey: "stock",
+          header: ({ column }) => (
+            <OrganizationItemsTableColumnHeader column={column} title="Stock" />
+          ),
+          cell: ({ row }) => {
+            const item = row.original;
+            if (item.type !== "product") return <div className="ml-2.5">-</div>;
+            return <div className="ml-2.5 font-medium">{item.stock ?? 0}</div>;
+          },
+        } as ColumnDef<OrganizationItem>,
+        {
+          accessorKey: "sales",
+          header: ({ column }) => (
+            <OrganizationItemsTableColumnHeader
+              column={column}
+              title="Ventas"
             />
-            <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
-              <Link href={`/admin/items/${item.type}/${item.id}`}>
-                <EyeIcon className="h-4 w-4" />
-              </Link>
-            </Button>
-          </div>
-        );
-      },
-    } as ColumnDef<OrganizationItem>,
-  ] : []),
+          ),
+          cell: ({ row }) => {
+            const item = row.original;
+            if (item.type !== "product") return <div className="ml-2.5">-</div>;
+            return <div className="ml-2.5 font-medium">{item.sales ?? 0}</div>;
+          },
+        } as ColumnDef<OrganizationItem>,
+      ]
+    : []),
+  // Columna de acciones para admin
+  ...(isAdmin
+    ? [
+        {
+          id: "actions",
+          header: () => <div className="text-center">Acciones</div>,
+          cell: ({ row }) => {
+            const item = row.original;
+            return (
+              <div className="flex items-center justify-center gap-2">
+                <ItemApprovalActions
+                  itemId={item.id}
+                  itemType={item.type}
+                  itemName={item.name}
+                  currentStatus={item.status}
+                />
+                <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
+                  <Link href={`/admin/items/${item.type}/${item.id}`}>
+                    <EyeIcon className="h-4 w-4" />
+                  </Link>
+                </Button>
+              </div>
+            );
+          },
+        } as ColumnDef<OrganizationItem>,
+      ]
+    : []),
 ];

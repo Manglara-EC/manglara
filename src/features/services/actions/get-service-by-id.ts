@@ -12,7 +12,7 @@ import type { PublicService } from "@/features/services/types";
 type ErrorCode = "NOT_FOUND" | "INTERNAL_SERVER_ERROR";
 
 export const getServiceById = async (
-  serviceId: string
+  serviceId: string,
 ): Promise<ActionResponse<PublicService, ErrorCode>> => {
   const { data: serv, error: serviceError } = await tryCatch(
     db
@@ -28,10 +28,10 @@ export const getServiceById = async (
         and(
           eq(service.id, serviceId),
           eq(service.status, "approved"),
-          eq(service.deleted, false)
-        )
+          eq(service.deleted, false),
+        ),
       )
-      .limit(1)
+      .limit(1),
   );
 
   if (serviceError || !serv || serv.length === 0) {
