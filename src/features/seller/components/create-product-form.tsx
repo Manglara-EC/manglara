@@ -20,7 +20,6 @@ import { Separator } from "@/shared/components/ui/separator";
 import { useCreateProductMutation } from "@/features/seller/hooks/use-create-product-mutation";
 import { authClient } from "@/shared/lib/better-auth/client";
 
-import { uploadImageAction } from "@/shared/actions/upload-image";
 import { toast } from "sonner";
 
 interface Props {
@@ -68,12 +67,20 @@ export function CreateProductForm({ organizationId, onSuccess }: Props) {
     for (const file of images) {
       const formData = new FormData();
       formData.append("file", file);
-      const result = await uploadImageAction(formData);
-      if (result.error) {
-        throw new Error(result.error || "Error al subir la imagen");
+
+      const response = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data.error || "Error al subir la imagen");
       }
-      if (result.url) {
-        imageUrls.push(result.url);
+
+      const data = await response.json();
+      if (data.url) {
+        imageUrls.push(data.url);
       }
     }
     return imageUrls;
