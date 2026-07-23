@@ -109,6 +109,8 @@ export const createService = async (
     durationMinutes: validation.data.durationMinutes ?? null,
     maxCapacity: validation.data.maxCapacity,
     location: validation.data.location ?? null,
+    latitude: validation.data.latitude ?? null,
+    longitude: validation.data.longitude ?? null,
     serviceConfig: validation.data.serviceConfig ?? null,
     availabilityRules: validation.data.availabilityRules ?? null,
     cancellationPolicy: validation.data.cancellationPolicy,

@@ -28,7 +28,32 @@ export const createProductSchema = z.object({
       message: "El stock debe ser un número",
     }),
 
-  images: z.array(z.url()).optional(),
+  images: z.array(z.string()).optional(),
+
+  location: z
+    .string()
+    .trim()
+    .max(200, { message: "La ubicación debe tener menos de 200 caracteres" })
+    .optional(),
+  latitude: z.coerce
+    .number()
+    .min(-90)
+    .max(90)
+    .transform((val) => val.toString())
+    .optional(),
+  longitude: z.coerce
+    .number()
+    .min(-180)
+    .max(180)
+    .transform((val) => val.toString())
+    .optional(),
+
   sellerId: z.string().min(1, { message: "Seller ID es requerido" }),
   organizationId: z.string().min(1, { message: "Organization ID es requerido" }),
-});
+}).refine(
+  (data) => (data.latitude === undefined) === (data.longitude === undefined),
+  {
+    message: "Debes elegir la ubicación completa en el mapa",
+    path: ["latitude"],
+  },
+);

@@ -78,6 +78,9 @@ export interface CreateProductVariables {
   description?: string;
   price: string;
   stock: number;
+  location?: string;
+  latitude?: number;
+  longitude?: number;
   images?: string[];
   sellerId: string;
   organizationId: string;
@@ -97,6 +100,8 @@ export interface CreateServiceVariables {
   durationMinutes?: number;
   maxCapacity?: number;
   location?: string;
+  latitude?: number;
+  longitude?: number;
 
   // Configuración específica por tipo (JSON)
   serviceConfig?: ServiceConfig | null;
@@ -122,6 +127,9 @@ export interface UpdateProductVariables {
   description?: string;
   price: string;
   stock?: number;
+  location?: string;
+  latitude?: number;
+  longitude?: number;
   images?: string[];
   organizationId?: string;
 }
@@ -136,6 +144,8 @@ export interface UpdateServiceVariables {
   durationMinutes?: number;
   maxCapacity?: number;
   location?: string;
+  latitude?: number;
+  longitude?: number;
   serviceConfig?: ServiceConfig | null;
   availabilityRules?: AvailabilityRules | null;
   cancellationPolicy?: CancellationPolicy;

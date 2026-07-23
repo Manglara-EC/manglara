@@ -156,6 +156,8 @@ export async function updateService(
         priceUnit: validatedData.priceUnit,
         serviceType: validatedData.serviceType,
         location: validatedData.location,
+        latitude: validatedData.latitude ?? null,
+        longitude: validatedData.longitude ?? null,
         maxCapacity: validatedData.maxCapacity,
         cancellationWindowHours: validatedData.cancellationWindowHours,
         serviceConfig: validatedData.serviceConfig,

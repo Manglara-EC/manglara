@@ -16,6 +16,7 @@ import {
 } from "@/shared/components/ui/typography";
 
 import { useCart } from "@/features/cart/context/cart-context";
+import { MapPreview } from "@/shared/components/map-preview";
 import type { PublicProduct } from "@/features/products/types";
 
 interface Props {
@@ -128,6 +129,12 @@ export function ProductDetail({ product }: Props) {
                 </TypographyMuted>
               </div>
             )}
+
+            <MapPreview
+              latitude={product.latitude}
+              longitude={product.longitude}
+              label={product.location}
+            />
 
             <div className="space-y-4">
               <div className="flex items-center gap-4">

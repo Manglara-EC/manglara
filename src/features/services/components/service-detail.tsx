@@ -23,6 +23,7 @@ import {
 } from "@/shared/components/ui/card";
 import { Badge } from "@/shared/components/ui/badge";
 import { Separator } from "@/shared/components/ui/separator";
+import { MapPreview } from "@/shared/components/map-preview";
 import {
   TypographyH1,
   TypographyH3,
@@ -257,6 +258,12 @@ export function ServiceDetail({ service }: Props) {
                   {service.location}
                 </div>
               )}
+
+              <MapPreview
+                latitude={service.latitude}
+                longitude={service.longitude}
+                label={service.location}
+              />
             </div>
           </CardContent>
         </Card>

@@ -11,6 +11,8 @@ import { Label } from "@/shared/components/ui/label";
 import { Textarea } from "@/shared/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import { Badge } from "@/shared/components/ui/badge";
+import { LocationPicker } from "@/shared/components/location-picker";
+import type { LatLng } from "@/shared/components/leaflet-map";
 
 import { useUpdateProductMutation } from "@/features/seller/hooks/use-update-product-mutation";
 import type { ProductWithOrg, UpdateProductVariables } from "@/features/seller/types";
@@ -28,8 +30,15 @@ export function EditProductForm({ productId, product }: Props) {
         description: product.description || "",
         price: String(product.price),
         stock: product.stock,
+        location: product.location || "",
         organizationId: product.organizationId,
     });
+    const [coords, setCoords] = useState<LatLng | null>(
+        product.latitude !== null && product.latitude !== undefined &&
+        product.longitude !== null && product.longitude !== undefined
+            ? { lat: Number(product.latitude), lng: Number(product.longitude) }
+            : null,
+    );
 
     const updateMutation = useUpdateProductMutation({
         productId,
@@ -51,6 +60,9 @@ export function EditProductForm({ productId, product }: Props) {
             description: formData.description || undefined,
             price: formData.price,
             stock: formData.stock,
+            location: formData.location || undefined,
+            latitude: coords?.lat,
+            longitude: coords?.lng,
             organizationId: formData.organizationId,
         };
 
@@ -145,6 +157,28 @@ export function EditProductForm({ productId, product }: Props) {
                                 placeholder="0"
                             />
                         </div>
+                    </div>
+                </CardContent>
+            </Card>
+
+            {/* Ubicación */}
+            <Card>
+                <CardHeader>
+                    <CardTitle>Ubicación</CardTitle>
+                    <CardDescription>
+                        Marca en el mapa dónde puede recogerse o dónde se ofrece el producto (opcional)
+                    </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <LocationPicker value={coords} onChange={setCoords} />
+                    <div className="space-y-2">
+                        <Label htmlFor="location">Etiqueta de la ubicación (opcional)</Label>
+                        <Input
+                            id="location"
+                            value={formData.location}
+                            onChange={handleChange("location")}
+                            placeholder="Ej: Restaurante El Manglar, planta baja"
+                        />
                     </div>
                 </CardContent>
             </Card>

@@ -10,6 +10,8 @@ import { Label } from "@/shared/components/ui/label";
 import { Textarea } from "@/shared/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import { Separator } from "@/shared/components/ui/separator";
+import { LocationPicker } from "@/shared/components/location-picker";
+import type { LatLng } from "@/shared/components/leaflet-map";
 
 import { useCreateProductMutation } from "@/features/seller/hooks/use-create-product-mutation";
 import { authClient } from "@/shared/lib/better-auth/client";
@@ -28,8 +30,10 @@ export function CreateProductForm({ organizationId, onSuccess }: Props) {
         description: "",
         price: "",
         stock: 0,
+        location: "",
         images: [] as File[],
     });
+    const [coords, setCoords] = useState<LatLng | null>(null);
 
     const handleChange = (field: keyof Omit<typeof form, "images">) => (
         e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -72,6 +76,9 @@ export function CreateProductForm({ organizationId, onSuccess }: Props) {
             description: form.description || undefined,
             price: form.price,
             stock: form.stock,
+            location: form.location || undefined,
+            latitude: coords?.lat,
+            longitude: coords?.lng,
             images: imageUrls.length > 0 ? imageUrls : undefined,
             sellerId: session.user.id,
             organizationId,
@@ -194,6 +201,28 @@ export function CreateProductForm({ organizationId, onSuccess }: Props) {
                     <p className="text-xs text-muted-foreground">
                         Puedes seleccionar múltiples imágenes.
                     </p>
+                </CardContent>
+            </Card>
+
+            {/* Ubicación */}
+            <Card>
+                <CardHeader>
+                    <CardTitle>Ubicación</CardTitle>
+                    <CardDescription>
+                        Marca en el mapa dónde puede recogerse o dónde se ofrece el producto (opcional)
+                    </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <LocationPicker value={coords} onChange={setCoords} />
+                    <div className="space-y-2">
+                        <Label htmlFor="location">Etiqueta de la ubicación (opcional)</Label>
+                        <Input
+                            id="location"
+                            value={form.location}
+                            onChange={handleChange("location")}
+                            placeholder="Ej: Restaurante El Manglar, planta baja"
+                        />
+                    </div>
                 </CardContent>
             </Card>
 
