@@ -204,6 +204,7 @@ export function CreateServiceForm({ organizationId }: Props) {
                     <FormControl>
                       <LocationPicker
                         value={coords}
+                        className="h-96 sm:h-[450px]"
                         onChange={(value) => {
                           form.setValue("latitude", value.lat, { shouldDirty: true });
                           form.setValue("longitude", value.lng, { shouldDirty: true });

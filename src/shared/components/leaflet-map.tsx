@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import type { Map as LeafletMapInstance, Marker as LeafletMarker } from "leaflet";
+import { cn } from "@/shared/utils/cn";
 
 export interface LatLng {
   lat: number;
@@ -172,7 +173,7 @@ export function LeafletMap({
   return (
     <div
       ref={containerRef}
-      className={`h-64 w-full rounded-lg ${className}`}
+      className={cn("h-64 w-full rounded-lg", className)}
       style={{ zIndex: 0 }}
     />
   );

@@ -26,8 +26,6 @@ export default async function SellerLayout({
   }
 
   return (
-    <div className="h-full overflow-y-auto">
-      <div className="container mx-auto py-6 pb-20">{children}</div>
-    </div>
+    <div className="container mx-auto py-6">{children}</div>
   );
 }
