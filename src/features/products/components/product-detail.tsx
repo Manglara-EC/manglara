@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -9,6 +9,7 @@ import {
   Plus,
   Minus,
   ShoppingCart,
+  Maximize2,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -20,6 +21,20 @@ import {
   TypographyH3,
   TypographyMuted,
 } from "@/shared/components/ui/typography";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/shared/components/ui/dialog";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+  type CarouselApi,
+} from "@/shared/components/ui/carousel";
 
 import { useCart } from "@/features/cart/context/cart-context";
 import { MapPreview } from "@/shared/components/map-preview";
@@ -32,14 +47,32 @@ interface Props {
 export function ProductDetail({ product }: Props) {
   const { addItem, cart } = useCart();
   const [quantity, setQuantity] = useState(1);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [api, setApi] = useState<CarouselApi>();
+  const [current, setCurrent] = useState(1);
 
   const price = new Intl.NumberFormat("es-ES", {
     style: "currency",
     currency: "EUR",
   }).format(Number(product.price));
 
-  const imageUrl =
-    product.images && product.images.length > 0 ? product.images[0] : null;
+  const images = product.images ?? [];
+  const imageUrl = images.length > 0 ? images[0] : null;
+
+  useEffect(() => {
+    if (!api) return;
+
+    setCurrent(api.selectedScrollSnap() + 1);
+    api.on("select", () => {
+      setCurrent(api.selectedScrollSnap() + 1);
+    });
+  }, [api]);
+
+  const openModal = (index: number = 0) => {
+    setSelectedImageIndex(index);
+    setIsModalOpen(true);
+  };
 
   const existingItem = cart.items.find(
     (item) => item.product.id === product.id,
@@ -93,16 +126,27 @@ export function ProductDetail({ product }: Props) {
       </Link>
 
       <div className="grid gap-6 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <div className="relative aspect-square w-full overflow-hidden rounded-lg bg-muted">
+        <Card className="overflow-hidden">
+          <CardHeader className="p-4 sm:p-6">
+            <div
+              className="group relative aspect-square w-full cursor-pointer overflow-hidden rounded-lg bg-muted"
+              onClick={() => imageUrl && openModal(0)}
+            >
               {imageUrl ? (
-                <Image
-                  src={imageUrl}
-                  alt={product.name}
-                  fill
-                  className="object-cover"
-                />
+                <>
+                  <Image
+                    src={imageUrl}
+                    alt={product.name}
+                    fill
+                    className="object-cover transition-transform duration-300 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 transition-opacity group-hover:opacity-100">
+                    <Button variant="secondary" size="sm" className="gap-2">
+                      <Maximize2 className="h-4 w-4" />
+                      Ver galería ({images.length})
+                    </Button>
+                  </div>
+                </>
               ) : (
                 <div className="flex h-full items-center justify-center">
                   <Package className="h-24 w-24 text-muted-foreground" />
@@ -110,6 +154,28 @@ export function ProductDetail({ product }: Props) {
               )}
             </div>
           </CardHeader>
+
+          {images.length > 1 && (
+            <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
+              <div className="flex flex-wrap gap-2">
+                {images.map((img, index) => (
+                  <button
+                    key={index}
+                    type="button"
+                    onClick={() => openModal(index)}
+                    className="relative aspect-square w-16 overflow-hidden rounded-md border-2 border-transparent hover:border-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                  >
+                    <Image
+                      src={img}
+                      alt={`${product.name} miniatura ${index + 1}`}
+                      fill
+                      className="object-cover"
+                    />
+                  </button>
+                ))}
+              </div>
+            </CardContent>
+          )}
         </Card>
 
         <div className="flex flex-col gap-4">
@@ -205,6 +271,54 @@ export function ProductDetail({ product }: Props) {
           </div>
         </div>
       </div>
+
+      {/* Modal con Carrusel de Imágenes */}
+      {images.length > 0 && (
+        <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+          <DialogContent className="max-w-4xl w-[95vw] border-none bg-black/95 p-4 text-white sm:p-6">
+            <DialogHeader className="flex flex-row items-center justify-between">
+              <DialogTitle className="text-base text-white">
+                {product.name} ({current} de {images.length})
+              </DialogTitle>
+            </DialogHeader>
+
+            <div className="relative flex items-center justify-center px-8 py-4 sm:px-12">
+              <Carousel
+                setApi={setApi}
+                opts={{
+                  startIndex: selectedImageIndex,
+                  loop: true,
+                }}
+                className="w-full max-w-2xl"
+              >
+                <CarouselContent>
+                  {images.map((imgUrl, idx) => (
+                    <CarouselItem
+                      key={idx}
+                      className="flex items-center justify-center"
+                    >
+                      <div className="relative aspect-4/3 max-h-[70vh] w-full overflow-hidden rounded-lg">
+                        <Image
+                          src={imgUrl}
+                          alt={`${product.name} - Imagen ${idx + 1}`}
+                          fill
+                          className="object-contain"
+                        />
+                      </div>
+                    </CarouselItem>
+                  ))}
+                </CarouselContent>
+                {images.length > 1 && (
+                  <>
+                    <CarouselPrevious className="-left-4 bg-background/80 text-foreground hover:bg-background sm:-left-8" />
+                    <CarouselNext className="-right-4 bg-background/80 text-foreground hover:bg-background sm:-right-8" />
+                  </>
+                )}
+              </Carousel>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }
