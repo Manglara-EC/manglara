@@ -139,6 +139,11 @@ export async function updateProduct(
         price: validatedData.price,
         stock: validatedData.stock,
         images: validatedData.images,
+        location: validatedData.location,
+        latitude:
+          validatedData.latitude !== undefined ? validatedData.latitude.toString() : null,
+        longitude:
+          validatedData.longitude !== undefined ? validatedData.longitude.toString() : null,
         organizationId: validatedData.organizationId,
         status: "pending", // Vuelve a pendiente para revisión
         approvedBy: null,

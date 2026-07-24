@@ -134,8 +134,20 @@ export const createServiceSchema = z.object({
   // Capacidad máxima
   maxCapacity: z.coerce.number().int().min(1).default(1),
 
-  // Ubicación (solo texto, sin coordenadas)
+  // Ubicación (texto + coordenadas elegidas en el mapa)
   location: z.string().trim().max(500).optional(),
+  latitude: z.coerce
+    .number()
+    .min(-90)
+    .max(90)
+    .transform((val) => val.toString())
+    .optional(),
+  longitude: z.coerce
+    .number()
+    .min(-180)
+    .max(180)
+    .transform((val) => val.toString())
+    .optional(),
 
   // Configuración específica del tipo de servicio
   serviceConfig: serviceConfigSchema,
@@ -157,7 +169,13 @@ export const createServiceSchema = z.object({
   organizationId: z
     .string()
     .min(1, { message: "Organization ID es requerido" }),
-});
+}).refine(
+  (data) => (data.latitude === undefined) === (data.longitude === undefined),
+  {
+    message: "Debes elegir la ubicación completa en el mapa",
+    path: ["latitude"],
+  },
+);
 
 // Schema para validaciones específicas por tipo de servicio
 export const validateServiceByType = (

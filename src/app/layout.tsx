@@ -4,7 +4,8 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 
 import { Providers } from "@/shared/components/providers";
 
-import "@/shared/styles/globals.css";
+import "../shared/styles/globals.css";
+import "leaflet/dist/leaflet.css";
 
 export default function RootLayout({
   children,

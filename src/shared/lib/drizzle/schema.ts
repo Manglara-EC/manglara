@@ -116,6 +116,9 @@ export const product = pgTable("product", {
 
   stock: integer("stock").default(0).notNull(),
   images: json("images").$type<string[]>(),
+  location: text("location"),
+  latitude: decimal("latitude", { precision: 10, scale: 7 }),
+  longitude: decimal("longitude", { precision: 10, scale: 7 }),
 
   sellerId: text("seller_id")
     .notNull()
@@ -160,8 +163,10 @@ export const service = pgTable("service", {
   // Capacidad máxima (personas por sesión, huéspedes, etc.)
   maxCapacity: integer("max_capacity").default(1).notNull(),
 
-  // Ubicación del servicio (solo texto)
+  // Ubicación del servicio: coordenadas elegidas en el mapa + etiqueta de texto opcional
   location: text("location"),
+  latitude: decimal("latitude", { precision: 10, scale: 7 }),
+  longitude: decimal("longitude", { precision: 10, scale: 7 }),
 
   // Configuración flexible por tipo de servicio (JSON)
   // Para accommodation: { checkInTime, checkOutTime, minNights, maxNights, amenities }

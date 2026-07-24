@@ -30,6 +30,8 @@ import {
   CardTitle,
 } from "@/shared/components/ui/card";
 import { Separator } from "@/shared/components/ui/separator";
+import { LocationPicker } from "@/shared/components/location-picker";
+import type { LatLng } from "@/shared/components/leaflet-map";
 
 import { useCreateServiceForm } from "@/features/seller/hooks/use-create-service-form";
 import {
@@ -182,6 +184,36 @@ export function CreateServiceForm({ organizationId }: Props) {
                   <FormMessage />
                 </FormItem>
               )}
+            />
+
+            <FormField
+              control={
+                form.control as unknown as React.ComponentProps<
+                  typeof FormField
+                >["control"]
+              }
+              name="latitude"
+              render={() => {
+                const lat = form.watch("latitude");
+                const lng = form.watch("longitude");
+                const coords: LatLng | null =
+                  lat !== undefined && lng !== undefined ? { lat, lng } : null;
+
+                return (
+                  <FormItem>
+                    <FormControl>
+                      <LocationPicker
+                        value={coords}
+                        onChange={(value) => {
+                          form.setValue("latitude", value.lat, { shouldDirty: true });
+                          form.setValue("longitude", value.lng, { shouldDirty: true });
+                        }}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                );
+              }}
             />
           </CardContent>
         </Card>

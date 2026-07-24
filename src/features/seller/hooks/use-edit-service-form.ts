@@ -41,6 +41,14 @@ export const useEditServiceForm = ({ serviceId, service }: Props) => {
     maxCapacity: service.maxCapacity || 1,
     durationMinutes: (serviceConfig.durationMinutes as number) || undefined,
     location: service.location || "",
+    latitude:
+      service.latitude !== null && service.latitude !== undefined
+        ? Number(service.latitude)
+        : undefined,
+    longitude:
+      service.longitude !== null && service.longitude !== undefined
+        ? Number(service.longitude)
+        : undefined,
     serviceConfig: serviceConfig,
     availabilityRules: availabilityRules,
     cancellationPolicy:

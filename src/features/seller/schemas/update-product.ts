@@ -33,9 +33,16 @@ export const updateProductSchema = z.object({
     }),
 
   images: z.array(z.string()).optional(),
-  organizationId: z
+
+  location: z
     .string()
-    .min(1, { message: "Organization ID es requerido" }),
+    .trim()
+    .max(200, { message: "La ubicación debe tener menos de 200 caracteres" })
+    .optional(),
+  latitude: z.coerce.number().min(-90).max(90).optional(),
+  longitude: z.coerce.number().min(-180).max(180).optional(),
+
+  organizationId: z.string().min(1, { message: "Organization ID es requerido" }),
 });
 
 export type UpdateProductInput = z.infer<typeof updateProductSchema>;
