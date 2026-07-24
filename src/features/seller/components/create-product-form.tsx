@@ -8,13 +8,8 @@ import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
 import { Textarea } from "@/shared/components/ui/textarea";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/shared/components/ui/card";
+import { Checkbox } from "@/shared/components/ui/checkbox";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import { Separator } from "@/shared/components/ui/separator";
 import { LocationPicker } from "@/shared/components/location-picker";
 import type { LatLng } from "@/shared/components/leaflet-map";
@@ -22,11 +17,9 @@ import type { LatLng } from "@/shared/components/leaflet-map";
 import { useCreateProductMutation } from "@/features/seller/hooks/use-create-product-mutation";
 import { authClient } from "@/shared/lib/better-auth/client";
 
-import { toast } from "sonner";
-
 interface Props {
-  organizationId: string;
-  onSuccess?: () => void;
+    organizationId: string;
+    onSuccess?: () => void;
 }
 
 export function CreateProductForm({ organizationId, onSuccess }: Props) {
@@ -39,32 +32,32 @@ export function CreateProductForm({ organizationId, onSuccess }: Props) {
         price: "",
         stock: 0,
         location: "",
+        isReservable: false,
         images: [] as File[],
     });
     const [coords, setCoords] = useState<LatLng | null>(null);
 
-  const [form, setForm] = useState({
-    name: "",
-    description: "",
-    price: "",
-    stock: 0,
-    images: [] as File[],
-  });
-
-  const handleChange =
-    (field: keyof Omit<typeof form, "images">) =>
-    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-      const value = field === "stock" ? Number(e.target.value) : e.target.value;
-      setForm((prev) => ({ ...prev, [field]: value }));
+    const handleChange = (field: keyof Omit<typeof form, "images" | "isReservable">) => (
+        e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    ) => {
+        const value = field === "stock" ? Number(e.target.value) : e.target.value;
+        setForm((prev) => ({ ...prev, [field]: value }));
     };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    setForm((prev) => ({
-      ...prev,
-      images: [...prev.images, ...files],
-    }));
-  };
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = Array.from(e.target.files || []);
+        setForm((prev) => ({
+            ...prev,
+            images: [...prev.images, ...files],
+        }));
+    };
+
+    const removeImage = (index: number) => {
+        setForm((prev) => ({
+            ...prev,
+            images: prev.images.filter((_, i) => i !== index),
+        }));
+    };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -88,6 +81,7 @@ export function CreateProductForm({ organizationId, onSuccess }: Props) {
             location: form.location || undefined,
             latitude: coords?.lat,
             longitude: coords?.lng,
+            isReservable: form.isReservable,
             images: imageUrls.length > 0 ? imageUrls : undefined,
             sellerId: session.user.id,
             organizationId,
@@ -235,6 +229,36 @@ export function CreateProductForm({ organizationId, onSuccess }: Props) {
                 </CardContent>
             </Card>
 
+            {/* Reserva por fecha */}
+            <Card>
+                <CardHeader>
+                    <CardTitle>Reserva por fecha</CardTitle>
+                    <CardDescription>
+                        Actívalo si el comprador debe elegir una fecha para recibir o disfrutar
+                        el producto (ej: comida de restaurante, mesa reservada)
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <div className="flex items-start gap-3 rounded-lg border border-border p-4">
+                        <Checkbox
+                            id="isReservable"
+                            checked={form.isReservable}
+                            onCheckedChange={(checked) =>
+                                setForm((prev) => ({ ...prev, isReservable: checked === true }))
+                            }
+                        />
+                        <div className="space-y-1">
+                            <Label htmlFor="isReservable" className="cursor-pointer">
+                                Este producto requiere reserva por fecha
+                            </Label>
+                            <p className="text-xs text-muted-foreground">
+                                El stock se calculará por día en vez de descontarse al comprar.
+                            </p>
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
+
             <Separator />
 
             {/* Botones de acción */}
@@ -249,79 +273,6 @@ export function CreateProductForm({ organizationId, onSuccess }: Props) {
                     Crear producto
                 </Button>
             </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="stock">Stock</Label>
-              <Input
-                id="stock"
-                type="number"
-                min={0}
-                value={form.stock}
-                onChange={handleChange("stock")}
-                placeholder="0"
-              />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Imágenes */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Imágenes</CardTitle>
-          <CardDescription>
-            Sube fotos de tu producto (opcional)
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <Input
-            type="file"
-            accept="image/*"
-            multiple
-            onChange={handleImageChange}
-            className="cursor-pointer"
-          />
-          {form.images.length > 0 && (
-            <div className="flex flex-wrap gap-2">
-              {form.images.map((image, index) => (
-                <div
-                  key={index}
-                  className="relative group flex items-center gap-2 p-2 border rounded-md bg-muted"
-                >
-                  <span className="text-sm truncate max-w-[200px]">
-                    {image.name}
-                  </span>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="h-6 w-6 p-0"
-                    onClick={() => removeImage(index)}
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                </div>
-              ))}
-            </div>
-          )}
-          <p className="text-xs text-muted-foreground">
-            Puedes seleccionar múltiples imágenes.
-          </p>
-        </CardContent>
-      </Card>
-
-      <Separator />
-
-      {/* Botones de acción */}
-      <div className="flex justify-end gap-4">
-        <Button type="button" variant="outline" asChild>
-          <Link href="/seller/products">Cancelar</Link>
-        </Button>
-        <Button type="submit" disabled={isLoading}>
-          {isLoading && <LoaderIcon className="mr-2 h-4 w-4 animate-spin" />}
-          Crear producto
-        </Button>
-      </div>
-    </form>
-  );
+        </form>
+    );
 }

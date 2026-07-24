@@ -1,21 +1,18 @@
 "use client";
 
-import {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  useCallback,
-  ReactNode,
-} from "react";
+import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react";
 
 import type { CartItem, Cart } from "@/features/cart/types";
 
 interface CartContextValue {
   cart: Cart;
-  addItem: (product: CartItem["product"], quantity: number) => boolean;
-  removeItem: (productId: string) => void;
-  updateQuantity: (productId: string, quantity: number) => void;
+  addItem: (
+    product: CartItem["product"],
+    quantity: number,
+    reservationDate?: string,
+  ) => boolean;
+  removeItem: (productId: string, reservationDate?: string) => void;
+  updateQuantity: (productId: string, quantity: number, reservationDate?: string) => void;
   clearCart: () => void;
   getTotalItems: () => number;
   getTotalPrice: () => number;
@@ -52,6 +49,18 @@ function saveCartToStorage(cart: Cart): void {
   }
 }
 
+// Dos items del carrito son "el mismo" si es el mismo producto Y la misma
+// fecha de reserva (o ninguno de los dos tiene fecha, para productos normales).
+// Así, el mismo producto reservado para dos fechas distintas queda como dos
+// líneas separadas del carrito.
+function isSameCartLine(
+  item: CartItem,
+  productId: string,
+  reservationDate?: string,
+): boolean {
+  return item.product.id === productId && item.reservationDate === reservationDate;
+}
+
 interface CartProviderProps {
   children: ReactNode;
 }
@@ -59,31 +68,40 @@ interface CartProviderProps {
 export function CartProvider({ children }: CartProviderProps) {
   const [cart, setCart] = useState<Cart>(loadCartFromStorage);
 
-  // Save to localStorage whenever cart changes
   useEffect(() => {
     saveCartToStorage(cart);
   }, [cart]);
 
   const addItem = useCallback(
-    (product: CartItem["product"], quantity: number): boolean => {
-      // Validate stock
+    (product: CartItem["product"], quantity: number, reservationDate?: string): boolean => {
+      if (product.isReservable && !reservationDate) {
+        // No se puede agregar un producto reservable sin fecha.
+        return false;
+      }
+
+      // Validación de sanidad: nunca exceder el stock/capacidad total del
+      // producto. La disponibilidad real para la fecha elegida (en el caso
+      // de productos reservables) ya debió validarse antes de llamar a esto
+      // (ver useProductAvailability); la validación definitiva ocurre en el
+      // servidor al momento de la compra.
       if (product.stock !== undefined && quantity > product.stock) {
         return false;
       }
 
+      let didAdd = true;
+
       setCart((prevCart) => {
-        const existingItemIndex = prevCart.items.findIndex(
-          (item) => item.product.id === product.id,
+        const existingItemIndex = prevCart.items.findIndex((item) =>
+          isSameCartLine(item, product.id, reservationDate),
         );
 
         if (existingItemIndex >= 0) {
-          // Update existing item
           const existingItem = prevCart.items[existingItemIndex];
           const newQuantity = existingItem.quantity + quantity;
 
-          // Validate stock for updated quantity
           if (product.stock !== undefined && newQuantity > product.stock) {
-            return prevCart; // Don't update if exceeds stock
+            didAdd = false;
+            return prevCart;
           }
 
           const newItems = [...prevCart.items];
@@ -94,44 +112,44 @@ export function CartProvider({ children }: CartProviderProps) {
 
           return { items: newItems };
         } else {
-          // Add new item
           return {
-            items: [...prevCart.items, { product, quantity }],
+            items: [...prevCart.items, { product, quantity, reservationDate }],
           };
         }
       });
 
-      return true;
+      return didAdd;
     },
     [],
   );
 
-  const removeItem = useCallback((productId: string) => {
+  const removeItem = useCallback((productId: string, reservationDate?: string) => {
     setCart((prevCart) => ({
-      items: prevCart.items.filter((item) => item.product.id !== productId),
+      items: prevCart.items.filter(
+        (item) => !isSameCartLine(item, productId, reservationDate),
+      ),
     }));
   }, []);
 
   const updateQuantity = useCallback(
-    (productId: string, quantity: number) => {
+    (productId: string, quantity: number, reservationDate?: string) => {
       if (quantity <= 0) {
-        removeItem(productId);
+        removeItem(productId, reservationDate);
         return;
       }
 
       setCart((prevCart) => {
-        const item = prevCart.items.find(
-          (item) => item.product.id === productId,
+        const item = prevCart.items.find((item) =>
+          isSameCartLine(item, productId, reservationDate),
         );
         if (!item) return prevCart;
 
-        // Validate stock
         if (item.product.stock !== undefined && quantity > item.product.stock) {
-          return prevCart; // Don't update if exceeds stock
+          return prevCart;
         }
 
         const newItems = prevCart.items.map((item) =>
-          item.product.id === productId ? { ...item, quantity } : item,
+          isSameCartLine(item, productId, reservationDate) ? { ...item, quantity } : item,
         );
 
         return { items: newItems };
@@ -151,7 +169,7 @@ export function CartProvider({ children }: CartProviderProps) {
   const getTotalPrice = useCallback(() => {
     return cart.items.reduce(
       (total, item) => total + Number(item.product.price) * item.quantity,
-      0,
+      0
     );
   }, [cart.items]);
 

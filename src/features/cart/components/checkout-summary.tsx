@@ -7,12 +7,7 @@ import { Package, LoaderIcon } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/shared/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/shared/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import { Separator } from "@/shared/components/ui/separator";
 import { ScrollArea } from "@/shared/components/ui/scroll-area";
 
@@ -95,7 +90,7 @@ export function CheckoutSummary() {
                   }).format(Number(item.product.price) * item.quantity);
 
                   return (
-                    <div key={item.product.id} className="space-y-4">
+                    <div key={`${item.product.id}-${item.reservationDate ?? "no-date"}`} className="space-y-4">
                       <div className="flex gap-4">
                         <div className="relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-lg bg-muted">
                           {imageUrl ? (
@@ -112,12 +107,19 @@ export function CheckoutSummary() {
                           )}
                         </div>
                         <div className="flex flex-1 flex-col gap-1">
-                          <p className="font-medium text-lg">
-                            {item.product.name}
-                          </p>
+                          <p className="font-medium text-lg">{item.product.name}</p>
                           <p className="text-sm text-muted-foreground">
                             {price} × {item.quantity}
                           </p>
+                          {item.reservationDate && (
+                            <p className="text-sm text-primary">
+                              Reservado para el{" "}
+                              {new Date(item.reservationDate + "T00:00:00").toLocaleDateString(
+                                "es-ES",
+                                { day: "numeric", month: "long", year: "numeric" },
+                              )}
+                            </p>
+                          )}
                         </div>
                         <div className="text-right">
                           <p className="font-semibold">{itemTotal}</p>
@@ -148,10 +150,7 @@ export function CheckoutSummary() {
                 }).format(itemTotal);
 
                 return (
-                  <div
-                    key={item.product.id}
-                    className="flex justify-between text-sm"
-                  >
+                  <div key={`${item.product.id}-${item.reservationDate ?? "no-date"}`} className="flex justify-between text-sm">
                     <span className="text-muted-foreground">
                       {item.product.name} (×{item.quantity})
                     </span>

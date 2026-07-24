@@ -73,19 +73,18 @@ export const productLine = pgTable("product_line", {
     .references(() => product.id),
 });
 
-// Detalle de Reserva de Servicio
+// Detalle de Reserva (Servicio o Producto reservable)
 export const bookingLine = pgTable("booking_line", {
   transactionLineId: text("transaction_line_id")
     .primaryKey()
     .references(() => transactionLine.id, { onDelete: "cascade" }),
-  serviceId: text("service_id")
-    .notNull()
-    .references(() => service.id),
+  serviceId: text("service_id").references(() => service.id),
+  productId: text("product_id").references(() => product.id),
   userId: text("user_id") // Duplicado para conveniencia de consultas rápidas del cliente
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
 
   // Datos temporales obligatorios para las reservas
   startDate: timestamp("start_date").notNull(),
-  endDate: timestamp("end_date").notNull(),
+  endDate: timestamp("end_date"), // Opcional: solo aplica a reservas de rango (ej. alojamiento). Para productos, la reserva es de un solo día (= startDate).
 });

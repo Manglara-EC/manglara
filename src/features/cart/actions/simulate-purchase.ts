@@ -1,7 +1,7 @@
 "use server";
 
 import { headers } from "next/headers";
-import { eq, and, inArray } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { db } from "@/shared/lib/drizzle/server";
 import { auth } from "@/shared/lib/better-auth/server";
 import { product as productTable, request } from "@/shared/lib/drizzle/schema";
@@ -10,7 +10,9 @@ import {
   transactionHeader,
   transactionLine,
   productLine,
+  bookingLine,
 } from "@/shared/lib/drizzle/transactions";
+import { getBookedQuantityForDate } from "@/features/products/lib/availability";
 import { tryCatch } from "@/shared/utils/try-catch";
 import type { ActionResponse } from "@/shared/types";
 import type { CartItem } from "@/features/cart/types";
@@ -22,7 +24,11 @@ type ErrorCode =
   | "INSUFFICIENT_STOCK"
   | "INVALID_QUANTITY"
   | "PRICE_MISMATCH"
+  | "RESERVATION_DATE_REQUIRED"
+  | "DATE_NOT_AVAILABLE"
   | "INTERNAL_SERVER_ERROR";
+
+const DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
 
 export const simulatePurchase = async (
   items: CartItem[],
@@ -76,6 +82,11 @@ export const simulatePurchase = async (
 
   const productMap = new Map(products.map((p) => [p.id, p]));
 
+  // Suma de cantidades pedidas dentro de este mismo carrito, agrupadas por
+  // producto + fecha, para validar contra la disponibilidad de ese día
+  // incluso si el carrito tuviera más de una línea para el mismo día.
+  const requestedPerProductDate = new Map<string, number>();
+
   // Validate each item
   for (const item of items) {
     const product = productMap.get(item.product.id);
@@ -101,17 +112,6 @@ export const simulatePurchase = async (
       };
     }
 
-    // Validate stock
-    if (product.stock < item.quantity) {
-      return {
-        data: null,
-        error: {
-          code: "INSUFFICIENT_STOCK",
-          message: `Stock insuficiente para ${item.product.name}. Disponible: ${product.stock}`,
-        },
-      };
-    }
-
     // Validate price consistency (allow small floating point differences)
     const priceDiff = Math.abs(
       Number(product.price) - Number(item.product.price),
@@ -122,6 +122,68 @@ export const simulatePurchase = async (
         error: {
           code: "PRICE_MISMATCH",
           message: `El precio de ${item.product.name} ha cambiado`,
+        },
+      };
+    }
+
+    if (product.isReservable) {
+      // Productos reservables: la fecha es obligatoria y el stock se valida
+      // por día, no globalmente.
+      if (!item.reservationDate || !DATE_REGEX.test(item.reservationDate)) {
+        return {
+          data: null,
+          error: {
+            code: "RESERVATION_DATE_REQUIRED",
+            message: `Elige una fecha de reserva para ${item.product.name}`,
+          },
+        };
+      }
+
+      const key = `${product.id}__${item.reservationDate}`;
+      requestedPerProductDate.set(
+        key,
+        (requestedPerProductDate.get(key) ?? 0) + item.quantity,
+      );
+    } else {
+      // Validate stock (productos normales)
+      if (product.stock < item.quantity) {
+        return {
+          data: null,
+          error: {
+            code: "INSUFFICIENT_STOCK",
+            message: `Stock insuficiente para ${item.product.name}. Disponible: ${product.stock}`,
+          },
+        };
+      }
+    }
+  }
+
+  // Validate availability per date for reservable products
+  for (const [key, requestedQuantity] of requestedPerProductDate.entries()) {
+    const [productId, date] = key.split("__");
+    const product = productMap.get(productId)!;
+
+    const { data: bookedQuantity, error: bookedError } = await tryCatch(
+      getBookedQuantityForDate(db, productId, date),
+    );
+
+    if (bookedError || bookedQuantity === null) {
+      return {
+        data: null,
+        error: {
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Error al validar la disponibilidad de la reserva",
+        },
+      };
+    }
+
+    if (bookedQuantity + requestedQuantity > product.stock) {
+      const remaining = Math.max(0, product.stock - bookedQuantity);
+      return {
+        data: null,
+        error: {
+          code: "DATE_NOT_AVAILABLE",
+          message: `Solo quedan ${remaining} unidades de ${product.name} disponibles para el ${date}`,
         },
       };
     }
@@ -194,7 +256,8 @@ export const simulatePurchase = async (
 
         transactionIds.push(transactionId);
 
-        // 4. Create line items and update stock
+        // 4. Create line items, and either update stock (productos normales)
+        // o crear la reserva (productos reservables)
         for (const item of sellerItems) {
           const productData = productMap.get(item.product.id)!;
           const unitPrice = Number(productData.price);
@@ -208,7 +271,7 @@ export const simulatePurchase = async (
           await tx.insert(transactionLine).values({
             id: transactionLineId,
             transactionId: transactionId,
-            type: "product",
+            type: productData.isReservable ? "booking" : "product",
             unitPrice: unitPrice.toString(),
             quantity: quantity,
             discount: discount.toString(),
@@ -217,20 +280,33 @@ export const simulatePurchase = async (
             createdAt: new Date(),
           });
 
-          // B. Insert product specific line (subtipo)
-          await tx.insert(productLine).values({
-            transactionLineId: transactionLineId,
-            productId: productData.id,
-          });
+          if (productData.isReservable) {
+            // B1. Insert booking line (subtipo) — el stock NO se descuenta
+            // globalmente, ya se validó que hay cupo para esa fecha.
+            const reservationDate = new Date(`${item.reservationDate}T00:00:00`);
+            await tx.insert(bookingLine).values({
+              transactionLineId: transactionLineId,
+              productId: productData.id,
+              userId: session.user.id,
+              startDate: reservationDate,
+              endDate: reservationDate,
+            });
+          } else {
+            // B2. Insert product specific line (subtipo)
+            await tx.insert(productLine).values({
+              transactionLineId: transactionLineId,
+              productId: productData.id,
+            });
 
-          // C. Update product stock
-          await tx
-            .update(productTable)
-            .set({
-              stock: productData.stock - quantity,
-              updatedAt: new Date(),
-            })
-            .where(eq(productTable.id, productData.id));
+            // C. Update product stock
+            await tx
+              .update(productTable)
+              .set({
+                stock: productData.stock - quantity,
+                updatedAt: new Date(),
+              })
+              .where(eq(productTable.id, productData.id));
+          }
         }
 
         // 5. Create notification request for the seller

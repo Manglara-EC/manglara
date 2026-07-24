@@ -9,26 +9,18 @@ import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
 import { Textarea } from "@/shared/components/ui/textarea";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/shared/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/components/ui/card";
+import { Checkbox } from "@/shared/components/ui/checkbox";
 import { Badge } from "@/shared/components/ui/badge";
 import { LocationPicker } from "@/shared/components/location-picker";
 import type { LatLng } from "@/shared/components/leaflet-map";
 
 import { useUpdateProductMutation } from "@/features/seller/hooks/use-update-product-mutation";
-import type {
-  ProductWithOrg,
-  UpdateProductVariables,
-} from "@/features/seller/types";
+import type { ProductWithOrg, UpdateProductVariables } from "@/features/seller/types";
 
 interface Props {
-  productId: string;
-  product: ProductWithOrg;
+    productId: string;
+    product: ProductWithOrg;
 }
 
 export function EditProductForm({ productId, product }: Props) {
@@ -40,6 +32,7 @@ export function EditProductForm({ productId, product }: Props) {
         price: String(product.price),
         stock: product.stock,
         location: product.location || "",
+        isReservable: product.isReservable ?? false,
         organizationId: product.organizationId,
     });
     const [coords, setCoords] = useState<LatLng | null>(
@@ -53,15 +46,15 @@ export function EditProductForm({ productId, product }: Props) {
         productId,
     });
 
-    const handleChange = (field: keyof typeof formData) => (
+    const handleChange = (field: keyof Omit<typeof formData, "isReservable">) => (
         e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
     ) => {
         const value = field === "stock" ? Number(e.target.value) : e.target.value;
         setFormData((prev) => ({ ...prev, [field]: value }));
     };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
 
         const variables: UpdateProductVariables = {
             productId,
@@ -72,6 +65,7 @@ export function EditProductForm({ productId, product }: Props) {
             location: formData.location || undefined,
             latitude: coords?.lat,
             longitude: coords?.lng,
+            isReservable: formData.isReservable,
             organizationId: formData.organizationId,
         };
 
@@ -89,85 +83,24 @@ export function EditProductForm({ productId, product }: Props) {
         }
     };
 
-    updateMutation.mutate(variables);
-  };
-
-  const getStatusBadge = () => {
-    switch (product.status) {
-      case "approved":
-        return <Badge variant="default">Aprobado</Badge>;
-      case "rejected":
-        return <Badge variant="destructive">Rechazado</Badge>;
-      default:
-        return <Badge variant="secondary">Pendiente</Badge>;
-    }
-  };
-
-  return (
-    <form onSubmit={handleSubmit} className="space-y-8">
-      {/* Header con estado */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-lg font-semibold">Editando: {product.name}</h2>
-          <p className="text-sm text-muted-foreground">
-            Organización: {product.organizationName}
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          {getStatusBadge()}
-          {product.status === "rejected" && product.rejectionReason && (
-            <span className="text-sm text-destructive">
-              Razón: {product.rejectionReason}
-            </span>
-          )}
-        </div>
-      </div>
-
-      {/* Información del producto */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Información del producto</CardTitle>
-          <CardDescription>
-            Modifica los detalles de tu producto. Al guardar, volverá a estado
-            pendiente para revisión.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="space-y-2">
-            <Label htmlFor="name">Nombre *</Label>
-            <Input
-              id="name"
-              value={formData.name}
-              onChange={handleChange("name")}
-              placeholder="Nombre del producto"
-              required
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="description">Descripción</Label>
-            <Textarea
-              id="description"
-              value={formData.description}
-              onChange={handleChange("description")}
-              placeholder="Describe tu producto..."
-              rows={4}
-            />
-          </div>
-
-          <div className="grid gap-6 md:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="price">Precio ($) *</Label>
-              <Input
-                id="price"
-                type="number"
-                step="0.01"
-                min="0"
-                value={formData.price}
-                onChange={handleChange("price")}
-                placeholder="0.00"
-                required
-              />
+    return (
+        <form onSubmit={handleSubmit} className="space-y-8">
+            {/* Header con estado */}
+            <div className="flex items-center justify-between">
+                <div>
+                    <h2 className="text-lg font-semibold">Editando: {product.name}</h2>
+                    <p className="text-sm text-muted-foreground">
+                        Organización: {product.organizationName}
+                    </p>
+                </div>
+                <div className="flex items-center gap-2">
+                    {getStatusBadge()}
+                    {product.status === "rejected" && product.rejectionReason && (
+                        <span className="text-sm text-destructive">
+                            Razón: {product.rejectionReason}
+                        </span>
+                    )}
+                </div>
             </div>
 
             {/* Información del producto */}
@@ -253,6 +186,36 @@ export function EditProductForm({ productId, product }: Props) {
                 </CardContent>
             </Card>
 
+            {/* Reserva por fecha */}
+            <Card>
+                <CardHeader>
+                    <CardTitle>Reserva por fecha</CardTitle>
+                    <CardDescription>
+                        Actívalo si el comprador debe elegir una fecha para recibir o disfrutar
+                        el producto
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <div className="flex items-start gap-3 rounded-lg border border-border p-4">
+                        <Checkbox
+                            id="isReservable"
+                            checked={formData.isReservable}
+                            onCheckedChange={(checked) =>
+                                setFormData((prev) => ({ ...prev, isReservable: checked === true }))
+                            }
+                        />
+                        <div className="space-y-1">
+                            <Label htmlFor="isReservable" className="cursor-pointer">
+                                Este producto requiere reserva por fecha
+                            </Label>
+                            <p className="text-xs text-muted-foreground">
+                                El stock se calculará por día en vez de descontarse al comprar.
+                            </p>
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
+
             {/* Botones de acción */}
             <div className="flex justify-between">
                 <Button type="button" variant="outline" asChild>
@@ -268,25 +231,6 @@ export function EditProductForm({ productId, product }: Props) {
                     Guardar cambios
                 </Button>
             </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Botones de acción */}
-      <div className="flex justify-between">
-        <Button type="button" variant="outline" asChild>
-          <Link href="/seller/products">
-            <ArrowLeftIcon className="mr-2 h-4 w-4" />
-            Cancelar
-          </Link>
-        </Button>
-        <Button type="submit" disabled={updateMutation.isPending}>
-          {updateMutation.isPending && (
-            <LoaderIcon className="mr-2 h-4 w-4 animate-spin" />
-          )}
-          Guardar cambios
-        </Button>
-      </div>
-    </form>
-  );
+        </form>
+    );
 }
