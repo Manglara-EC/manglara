@@ -11,6 +11,7 @@ import { Separator } from "@/shared/components/ui/separator";
 import { ScrollArea } from "@/shared/components/ui/scroll-area";
 
 import { useCart } from "@/features/cart/context/cart-context";
+import { formatCurrency } from "@/shared/utils/currency";
 
 export function CartView() {
   const router = useRouter();
@@ -23,10 +24,7 @@ export function CartView() {
     clearCart,
   } = useCart();
 
-  const totalPrice = new Intl.NumberFormat("es-ES", {
-    style: "currency",
-    currency: "EUR",
-  }).format(getTotalPrice());
+  const totalPrice = formatCurrency(getTotalPrice());
 
   const handleProceedToCheckout = () => {
     if (cart.items.length === 0) return;
@@ -65,14 +63,10 @@ export function CartView() {
                     item.product.images && item.product.images.length > 0
                       ? item.product.images[0]
                       : null;
-                  const price = new Intl.NumberFormat("es-ES", {
-                    style: "currency",
-                    currency: "EUR",
-                  }).format(Number(item.product.price));
-                  const itemTotal = new Intl.NumberFormat("es-ES", {
-                    style: "currency",
-                    currency: "EUR",
-                  }).format(Number(item.product.price) * item.quantity);
+                  const price = formatCurrency(item.product.price);
+                  const itemTotal = formatCurrency(
+                    Number(item.product.price) * item.quantity,
+                  );
 
                   return (
                     <div key={item.product.id} className="space-y-4">

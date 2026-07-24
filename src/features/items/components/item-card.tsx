@@ -37,6 +37,7 @@ import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
 
 import { useCart } from "@/features/cart/context/cart-context";
+import { formatCurrency } from "@/shared/utils/currency";
 import type { PublicItem } from "@/features/items/types";
 
 const SERVICE_TYPE_LABELS: Record<string, string> = {
@@ -58,10 +59,7 @@ interface Props {
 export function ItemCard({ item }: Props) {
   const imageUrl =
     item.images && item.images.length > 0 ? item.images[0] : null;
-  const price = new Intl.NumberFormat("es-ES", {
-    style: "currency",
-    currency: "EUR",
-  }).format(Number(item.price));
+  const price = formatCurrency(item.price);
 
   const { addItem, cart } = useCart();
   const [quantity, setQuantity] = useState(1);

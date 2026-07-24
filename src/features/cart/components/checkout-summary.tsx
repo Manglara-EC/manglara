@@ -18,16 +18,14 @@ import { ScrollArea } from "@/shared/components/ui/scroll-area";
 
 import { useCart } from "@/features/cart/context/cart-context";
 import { simulatePurchase } from "@/features/cart/actions/simulate-purchase";
+import { formatCurrency } from "@/shared/utils/currency";
 
 export function CheckoutSummary() {
   const router = useRouter();
   const { cart, getTotalPrice, clearCart } = useCart();
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const totalPrice = new Intl.NumberFormat("es-ES", {
-    style: "currency",
-    currency: "EUR",
-  }).format(getTotalPrice());
+  const totalPrice = formatCurrency(getTotalPrice());
 
   const handleSimulatePurchase = async () => {
     if (cart.items.length === 0) {
@@ -85,14 +83,10 @@ export function CheckoutSummary() {
                     item.product.images && item.product.images.length > 0
                       ? item.product.images[0]
                       : null;
-                  const price = new Intl.NumberFormat("es-ES", {
-                    style: "currency",
-                    currency: "EUR",
-                  }).format(Number(item.product.price));
-                  const itemTotal = new Intl.NumberFormat("es-ES", {
-                    style: "currency",
-                    currency: "EUR",
-                  }).format(Number(item.product.price) * item.quantity);
+                  const price = formatCurrency(item.product.price);
+                  const itemTotal = formatCurrency(
+                    Number(item.product.price) * item.quantity,
+                  );
 
                   return (
                     <div key={item.product.id} className="space-y-4">

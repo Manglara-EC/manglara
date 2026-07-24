@@ -88,4 +88,5 @@ export const bookingLine = pgTable("booking_line", {
   // Datos temporales obligatorios para las reservas
   startDate: timestamp("start_date").notNull(),
   endDate: timestamp("end_date").notNull(),
+  notes: text("notes"),
 });

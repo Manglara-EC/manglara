@@ -12,6 +12,7 @@ import {
   LayoutDashboardIcon,
   BuildingIcon,
   ShoppingCartIcon,
+  CalendarIcon,
 } from "lucide-react";
 
 import { UserRole } from "@/shared/constants/roles";
@@ -59,6 +60,15 @@ export const MENU_CONFIG: MenuItem[] = [
     href: "/explore",
     allowedRoles: [UserRole.USER, UserRole.SELLER, UserRole.ADMIN],
     description: "Explora productos y servicios",
+  },
+
+  {
+    id: "reservations",
+    label: "Mis Reservas",
+    icon: CalendarIcon,
+    href: "/reservations",
+    allowedRoles: [UserRole.USER, UserRole.SELLER, UserRole.ADMIN],
+    description: "Consulta y gestiona tus reservas de servicios",
   },
 
   {

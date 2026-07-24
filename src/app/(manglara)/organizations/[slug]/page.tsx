@@ -72,8 +72,7 @@ export default async function OrganizationsPage({
   const queryClient = new QueryClient();
 
   await queryClient.prefetchQuery({
-    // eslint-disable-next-line @tanstack/query/exhaustive-deps
-    queryKey: ["organization", "detail", data.id],
+    queryKey: ["organization", "detail", data.id, data],
     queryFn: () => data,
   });
 

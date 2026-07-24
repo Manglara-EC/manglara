@@ -45,8 +45,7 @@ export default async function ServiceDetailPage({
   const queryClient = new QueryClient();
 
   await queryClient.prefetchQuery({
-    // eslint-disable-next-line @tanstack/query/exhaustive-deps
-    queryKey: ["service", id],
+    queryKey: ["service", id, service],
     queryFn: () => service,
   });
 

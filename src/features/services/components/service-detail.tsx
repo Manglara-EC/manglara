@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -30,6 +31,8 @@ import {
   TypographyMuted,
   TypographyP,
 } from "@/shared/components/ui/typography";
+import { ServiceBookingDialog } from "@/features/services/components/service-booking-dialog";
+import { formatCurrency } from "@/shared/utils/currency";
 
 import type { PublicService } from "@/features/services/types";
 import type { AvailabilityRules } from "@/shared/lib/drizzle/schema";
@@ -150,10 +153,9 @@ const getScheduleText = (
 };
 
 export function ServiceDetail({ service }: Props) {
-  const price = new Intl.NumberFormat("es-ES", {
-    style: "currency",
-    currency: "EUR",
-  }).format(Number(service.price));
+  const [isBookingOpen, setIsBookingOpen] = useState(false);
+
+  const price = formatCurrency(service.price);
 
   interface ServiceConfigProps {
     pricingMode?: string;
@@ -437,7 +439,11 @@ export function ServiceDetail({ service }: Props) {
               </p>
             </div>
 
-            <Button className="w-full" size="lg">
+            <Button
+              className="w-full"
+              size="lg"
+              onClick={() => setIsBookingOpen(true)}
+            >
               {serviceType === "rental"
                 ? "Alquilar ahora"
                 : serviceType === "parking"
@@ -447,6 +453,12 @@ export function ServiceDetail({ service }: Props) {
           </CardContent>
         </Card>
       </div>
+
+      <ServiceBookingDialog
+        service={service}
+        open={isBookingOpen}
+        onOpenChange={setIsBookingOpen}
+      />
 
       {/* Detalles según tipo de servicio */}
       <div className="grid gap-6 lg:grid-cols-2">

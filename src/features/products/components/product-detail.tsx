@@ -21,6 +21,7 @@ import {
   TypographyH3,
   TypographyMuted,
 } from "@/shared/components/ui/typography";
+import { formatCurrency } from "@/shared/utils/currency";
 import {
   Dialog,
   DialogContent,
@@ -52,10 +53,7 @@ export function ProductDetail({ product }: Props) {
   const [api, setApi] = useState<CarouselApi>();
   const [current, setCurrent] = useState(1);
 
-  const price = new Intl.NumberFormat("es-ES", {
-    style: "currency",
-    currency: "EUR",
-  }).format(Number(product.price));
+  const price = formatCurrency(product.price);
 
   const images = product.images ?? [];
   const imageUrl = images.length > 0 ? images[0] : null;
