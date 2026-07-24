@@ -3,7 +3,13 @@
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { CheckIcon, XIcon, LoaderIcon, AlertTriangleIcon, Trash2Icon } from "lucide-react";
+import {
+  CheckIcon,
+  XIcon,
+  LoaderIcon,
+  AlertTriangleIcon,
+  Trash2Icon,
+} from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/shared/components/ui/button";
@@ -61,7 +67,9 @@ export function ItemApprovalCard({
         toast.error(result.error.message);
         return;
       }
-      toast.success(`${itemType === "product" ? "Producto" : "Servicio"} aprobado correctamente`);
+      toast.success(
+        `${itemType === "product" ? "Producto" : "Servicio"} aprobado correctamente`,
+      );
       router.refresh();
     },
     onError: () => {
@@ -70,13 +78,16 @@ export function ItemApprovalCard({
   });
 
   const rejectMutation = useMutation({
-    mutationFn: () => rejectItem({ itemId, itemType, reason: rejectReasonInput }),
+    mutationFn: () =>
+      rejectItem({ itemId, itemType, reason: rejectReasonInput }),
     onSuccess: (result) => {
       if (result.error) {
         toast.error(result.error.message);
         return;
       }
-      toast.success(`${itemType === "product" ? "Producto" : "Servicio"} rechazado`);
+      toast.success(
+        `${itemType === "product" ? "Producto" : "Servicio"} rechazado`,
+      );
       setShowRejectForm(false);
       setRejectReasonInput("");
       router.refresh();
@@ -93,7 +104,9 @@ export function ItemApprovalCard({
         toast.error(result.error.message);
         return;
       }
-      toast.success(`${itemType === "product" ? "Producto" : "Servicio"} eliminado correctamente`);
+      toast.success(
+        `${itemType === "product" ? "Producto" : "Servicio"} eliminado correctamente`,
+      );
       router.push("/admin");
     },
     onError: () => {
@@ -101,26 +114,36 @@ export function ItemApprovalCard({
     },
   });
 
-  const isPending = approveMutation.isPending || rejectMutation.isPending || deleteMutation.isPending;
+  const isPending =
+    approveMutation.isPending ||
+    rejectMutation.isPending ||
+    deleteMutation.isPending;
 
   // Componente del dialog de eliminación (reutilizable)
   const DeleteDialog = () => (
     <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>¿Eliminar {itemType === "product" ? "producto" : "servicio"}?</AlertDialogTitle>
+          <AlertDialogTitle>
+            ¿Eliminar {itemType === "product" ? "producto" : "servicio"}?
+          </AlertDialogTitle>
           <AlertDialogDescription>
-            ¿Estás seguro de que deseas eliminar &quot;{itemName}&quot;? Esta acción no se puede deshacer.
+            ¿Estás seguro de que deseas eliminar &quot;{itemName}&quot;? Esta
+            acción no se puede deshacer.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={deleteMutation.isPending}>Cancelar</AlertDialogCancel>
+          <AlertDialogCancel disabled={deleteMutation.isPending}>
+            Cancelar
+          </AlertDialogCancel>
           <AlertDialogAction
             onClick={() => deleteMutation.mutate()}
             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             disabled={deleteMutation.isPending}
           >
-            {deleteMutation.isPending && <LoaderIcon className="mr-2 h-4 w-4 animate-spin" />}
+            {deleteMutation.isPending && (
+              <LoaderIcon className="mr-2 h-4 w-4 animate-spin" />
+            )}
             Eliminar
           </AlertDialogAction>
         </AlertDialogFooter>
@@ -152,7 +175,8 @@ export function ItemApprovalCard({
               Aprobado
             </CardTitle>
             <CardDescription>
-              Este {itemType === "product" ? "producto" : "servicio"} está visible para los compradores.
+              Este {itemType === "product" ? "producto" : "servicio"} está
+              visible para los compradores.
             </CardDescription>
           </CardHeader>
           <CardFooter>
@@ -175,7 +199,8 @@ export function ItemApprovalCard({
               Rechazado
             </CardTitle>
             <CardDescription>
-              Este {itemType === "product" ? "producto" : "servicio"} fue rechazado.
+              Este {itemType === "product" ? "producto" : "servicio"} fue
+              rechazado.
             </CardDescription>
           </CardHeader>
           {rejectionReason && (
@@ -183,25 +208,27 @@ export function ItemApprovalCard({
               <Alert variant="destructive">
                 <AlertTriangleIcon className="h-4 w-4" />
                 <AlertDescription>
-                <strong>Razón:</strong> {rejectionReason}
-              </AlertDescription>
-            </Alert>
-          </CardContent>
-        )}
-        <CardFooter className="flex flex-col gap-3">
-          <Button
-            className="w-full"
-            variant="outline"
-            onClick={() => approveMutation.mutate()}
-            disabled={isPending}
-          >
-            {approveMutation.isPending && <LoaderIcon className="mr-2 h-4 w-4 animate-spin" />}
-            Cambiar a Aprobado
-          </Button>
-          <DeleteButton />
-        </CardFooter>
-      </Card>
-      <DeleteDialog />
+                  <strong>Razón:</strong> {rejectionReason}
+                </AlertDescription>
+              </Alert>
+            </CardContent>
+          )}
+          <CardFooter className="flex flex-col gap-3">
+            <Button
+              className="w-full"
+              variant="outline"
+              onClick={() => approveMutation.mutate()}
+              disabled={isPending}
+            >
+              {approveMutation.isPending && (
+                <LoaderIcon className="mr-2 h-4 w-4 animate-spin" />
+              )}
+              Cambiar a Aprobado
+            </Button>
+            <DeleteButton />
+          </CardFooter>
+        </Card>
+        <DeleteDialog />
       </>
     );
   }
@@ -210,7 +237,9 @@ export function ItemApprovalCard({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Revisar {itemType === "product" ? "producto" : "servicio"}</CardTitle>
+        <CardTitle>
+          Revisar {itemType === "product" ? "producto" : "servicio"}
+        </CardTitle>
         <CardDescription>
           Decide si aprobar o rechazar este item para su publicación.
         </CardDescription>
@@ -252,7 +281,8 @@ export function ItemApprovalCard({
                 className="min-h-24"
               />
               <p className="text-xs text-muted-foreground">
-                Esta razón se mostrará al vendedor para que pueda corregir el problema.
+                Esta razón se mostrará al vendedor para que pueda corregir el
+                problema.
               </p>
             </div>
             <Separator />
@@ -274,7 +304,9 @@ export function ItemApprovalCard({
                 onClick={() => rejectMutation.mutate()}
                 disabled={!rejectReasonInput.trim() || isPending}
               >
-                {rejectMutation.isPending && <LoaderIcon className="mr-2 h-4 w-4 animate-spin" />}
+                {rejectMutation.isPending && (
+                  <LoaderIcon className="mr-2 h-4 w-4 animate-spin" />
+                )}
                 Confirmar rechazo
               </Button>
             </div>
@@ -282,7 +314,7 @@ export function ItemApprovalCard({
         )}
 
         <Separator />
-        
+
         {/* Botón de eliminar siempre visible para admin */}
         <DeleteButton />
       </CardContent>

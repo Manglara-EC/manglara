@@ -29,9 +29,12 @@ export function AddToCartButton({ product }: Props) {
   const [quantity, setQuantity] = useState(1);
   const [open, setOpen] = useState(false);
 
-  const existingItem = cart.items.find((item) => item.product.id === product.id);
+  const existingItem = cart.items.find(
+    (item) => item.product.id === product.id,
+  );
   const currentQuantity = existingItem?.quantity ?? 0;
-  const availableStock = product.stock !== undefined ? product.stock - currentQuantity : undefined;
+  const availableStock =
+    product.stock !== undefined ? product.stock - currentQuantity : undefined;
   const maxQuantity = availableStock !== undefined ? availableStock : 999;
 
   const handleAddToCart = () => {
@@ -47,7 +50,9 @@ export function AddToCartButton({ product }: Props) {
 
     const success = addItem(product, quantity);
     if (success) {
-      toast.success(`${quantity} ${quantity === 1 ? "unidad" : "unidades"} agregada${quantity > 1 ? "s" : ""} al carrito`);
+      toast.success(
+        `${quantity} ${quantity === 1 ? "unidad" : "unidades"} agregada${quantity > 1 ? "s" : ""} al carrito`,
+      );
       setOpen(false);
       setQuantity(1);
     } else {
@@ -104,7 +109,8 @@ export function AddToCartButton({ product }: Props) {
             )}
             {currentQuantity > 0 && (
               <p className="text-sm text-muted-foreground">
-                Ya tienes {currentQuantity} {currentQuantity === 1 ? "unidad" : "unidades"} en el carrito
+                Ya tienes {currentQuantity}{" "}
+                {currentQuantity === 1 ? "unidad" : "unidades"} en el carrito
               </p>
             )}
           </div>
@@ -113,7 +119,10 @@ export function AddToCartButton({ product }: Props) {
           <Button variant="outline" onClick={() => setOpen(false)}>
             Cancelar
           </Button>
-          <Button onClick={handleAddToCart} disabled={availableStock !== undefined && availableStock <= 0}>
+          <Button
+            onClick={handleAddToCart}
+            disabled={availableStock !== undefined && availableStock <= 0}
+          >
             Agregar
           </Button>
         </DialogFooter>

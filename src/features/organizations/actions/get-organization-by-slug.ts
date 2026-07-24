@@ -27,7 +27,7 @@ type ErrorCode = "UNAUTHORIZED" | "NOT_FOUND" | "INTERNAL_SERVER_ERROR";
  * Cualquier usuario autenticado puede ver esta información
  */
 export const getOrganizationBySlug = async (
-  slug: string
+  slug: string,
 ): Promise<ActionResponse<PublicOrganizationInfo, ErrorCode>> => {
   const session = await auth.api.getSession({
     headers: await headers(),
@@ -45,11 +45,7 @@ export const getOrganizationBySlug = async (
 
   // Obtener la organización
   const { data: orgs, error: orgError } = await tryCatch(
-    db
-      .select()
-      .from(organization)
-      .where(eq(organization.slug, slug))
-      .limit(1)
+    db.select().from(organization).where(eq(organization.slug, slug)).limit(1),
   );
 
   if (orgError || !orgs || orgs.length === 0) {
@@ -66,10 +62,7 @@ export const getOrganizationBySlug = async (
 
   // Contar miembros
   const { data: members, error: membersError } = await tryCatch(
-    db
-      .select()
-      .from(member)
-      .where(eq(member.organizationId, org.id))
+    db.select().from(member).where(eq(member.organizationId, org.id)),
   );
 
   if (membersError) {

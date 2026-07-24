@@ -13,7 +13,7 @@ import type { RequestWithReference } from "@/features/requests/types";
 
 type ErrorCode = "UNAUTHORIZED" | "INTERNAL_SERVER_ERROR";
 
-export const getMyRequests = async (): Promise <
+export const getMyRequests = async (): Promise<
   ActionResponse<RequestWithReference[], ErrorCode>
 > => {
   const session = await auth.api.getSession({
@@ -42,7 +42,7 @@ export const getMyRequests = async (): Promise <
       .leftJoin(service, eq(request.serviceId, service.id))
       .where(eq(request.userId, session.user.id))
       .orderBy(desc(request.createdAt))
-      .limit(50)
+      .limit(50),
   );
 
   if (requestsError) {

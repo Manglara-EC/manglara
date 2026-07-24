@@ -11,7 +11,7 @@ import type { ActionResponse } from "@/shared/types";
 
 type ErrorCode = "UNAUTHORIZED" | "INTERNAL_SERVER_ERROR";
 
-export const getUnreadCount = async (): Promise <
+export const getUnreadCount = async (): Promise<
   ActionResponse<number, ErrorCode>
 > => {
   const session = await auth.api.getSession({
@@ -32,12 +32,7 @@ export const getUnreadCount = async (): Promise <
     db
       .select({ count: count() })
       .from(request)
-      .where(
-        and(
-          eq(request.userId, session.user.id),
-          eq(request.read, false)
-        )
-      )
+      .where(and(eq(request.userId, session.user.id), eq(request.read, false))),
   );
 
   if (countError) {

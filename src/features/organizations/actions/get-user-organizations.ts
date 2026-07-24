@@ -48,7 +48,7 @@ export const getUserOrganizations = async (): Promise<
       })
       .from(member)
       .innerJoin(organization, eq(member.organizationId, organization.id))
-      .where(eq(member.userId, session.user.id))
+      .where(eq(member.userId, session.user.id)),
   );
 
   if (error) {

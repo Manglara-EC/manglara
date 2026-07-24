@@ -5,7 +5,10 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 import { updateService } from "@/features/seller/actions/update-service";
-import type { UpdateServiceVariables, ServiceWithOrg } from "@/features/seller/types";
+import type {
+  UpdateServiceVariables,
+  ServiceWithOrg,
+} from "@/features/seller/types";
 
 interface UseUpdateServiceMutationOptions {
   serviceId: string;
@@ -33,12 +36,14 @@ export const useUpdateServiceMutation = ({
     },
     onSuccess: (data) => {
       toast.success("Servicio actualizado correctamente");
-      
+
       // Invalidar queries relacionadas
       queryClient.invalidateQueries({ queryKey: ["seller", "services"] });
-      queryClient.invalidateQueries({ queryKey: ["seller", "service", serviceId] });
+      queryClient.invalidateQueries({
+        queryKey: ["seller", "service", serviceId],
+      });
       queryClient.invalidateQueries({ queryKey: ["services"] });
-      
+
       onSuccess?.(data);
       router.push("/seller/services");
     },

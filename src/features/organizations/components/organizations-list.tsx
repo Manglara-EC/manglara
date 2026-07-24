@@ -41,7 +41,10 @@ const getRoleLabel = (role: string) => {
   }
 };
 
-export function OrganizationsList({ initialData, error }: OrganizationsListProps) {
+export function OrganizationsList({
+  initialData,
+  error,
+}: OrganizationsListProps) {
   if (error) {
     return (
       <Card className="border-red-200 bg-red-50">
@@ -92,7 +95,7 @@ export function OrganizationsList({ initialData, error }: OrganizationsListProps
                     <div className="flex items-center gap-2 mt-1">
                       <span
                         className={`text-xs px-2 py-1 rounded-full font-medium ${getRoleBadgeColor(
-                          org.userRole
+                          org.userRole,
                         )}`}
                       >
                         {getRoleLabel(org.userRole)}
@@ -100,7 +103,7 @@ export function OrganizationsList({ initialData, error }: OrganizationsListProps
                       <span className="text-xs text-muted-foreground">
                         Desde{" "}
                         {new Date(org.membershipCreatedAt).toLocaleDateString(
-                          "es-ES"
+                          "es-ES",
                         )}
                       </span>
                     </div>

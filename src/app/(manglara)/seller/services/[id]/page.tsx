@@ -183,7 +183,7 @@ export default async function ServiceDetailPage({ params }: Props) {
       { start: string; end: string }[] | undefined
     >;
     const activeDays = Object.keys(schedule).filter(
-      (day) => Array.isArray(schedule[day]) && (schedule[day]?.length ?? 0) > 0,
+      (day) => Array.isArray(schedule[day as keyof typeof schedule]) && (schedule[day as keyof typeof schedule]?.length ?? 0) > 0,
     );
     if (activeDays.length === 0) return "";
 
@@ -197,8 +197,8 @@ export default async function ServiceDetailPage({ params }: Props) {
       sunday: "Domingo",
     };
 
-    const firstDay = activeDays[0];
-    const slot = rules.schedule[firstDay][0];
+    const firstDay = activeDays[0] as keyof typeof rules.schedule;
+    const slot = rules.schedule[firstDay]?.[0];
     const timeStr = slot ? ` de ${slot.start} a ${slot.end}` : "";
 
     if (activeDays.length === 7) {

@@ -18,15 +18,16 @@ export default async function SellerLayout({
   });
 
   // Verificar que el usuario sea seller o admin
-  if (!session || (session.user.role !== "seller" && session.user.role !== "admin")) {
+  if (
+    !session ||
+    (session.user.role !== "seller" && session.user.role !== "admin")
+  ) {
     redirect("/home");
   }
 
   return (
     <div className="h-full overflow-y-auto">
-      <div className="container mx-auto py-6 pb-20">
-        {children}
-      </div>
+      <div className="container mx-auto py-6 pb-20">{children}</div>
     </div>
   );
 }

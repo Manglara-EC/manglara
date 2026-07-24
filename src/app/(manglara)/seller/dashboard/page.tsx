@@ -4,8 +4,18 @@ import {
   TypographyH1,
   TypographyMuted,
 } from "@/shared/components/ui/typography";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
-import { BarChart3Icon, BoxIcon, ShoppingBagIcon, TrendingUpIcon } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/shared/components/ui/card";
+import {
+  BarChart3Icon,
+  BoxIcon,
+  ShoppingBagIcon,
+  TrendingUpIcon,
+} from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Manglara | Dashboard del Vendedor",
@@ -17,7 +27,8 @@ export default function SellerDashboardPage() {
       <div>
         <TypographyH1>Dashboard</TypographyH1>
         <TypographyMuted>
-          Bienvenido a tu panel de vendedor. Aquí podrás gestionar tus productos y servicios.
+          Bienvenido a tu panel de vendedor. Aquí podrás gestionar tus productos
+          y servicios.
         </TypographyMuted>
       </div>
 
@@ -56,9 +67,7 @@ export default function SellerDashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">$0.00</div>
-            <p className="text-xs text-muted-foreground">
-              Ventas este mes
-            </p>
+            <p className="text-xs text-muted-foreground">Ventas este mes</p>
           </CardContent>
         </Card>
 
@@ -83,7 +92,8 @@ export default function SellerDashboardPage() {
         </CardHeader>
         <CardContent>
           <p className="text-muted-foreground">
-            No hay actividad reciente. ¡Empieza creando tu primer producto o servicio!
+            No hay actividad reciente. ¡Empieza creando tu primer producto o
+            servicio!
           </p>
         </CardContent>
       </Card>

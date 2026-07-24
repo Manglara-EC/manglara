@@ -12,13 +12,10 @@ import type { ActionResponse } from "@/shared/types";
 import { markAsReadSchema } from "@/features/requests/schemas/mark-as-read";
 import type { MarkAsReadVariables } from "@/features/requests/types";
 
-type ErrorCode = 
-  | "UNAUTHORIZED" 
-  | "VALIDATION_ERROR"
-  | "INTERNAL_SERVER_ERROR";
+type ErrorCode = "UNAUTHORIZED" | "VALIDATION_ERROR" | "INTERNAL_SERVER_ERROR";
 
 export const markRequestAsRead = async (
-  variables: MarkAsReadVariables
+  variables: MarkAsReadVariables,
 ): Promise<ActionResponse<boolean, ErrorCode>> => {
   const session = await auth.api.getSession({
     headers: await headers(),
@@ -35,7 +32,7 @@ export const markRequestAsRead = async (
   }
 
   const validation = markAsReadSchema.safeParse(variables);
-  
+
   if (!validation.success) {
     return {
       data: null,
@@ -53,9 +50,9 @@ export const markRequestAsRead = async (
       .where(
         and(
           eq(request.id, variables.requestId),
-          eq(request.userId, session.user.id)
-        )
-      )
+          eq(request.userId, session.user.id),
+        ),
+      ),
   );
 
   if (updateError) {

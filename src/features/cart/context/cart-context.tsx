@@ -1,6 +1,13 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+  ReactNode,
+} from "react";
 
 import type { CartItem, Cart } from "@/features/cart/types";
 
@@ -57,44 +64,47 @@ export function CartProvider({ children }: CartProviderProps) {
     saveCartToStorage(cart);
   }, [cart]);
 
-  const addItem = useCallback((product: CartItem["product"], quantity: number): boolean => {
-    // Validate stock
-    if (product.stock !== undefined && quantity > product.stock) {
-      return false;
-    }
-
-    setCart((prevCart) => {
-      const existingItemIndex = prevCart.items.findIndex(
-        (item) => item.product.id === product.id
-      );
-
-      if (existingItemIndex >= 0) {
-        // Update existing item
-        const existingItem = prevCart.items[existingItemIndex];
-        const newQuantity = existingItem.quantity + quantity;
-
-        // Validate stock for updated quantity
-        if (product.stock !== undefined && newQuantity > product.stock) {
-          return prevCart; // Don't update if exceeds stock
-        }
-
-        const newItems = [...prevCart.items];
-        newItems[existingItemIndex] = {
-          ...existingItem,
-          quantity: newQuantity,
-        };
-
-        return { items: newItems };
-      } else {
-        // Add new item
-        return {
-          items: [...prevCart.items, { product, quantity }],
-        };
+  const addItem = useCallback(
+    (product: CartItem["product"], quantity: number): boolean => {
+      // Validate stock
+      if (product.stock !== undefined && quantity > product.stock) {
+        return false;
       }
-    });
 
-    return true;
-  }, []);
+      setCart((prevCart) => {
+        const existingItemIndex = prevCart.items.findIndex(
+          (item) => item.product.id === product.id,
+        );
+
+        if (existingItemIndex >= 0) {
+          // Update existing item
+          const existingItem = prevCart.items[existingItemIndex];
+          const newQuantity = existingItem.quantity + quantity;
+
+          // Validate stock for updated quantity
+          if (product.stock !== undefined && newQuantity > product.stock) {
+            return prevCart; // Don't update if exceeds stock
+          }
+
+          const newItems = [...prevCart.items];
+          newItems[existingItemIndex] = {
+            ...existingItem,
+            quantity: newQuantity,
+          };
+
+          return { items: newItems };
+        } else {
+          // Add new item
+          return {
+            items: [...prevCart.items, { product, quantity }],
+          };
+        }
+      });
+
+      return true;
+    },
+    [],
+  );
 
   const removeItem = useCallback((productId: string) => {
     setCart((prevCart) => ({
@@ -102,28 +112,33 @@ export function CartProvider({ children }: CartProviderProps) {
     }));
   }, []);
 
-  const updateQuantity = useCallback((productId: string, quantity: number) => {
-    if (quantity <= 0) {
-      removeItem(productId);
-      return;
-    }
-
-    setCart((prevCart) => {
-      const item = prevCart.items.find((item) => item.product.id === productId);
-      if (!item) return prevCart;
-
-      // Validate stock
-      if (item.product.stock !== undefined && quantity > item.product.stock) {
-        return prevCart; // Don't update if exceeds stock
+  const updateQuantity = useCallback(
+    (productId: string, quantity: number) => {
+      if (quantity <= 0) {
+        removeItem(productId);
+        return;
       }
 
-      const newItems = prevCart.items.map((item) =>
-        item.product.id === productId ? { ...item, quantity } : item
-      );
+      setCart((prevCart) => {
+        const item = prevCart.items.find(
+          (item) => item.product.id === productId,
+        );
+        if (!item) return prevCart;
 
-      return { items: newItems };
-    });
-  }, [removeItem]);
+        // Validate stock
+        if (item.product.stock !== undefined && quantity > item.product.stock) {
+          return prevCart; // Don't update if exceeds stock
+        }
+
+        const newItems = prevCart.items.map((item) =>
+          item.product.id === productId ? { ...item, quantity } : item,
+        );
+
+        return { items: newItems };
+      });
+    },
+    [removeItem],
+  );
 
   const clearCart = useCallback(() => {
     setCart({ items: [] });
@@ -136,7 +151,7 @@ export function CartProvider({ children }: CartProviderProps) {
   const getTotalPrice = useCallback(() => {
     return cart.items.reduce(
       (total, item) => total + Number(item.product.price) * item.quantity,
-      0
+      0,
     );
   }, [cart.items]);
 

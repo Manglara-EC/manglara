@@ -9,7 +9,11 @@ import { product, service } from "@/shared/lib/drizzle/schema";
 import { tryCatch } from "@/shared/utils/try-catch";
 import type { ActionResponse } from "@/shared/types";
 
-type ErrorCode = "UNAUTHORIZED" | "FORBIDDEN" | "NOT_FOUND" | "INTERNAL_SERVER_ERROR";
+type ErrorCode =
+  | "UNAUTHORIZED"
+  | "FORBIDDEN"
+  | "NOT_FOUND"
+  | "INTERNAL_SERVER_ERROR";
 
 interface DeleteItemParams {
   itemId: string;
@@ -56,7 +60,7 @@ export async function deleteItem({
         deleted: true,
         updatedAt: new Date(),
       })
-      .where(eq(table.id, itemId))
+      .where(eq(table.id, itemId)),
   );
 
   if (deleteError) {

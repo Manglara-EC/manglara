@@ -7,7 +7,12 @@ import { Package, LoaderIcon } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/shared/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/shared/components/ui/card";
 import { Separator } from "@/shared/components/ui/separator";
 import { ScrollArea } from "@/shared/components/ui/scroll-area";
 
@@ -107,7 +112,9 @@ export function CheckoutSummary() {
                           )}
                         </div>
                         <div className="flex flex-1 flex-col gap-1">
-                          <p className="font-medium text-lg">{item.product.name}</p>
+                          <p className="font-medium text-lg">
+                            {item.product.name}
+                          </p>
                           <p className="text-sm text-muted-foreground">
                             {price} × {item.quantity}
                           </p>
@@ -141,7 +148,10 @@ export function CheckoutSummary() {
                 }).format(itemTotal);
 
                 return (
-                  <div key={item.product.id} className="flex justify-between text-sm">
+                  <div
+                    key={item.product.id}
+                    className="flex justify-between text-sm"
+                  >
                     <span className="text-muted-foreground">
                       {item.product.name} (×{item.quantity})
                     </span>

@@ -14,15 +14,15 @@ import type { RejectServiceVariables } from "@/features/owner/types";
 import type { Service } from "@/shared/types";
 import { markRequestAsReadByItem } from "@/shared/actions/mark-notification-as-read";
 
-type ErrorCode = 
-  | "UNAUTHORIZED" 
-  | "FORBIDDEN" 
+type ErrorCode =
+  | "UNAUTHORIZED"
+  | "FORBIDDEN"
   | "NOT_FOUND"
   | "VALIDATION_ERROR"
   | "INTERNAL_SERVER_ERROR";
 
 export const rejectService = async (
-  variables: RejectServiceVariables
+  variables: RejectServiceVariables,
 ): Promise<ActionResponse<Service, ErrorCode>> => {
   const session = await auth.api.getSession({
     headers: await headers(),
@@ -39,7 +39,7 @@ export const rejectService = async (
   }
 
   const validation = rejectServiceSchema.safeParse(variables);
-  
+
   if (!validation.success) {
     return {
       data: null,
@@ -53,7 +53,7 @@ export const rejectService = async (
   const { data: serv, error: servError } = await tryCatch(
     db.query.service.findFirst({
       where: eq(service.id, variables.serviceId),
-    })
+    }),
   );
 
   if (servError || !serv) {
@@ -71,9 +71,9 @@ export const rejectService = async (
       where: and(
         eq(member.userId, session.user.id),
         eq(member.organizationId, serv.organizationId),
-        eq(member.role, "owner")
+        eq(member.role, "owner"),
       ),
-    })
+    }),
   );
 
   if (membershipError || !membership) {
@@ -95,7 +95,7 @@ export const rejectService = async (
         updatedAt: new Date(),
       })
       .where(eq(service.id, variables.serviceId))
-      .returning()
+      .returning(),
   );
 
   if (updateError || !updated || updated.length === 0) {
@@ -111,7 +111,7 @@ export const rejectService = async (
   await markRequestAsReadByItem({
     userId: session.user.id,
     itemId: variables.serviceId,
-    type: "service"
+    type: "service",
   });
 
   await tryCatch(
@@ -124,7 +124,7 @@ export const rejectService = async (
       serviceId: variables.serviceId,
       referenceType: "service",
       createdAt: new Date(),
-    })
+    }),
   );
 
   return {

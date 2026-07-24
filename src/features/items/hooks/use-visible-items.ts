@@ -19,4 +19,3 @@ export const useVisibleItems = ({ params }: Props = {}) => {
     },
   });
 };
-

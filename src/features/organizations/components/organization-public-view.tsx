@@ -2,7 +2,12 @@
 
 import { Building2Icon, UsersIcon, CalendarIcon } from "lucide-react";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/shared/components/ui/card";
 import { Badge } from "@/shared/components/ui/badge";
 import {
   TypographyH1,
@@ -56,9 +61,7 @@ export function OrganizationPublicView({ organization }: Props) {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold">
-              {organization.memberCount}
-            </p>
+            <p className="text-2xl font-bold">{organization.memberCount}</p>
           </CardContent>
         </Card>
 

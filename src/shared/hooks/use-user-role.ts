@@ -70,7 +70,11 @@ export const useUserRole = (): UseUserRoleReturn => {
     // 3. Custom fields si se configuraron
     const rawRoleValue =
       (session.user?.role as string | undefined) ||
-      ((session.user as Record<string, unknown>)?.metadata as Record<string, string> | undefined)?.role ||
+      (
+        (session.user as Record<string, unknown>)?.metadata as
+          | Record<string, string>
+          | undefined
+      )?.role ||
       undefined;
 
     setRawRole(rawRoleValue);
@@ -82,7 +86,9 @@ export const useUserRole = (): UseUserRoleReturn => {
 
       // Log para debugging
       if (process.env.NODE_ENV === "development") {
-        console.debug(`[useUserRole] Raw: "${rawRoleValue}" → Normalized: "${normalizedRole}"`);
+        console.debug(
+          `[useUserRole] Raw: "${rawRoleValue}" → Normalized: "${normalizedRole}"`,
+        );
       }
     } else {
       // Si no hay rol en la sesión, el usuario no tiene rol asignado

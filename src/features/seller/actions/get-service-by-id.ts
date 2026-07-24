@@ -10,14 +10,19 @@ import { tryCatch } from "@/shared/utils/try-catch";
 import type { ServiceWithOrg } from "@/features/seller/types";
 
 export async function getServiceById(
-  serviceId: string
-): Promise<{ data?: ServiceWithOrg; error?: { code: string; message: string } }> {
+  serviceId: string,
+): Promise<{
+  data?: ServiceWithOrg;
+  error?: { code: string; message: string };
+}> {
   try {
     // 1. Verificar autenticación
     const session = await auth.api.getSession({ headers: await headers() });
 
     if (!session?.user?.id) {
-      return { error: { code: "UNAUTHENTICATED", message: "Debes iniciar sesión" } };
+      return {
+        error: { code: "UNAUTHENTICATED", message: "Debes iniciar sesión" },
+      };
     }
 
     const userId = session.user.id;
@@ -57,7 +62,9 @@ export async function getServiceById(
       .limit(1);
 
     if (serviceData.length === 0) {
-      return { error: { code: "NOT_FOUND", message: "Servicio no encontrado" } };
+      return {
+        error: { code: "NOT_FOUND", message: "Servicio no encontrado" },
+      };
     }
 
     const foundService = serviceData[0];
@@ -74,13 +81,18 @@ export async function getServiceById(
           .where(
             and(
               eq(member.organizationId, foundService.organizationId),
-              eq(member.userId, userId)
-            )
+              eq(member.userId, userId),
+            ),
           )
           .limit(1);
 
         if (memberRecord.length === 0) {
-          return { error: { code: "FORBIDDEN", message: "No tienes permiso para ver este servicio" } };
+          return {
+            error: {
+              code: "FORBIDDEN",
+              message: "No tienes permiso para ver este servicio",
+            },
+          };
         }
       }
     }
@@ -96,6 +108,11 @@ export async function getServiceById(
     return { data: result };
   } catch (error) {
     console.error("Error getting service:", error);
-    return { error: { code: "INTERNAL_ERROR", message: "Error interno al obtener el servicio" } };
+    return {
+      error: {
+        code: "INTERNAL_ERROR",
+        message: "Error interno al obtener el servicio",
+      },
+    };
   }
 }

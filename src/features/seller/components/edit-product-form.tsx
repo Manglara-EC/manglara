@@ -9,17 +9,26 @@ import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
 import { Textarea } from "@/shared/components/ui/textarea";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/shared/components/ui/card";
 import { Badge } from "@/shared/components/ui/badge";
 import { LocationPicker } from "@/shared/components/location-picker";
 import type { LatLng } from "@/shared/components/leaflet-map";
 
 import { useUpdateProductMutation } from "@/features/seller/hooks/use-update-product-mutation";
-import type { ProductWithOrg, UpdateProductVariables } from "@/features/seller/types";
+import type {
+  ProductWithOrg,
+  UpdateProductVariables,
+} from "@/features/seller/types";
 
 interface Props {
-    productId: string;
-    product: ProductWithOrg;
+  productId: string;
+  product: ProductWithOrg;
 }
 
 export function EditProductForm({ productId, product }: Props) {
@@ -51,8 +60,8 @@ export function EditProductForm({ productId, product }: Props) {
         setFormData((prev) => ({ ...prev, [field]: value }));
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
 
         const variables: UpdateProductVariables = {
             productId,
@@ -80,24 +89,85 @@ export function EditProductForm({ productId, product }: Props) {
         }
     };
 
-    return (
-        <form onSubmit={handleSubmit} className="space-y-8">
-            {/* Header con estado */}
-            <div className="flex items-center justify-between">
-                <div>
-                    <h2 className="text-lg font-semibold">Editando: {product.name}</h2>
-                    <p className="text-sm text-muted-foreground">
-                        Organización: {product.organizationName}
-                    </p>
-                </div>
-                <div className="flex items-center gap-2">
-                    {getStatusBadge()}
-                    {product.status === "rejected" && product.rejectionReason && (
-                        <span className="text-sm text-destructive">
-                            Razón: {product.rejectionReason}
-                        </span>
-                    )}
-                </div>
+    updateMutation.mutate(variables);
+  };
+
+  const getStatusBadge = () => {
+    switch (product.status) {
+      case "approved":
+        return <Badge variant="default">Aprobado</Badge>;
+      case "rejected":
+        return <Badge variant="destructive">Rechazado</Badge>;
+      default:
+        return <Badge variant="secondary">Pendiente</Badge>;
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-8">
+      {/* Header con estado */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-lg font-semibold">Editando: {product.name}</h2>
+          <p className="text-sm text-muted-foreground">
+            Organización: {product.organizationName}
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          {getStatusBadge()}
+          {product.status === "rejected" && product.rejectionReason && (
+            <span className="text-sm text-destructive">
+              Razón: {product.rejectionReason}
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* Información del producto */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Información del producto</CardTitle>
+          <CardDescription>
+            Modifica los detalles de tu producto. Al guardar, volverá a estado
+            pendiente para revisión.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="space-y-2">
+            <Label htmlFor="name">Nombre *</Label>
+            <Input
+              id="name"
+              value={formData.name}
+              onChange={handleChange("name")}
+              placeholder="Nombre del producto"
+              required
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="description">Descripción</Label>
+            <Textarea
+              id="description"
+              value={formData.description}
+              onChange={handleChange("description")}
+              placeholder="Describe tu producto..."
+              rows={4}
+            />
+          </div>
+
+          <div className="grid gap-6 md:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="price">Precio ($) *</Label>
+              <Input
+                id="price"
+                type="number"
+                step="0.01"
+                min="0"
+                value={formData.price}
+                onChange={handleChange("price")}
+                placeholder="0.00"
+                required
+              />
             </div>
 
             {/* Información del producto */}
@@ -198,6 +268,25 @@ export function EditProductForm({ productId, product }: Props) {
                     Guardar cambios
                 </Button>
             </div>
-        </form>
-    );
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Botones de acción */}
+      <div className="flex justify-between">
+        <Button type="button" variant="outline" asChild>
+          <Link href="/seller/products">
+            <ArrowLeftIcon className="mr-2 h-4 w-4" />
+            Cancelar
+          </Link>
+        </Button>
+        <Button type="submit" disabled={updateMutation.isPending}>
+          {updateMutation.isPending && (
+            <LoaderIcon className="mr-2 h-4 w-4 animate-spin" />
+          )}
+          Guardar cambios
+        </Button>
+      </div>
+    </form>
+  );
 }

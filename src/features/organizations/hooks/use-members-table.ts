@@ -24,7 +24,10 @@ interface Props {
   columns?: ColumnDef<OrganizationMember>[];
 }
 
-export const useMembersTable = ({ organizationId, columns = defaultColumns }: Props) => {
+export const useMembersTable = ({
+  organizationId,
+  columns = defaultColumns,
+}: Props) => {
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [sorting, setSorting] = useState<SortingState>([]);

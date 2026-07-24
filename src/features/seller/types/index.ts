@@ -82,7 +82,7 @@ export interface CreateProductVariables {
   latitude?: number;
   longitude?: number;
   images?: string[];
-  sellerId: string;
+  sellerId?: string;
   organizationId: string;
 }
 

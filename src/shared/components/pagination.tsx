@@ -1,6 +1,11 @@
 "use client";
 
-import { ChevronLeftIcon, ChevronRightIcon, ChevronsLeftIcon, ChevronsRightIcon } from "lucide-react";
+import {
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  ChevronsLeftIcon,
+  ChevronsRightIcon,
+} from "lucide-react";
 
 import { Button } from "@/shared/components/ui/button";
 import type { PaginationResponse } from "@/shared/schemas/pagination";
@@ -16,7 +21,7 @@ interface PaginationProps {
  * Muestra controles para navegar entre páginas
  *
  * @example
- * <Pagination 
+ * <Pagination
  *   pagination={paginationData}
  *   onPageChange={setCurrentPage}
  *   isLoading={isLoading}

@@ -15,7 +15,7 @@ import type { ServiceWithOrg } from "@/features/seller/types";
 
 type ErrorCode = "UNAUTHORIZED" | "INTERNAL_SERVER_ERROR";
 
-export const getMyServices = async (): Promise <
+export const getMyServices = async (): Promise<
   ActionResponse<ServiceWithOrg[], ErrorCode>
 > => {
   const session = await auth.api.getSession({
@@ -41,12 +41,9 @@ export const getMyServices = async (): Promise <
       .from(service)
       .innerJoin(organization, eq(service.organizationId, organization.id))
       .where(
-        and(
-          eq(service.sellerId, session.user.id),
-          eq(service.deleted, false)
-        )
+        and(eq(service.sellerId, session.user.id), eq(service.deleted, false)),
       )
-      .orderBy(desc(service.createdAt))
+      .orderBy(desc(service.createdAt)),
   );
 
   if (servicesError) {

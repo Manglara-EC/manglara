@@ -14,7 +14,7 @@ import type { OrganizationStats } from "@/features/owner/types";
 type ErrorCode = "UNAUTHORIZED" | "FORBIDDEN" | "INTERNAL_SERVER_ERROR";
 
 export const getOrganizationStats = async (
-  organizationId: string
+  organizationId: string,
 ): Promise<ActionResponse<OrganizationStats, ErrorCode>> => {
   const session = await auth.api.getSession({
     headers: await headers(),
@@ -36,9 +36,9 @@ export const getOrganizationStats = async (
       where: and(
         eq(member.userId, session.user.id),
         eq(member.organizationId, organizationId),
-        eq(member.role, "owner")
+        eq(member.role, "owner"),
       ),
-    })
+    }),
   );
 
   if (membershipError || !membership) {
@@ -60,8 +60,8 @@ export const getOrganizationStats = async (
         .where(
           and(
             eq(product.organizationId, organizationId),
-            eq(product.deleted, false)
-          )
+            eq(product.deleted, false),
+          ),
         ),
       db
         .select({ count: count() })
@@ -70,8 +70,8 @@ export const getOrganizationStats = async (
           and(
             eq(product.organizationId, organizationId),
             eq(product.status, "pending"),
-            eq(product.deleted, false)
-          )
+            eq(product.deleted, false),
+          ),
         ),
       db
         .select({ count: count() })
@@ -80,8 +80,8 @@ export const getOrganizationStats = async (
           and(
             eq(product.organizationId, organizationId),
             eq(product.status, "approved"),
-            eq(product.deleted, false)
-          )
+            eq(product.deleted, false),
+          ),
         ),
       db
         .select({ count: count() })
@@ -90,10 +90,10 @@ export const getOrganizationStats = async (
           and(
             eq(product.organizationId, organizationId),
             eq(product.status, "rejected"),
-            eq(product.deleted, false)
-          )
+            eq(product.deleted, false),
+          ),
         ),
-    ])
+    ]),
   );
 
   // Count services by status
@@ -105,8 +105,8 @@ export const getOrganizationStats = async (
         .where(
           and(
             eq(service.organizationId, organizationId),
-            eq(service.deleted, false)
-          )
+            eq(service.deleted, false),
+          ),
         ),
       db
         .select({ count: count() })
@@ -115,8 +115,8 @@ export const getOrganizationStats = async (
           and(
             eq(service.organizationId, organizationId),
             eq(service.status, "pending"),
-            eq(service.deleted, false)
-          )
+            eq(service.deleted, false),
+          ),
         ),
       db
         .select({ count: count() })
@@ -125,8 +125,8 @@ export const getOrganizationStats = async (
           and(
             eq(service.organizationId, organizationId),
             eq(service.status, "approved"),
-            eq(service.deleted, false)
-          )
+            eq(service.deleted, false),
+          ),
         ),
       db
         .select({ count: count() })
@@ -135,10 +135,10 @@ export const getOrganizationStats = async (
           and(
             eq(service.organizationId, organizationId),
             eq(service.status, "rejected"),
-            eq(service.deleted, false)
-          )
+            eq(service.deleted, false),
+          ),
         ),
-    ])
+    ]),
   );
 
   if (productError || serviceError) {

@@ -22,7 +22,7 @@ type ErrorCode =
   | "INTERNAL_SERVER_ERROR";
 
 export const approveProduct = async (
-  variables: ApproveProductVariables
+  variables: ApproveProductVariables,
 ): Promise<ActionResponse<Product, ErrorCode>> => {
   const session = await auth.api.getSession({
     headers: await headers(),
@@ -54,7 +54,7 @@ export const approveProduct = async (
   const { data: prod, error: prodError } = await tryCatch(
     db.query.product.findFirst({
       where: eq(product.id, variables.productId),
-    })
+    }),
   );
 
   if (prodError || !prod) {
@@ -73,9 +73,9 @@ export const approveProduct = async (
       where: and(
         eq(member.userId, session.user.id),
         eq(member.organizationId, prod.organizationId),
-        eq(member.role, "owner")
+        eq(member.role, "owner"),
       ),
-    })
+    }),
   );
 
   if (membershipError || !membership) {
@@ -99,7 +99,7 @@ export const approveProduct = async (
         updatedAt: new Date(),
       })
       .where(eq(product.id, variables.productId))
-      .returning()
+      .returning(),
   );
 
   if (updateError || !updated || updated.length === 0) {
@@ -115,7 +115,7 @@ export const approveProduct = async (
   await markRequestAsReadByItem({
     userId: session.user.id,
     itemId: variables.productId,
-    type: "product"
+    type: "product",
   });
 
   await tryCatch(
@@ -128,7 +128,7 @@ export const approveProduct = async (
       serviceId: null,
       referenceType: "product",
       createdAt: new Date(),
-    })
+    }),
   );
   return {
     data: updated[0],

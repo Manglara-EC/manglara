@@ -12,7 +12,7 @@ import type { PublicProduct } from "@/features/products/types";
 type ErrorCode = "NOT_FOUND" | "INTERNAL_SERVER_ERROR";
 
 export const getProductById = async (
-  productId: string
+  productId: string,
 ): Promise<ActionResponse<PublicProduct, ErrorCode>> => {
   const { data: prod, error: productError } = await tryCatch(
     db
@@ -28,10 +28,10 @@ export const getProductById = async (
         and(
           eq(product.id, productId),
           eq(product.status, "approved"),
-          eq(product.deleted, false)
-        )
+          eq(product.deleted, false),
+        ),
       )
-      .limit(1)
+      .limit(1),
   );
 
   if (productError || !prod || prod.length === 0) {

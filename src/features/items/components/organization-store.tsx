@@ -2,7 +2,12 @@
 
 import { Store } from "lucide-react";
 
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/shared/components/ui/tabs";
+import {
+  Tabs,
+  TabsList,
+  TabsTrigger,
+  TabsContent,
+} from "@/shared/components/ui/tabs";
 import { TypographyH3 } from "@/shared/components/ui/typography";
 
 import { ItemsGrid } from "@/features/items/components/items-grid";
@@ -41,4 +46,3 @@ export function OrganizationStore({ organizationId }: Props) {
     </div>
   );
 }
-

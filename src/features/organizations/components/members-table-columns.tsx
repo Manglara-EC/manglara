@@ -113,4 +113,7 @@ export const columns: ColumnDef<OrganizationMember>[] = [
 ];
 
 // Columnas sin acciones para modo solo lectura
-export const readOnlyColumns: ColumnDef<OrganizationMember>[] = columns.slice(0, -1);
+export const readOnlyColumns: ColumnDef<OrganizationMember>[] = columns.slice(
+  0,
+  -1,
+);

@@ -2,7 +2,13 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { PlusIcon, EyeIcon, PencilIcon, MoreHorizontalIcon, Trash2Icon } from "lucide-react";
+import {
+  PlusIcon,
+  EyeIcon,
+  PencilIcon,
+  MoreHorizontalIcon,
+  Trash2Icon,
+} from "lucide-react";
 
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
@@ -50,7 +56,13 @@ interface Props {
 }
 
 // Labels de estado
-const STATUS_LABELS: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
+const STATUS_LABELS: Record<
+  string,
+  {
+    label: string;
+    variant: "default" | "secondary" | "destructive" | "outline";
+  }
+> = {
   pending: { label: "Pendiente", variant: "secondary" },
   approved: { label: "Aprobado", variant: "default" },
   rejected: { label: "Rechazado", variant: "destructive" },
@@ -98,10 +110,13 @@ export function ServicesTable({ services, isLoading }: Props) {
 
 function ServiceRow({ service }: { service: ServiceWithOrg }) {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const { mutate: deleteService, isPending: isDeleting } = useDeleteServiceMutation();
+  const { mutate: deleteService, isPending: isDeleting } =
+    useDeleteServiceMutation();
 
   const statusInfo = STATUS_LABELS[service.status] || STATUS_LABELS.pending;
-  const serviceTypeLabel = SERVICE_TYPE_LABELS[service.serviceType as ServiceType] || service.serviceType;
+  const serviceTypeLabel =
+    SERVICE_TYPE_LABELS[service.serviceType as ServiceType] ||
+    service.serviceType;
   const canDelete = service.status === "pending";
 
   const handleDelete = () => {
@@ -184,7 +199,8 @@ function ServiceRow({ service }: { service: ServiceWithOrg }) {
           <AlertDialogHeader>
             <AlertDialogTitle>¿Eliminar servicio?</AlertDialogTitle>
             <AlertDialogDescription>
-              ¿Estás seguro de que deseas eliminar &quot;{service.name}&quot;? Esta acción no se puede deshacer.
+              ¿Estás seguro de que deseas eliminar &quot;{service.name}&quot;?
+              Esta acción no se puede deshacer.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

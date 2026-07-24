@@ -31,7 +31,8 @@ export default async function OrganizationsPage({
   const { slug } = await params;
 
   // Primero obtener info básica de la organización
-  const { data: orgInfo, error: orgInfoError } = await getOrganizationBySlug(slug);
+  const { data: orgInfo, error: orgInfoError } =
+    await getOrganizationBySlug(slug);
 
   if (orgInfoError?.code === "NOT_FOUND" || !orgInfo) {
     return notFound();
@@ -63,7 +64,7 @@ export default async function OrganizationsPage({
 
   // Obtener el rol del usuario actual en esta organización
   const currentUserMember = data.members?.find(
-    (member) => member.userId === session?.user?.id
+    (member) => member.userId === session?.user?.id,
   );
   const userRoleInOrg = currentUserMember?.role ?? "member";
   const canManageOrg = userRoleInOrg === "owner" || userRoleInOrg === "admin";

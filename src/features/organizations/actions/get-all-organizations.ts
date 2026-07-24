@@ -51,7 +51,7 @@ export const getAllOrganizations = async (): Promise<
       .from(organization)
       .leftJoin(member, eq(member.organizationId, organization.id))
       .groupBy(organization.id)
-      .orderBy(desc(organization.createdAt))
+      .orderBy(desc(organization.createdAt)),
   );
 
   if (orgsError) {
@@ -72,7 +72,7 @@ export const getAllOrganizations = async (): Promise<
         role: member.role,
       })
       .from(member)
-      .where(eq(member.userId, userId))
+      .where(eq(member.userId, userId)),
   );
 
   if (memberError) {
@@ -87,7 +87,7 @@ export const getAllOrganizations = async (): Promise<
 
   // Crear un mapa de membresías para búsqueda rápida
   const membershipMap = new Map(
-    (userMemberships ?? []).map((m) => [m.organizationId, m.role])
+    (userMemberships ?? []).map((m) => [m.organizationId, m.role]),
   );
 
   // Combinar la información

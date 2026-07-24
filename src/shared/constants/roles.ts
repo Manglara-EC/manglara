@@ -78,7 +78,7 @@ export const hasPermission = (role: UserRole, permission: string): boolean => {
  */
 export const canPerform = (
   userRole: UserRole | null | undefined,
-  permission: string
+  permission: string,
 ): boolean => {
   if (!userRole) return false;
   return hasPermission(userRole, permission);

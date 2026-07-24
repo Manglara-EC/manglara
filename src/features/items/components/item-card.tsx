@@ -3,10 +3,25 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Package, Wrench, ShoppingCart, MapPinIcon, ClockIcon, UsersIcon, HomeIcon, CalendarIcon } from "lucide-react";
+import {
+  Package,
+  Wrench,
+  ShoppingCart,
+  MapPinIcon,
+  ClockIcon,
+  UsersIcon,
+  HomeIcon,
+  CalendarIcon,
+} from "lucide-react";
 import { toast } from "sonner";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/shared/components/ui/card";
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
 import {
@@ -41,7 +56,8 @@ interface Props {
 }
 
 export function ItemCard({ item }: Props) {
-  const imageUrl = item.images && item.images.length > 0 ? item.images[0] : null;
+  const imageUrl =
+    item.images && item.images.length > 0 ? item.images[0] : null;
   const price = new Intl.NumberFormat("es-ES", {
     style: "currency",
     currency: "EUR",
@@ -85,8 +101,8 @@ export function ItemCard({ item }: Props) {
                 </div>
               )}
               {/* Badge de tipo en la imagen */}
-              <Badge 
-                variant="secondary" 
+              <Badge
+                variant="secondary"
                 className="absolute top-2 left-2 bg-background/80 backdrop-blur-sm"
               >
                 {SERVICE_TYPE_LABELS[serviceType]}
@@ -95,7 +111,7 @@ export function ItemCard({ item }: Props) {
           </CardHeader>
           <CardContent className="flex flex-col gap-2">
             <CardTitle className="line-clamp-2 text-lg">{item.name}</CardTitle>
-            
+
             {item.description && (
               <CardDescription className="line-clamp-2">
                 {item.description}
@@ -147,9 +163,12 @@ export function ItemCard({ item }: Props) {
   }
 
   const product = item;
-  const existingItem = cart.items.find((cartItem) => cartItem.product.id === product.id);
+  const existingItem = cart.items.find(
+    (cartItem) => cartItem.product.id === product.id,
+  );
   const currentQuantity = existingItem?.quantity ?? 0;
-  const availableStock = product.stock !== undefined ? product.stock - currentQuantity : undefined;
+  const availableStock =
+    product.stock !== undefined ? product.stock - currentQuantity : undefined;
   const maxQuantity = availableStock !== undefined ? availableStock : 999;
 
   const handleAddToCart = (e: React.MouseEvent) => {
@@ -168,7 +187,9 @@ export function ItemCard({ item }: Props) {
 
     const success = addItem(product, quantity);
     if (success) {
-      toast.success(`${quantity} ${quantity === 1 ? "unidad" : "unidades"} agregada${quantity > 1 ? "s" : ""} al carrito`);
+      toast.success(
+        `${quantity} ${quantity === 1 ? "unidad" : "unidades"} agregada${quantity > 1 ? "s" : ""} al carrito`,
+      );
       setOpen(false);
       setQuantity(1);
     } else {
@@ -222,7 +243,11 @@ export function ItemCard({ item }: Props) {
         ) : (
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-              <Button className="w-full" size="sm" onClick={(e) => e.stopPropagation()}>
+              <Button
+                className="w-full"
+                size="sm"
+                onClick={(e) => e.stopPropagation()}
+              >
                 <ShoppingCart className="mr-2 h-4 w-4" />
                 Agregar al carrito
               </Button>
@@ -259,7 +284,9 @@ export function ItemCard({ item }: Props) {
                   )}
                   {currentQuantity > 0 && (
                     <p className="text-sm text-muted-foreground">
-                      Ya tienes {currentQuantity} {currentQuantity === 1 ? "unidad" : "unidades"} en el carrito
+                      Ya tienes {currentQuantity}{" "}
+                      {currentQuantity === 1 ? "unidad" : "unidades"} en el
+                      carrito
                     </p>
                   )}
                 </div>
@@ -268,7 +295,10 @@ export function ItemCard({ item }: Props) {
                 <Button variant="outline" onClick={() => setOpen(false)}>
                   Cancelar
                 </Button>
-                <Button onClick={handleAddToCart} disabled={availableStock !== undefined && availableStock <= 0}>
+                <Button
+                  onClick={handleAddToCart}
+                  disabled={availableStock !== undefined && availableStock <= 0}
+                >
                   Agregar
                 </Button>
               </DialogFooter>
@@ -279,4 +309,3 @@ export function ItemCard({ item }: Props) {
     </Card>
   );
 }
-

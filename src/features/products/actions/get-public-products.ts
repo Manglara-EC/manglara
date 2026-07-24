@@ -25,7 +25,7 @@ export interface GetPublicProductsResponse {
 export const getPublicProducts = async (
   page: number = 1,
   pageSize: number = 50,
-  organizationId?: string
+  organizationId?: string,
 ): Promise<ActionResponse<GetPublicProductsResponse, ErrorCode>> => {
   // Validar parámetros de paginación
   const validationResult = paginationParamsSchema.safeParse({
@@ -73,13 +73,13 @@ export const getPublicProducts = async (
         .where(and(...whereConditions))
         .orderBy(desc(product.createdAt))
         .limit(validPageSize)
-        .offset(offset)
+        .offset(offset),
     ),
     tryCatch(
       db
         .select({ count: count() })
         .from(product)
-        .where(and(...whereConditions))
+        .where(and(...whereConditions)),
     ),
   ]);
 

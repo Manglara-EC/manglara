@@ -19,14 +19,15 @@ export const useDeleteServiceMutation = () => {
     onSuccess: () => {
       // Invalidar queries relacionadas
       queryClient.invalidateQueries({ queryKey: ["seller", "services"] });
-      
+
       toast.success("Servicio eliminado", {
         description: "El servicio ha sido eliminado correctamente.",
       });
     },
     onError: (error: { code: string; message: string }) => {
       toast.error("No se pudo eliminar el servicio", {
-        description: error.message || "Por favor, inténtelo de nuevo más tarde.",
+        description:
+          error.message || "Por favor, inténtelo de nuevo más tarde.",
       });
     },
   });

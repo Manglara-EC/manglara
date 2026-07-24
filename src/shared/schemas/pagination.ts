@@ -37,7 +37,7 @@ export const calculateOffset = (page: number, pageSize: number): number => {
 export const calculatePagination = (
   page: number,
   pageSize: number,
-  total: number
+  total: number,
 ): PaginationResponse => {
   const totalPages = Math.ceil(total / pageSize);
 

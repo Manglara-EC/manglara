@@ -4,7 +4,12 @@ import {
   TypographyH1,
   TypographyMuted,
 } from "@/shared/components/ui/typography";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/shared/components/ui/tabs";
+import {
+  Tabs,
+  TabsList,
+  TabsTrigger,
+  TabsContent,
+} from "@/shared/components/ui/tabs";
 
 import { ItemsGrid } from "@/features/items/components/items-grid";
 

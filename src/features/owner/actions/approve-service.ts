@@ -14,15 +14,15 @@ import type { ApproveServiceVariables } from "@/features/owner/types";
 import type { Service } from "@/shared/types";
 import { markRequestAsReadByItem } from "@/shared/actions/mark-notification-as-read";
 
-type ErrorCode = 
-  | "UNAUTHORIZED" 
-  | "FORBIDDEN" 
+type ErrorCode =
+  | "UNAUTHORIZED"
+  | "FORBIDDEN"
   | "NOT_FOUND"
   | "VALIDATION_ERROR"
   | "INTERNAL_SERVER_ERROR";
 
 export const approveService = async (
-  variables: ApproveServiceVariables
+  variables: ApproveServiceVariables,
 ): Promise<ActionResponse<Service, ErrorCode>> => {
   const session = await auth.api.getSession({
     headers: await headers(),
@@ -39,7 +39,7 @@ export const approveService = async (
   }
 
   const validation = approveServiceSchema.safeParse(variables);
-  
+
   if (!validation.success) {
     return {
       data: null,
@@ -53,7 +53,7 @@ export const approveService = async (
   const { data: serv, error: servError } = await tryCatch(
     db.query.service.findFirst({
       where: eq(service.id, variables.serviceId),
-    })
+    }),
   );
 
   if (servError || !serv) {
@@ -71,9 +71,9 @@ export const approveService = async (
       where: and(
         eq(member.userId, session.user.id),
         eq(member.organizationId, serv.organizationId),
-        eq(member.role, "owner")
+        eq(member.role, "owner"),
       ),
-    })
+    }),
   );
 
   if (membershipError || !membership) {
@@ -96,7 +96,7 @@ export const approveService = async (
         updatedAt: new Date(),
       })
       .where(eq(service.id, variables.serviceId))
-      .returning()
+      .returning(),
   );
 
   if (updateError || !updated || updated.length === 0) {
@@ -112,7 +112,7 @@ export const approveService = async (
   await markRequestAsReadByItem({
     userId: session.user.id,
     itemId: variables.serviceId,
-    type: "service"
+    type: "service",
   });
 
   await tryCatch(
@@ -125,7 +125,7 @@ export const approveService = async (
       serviceId: variables.serviceId,
       referenceType: "service",
       createdAt: new Date(),
-    })
+    }),
   );
 
   return {

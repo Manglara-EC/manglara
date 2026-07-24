@@ -2,7 +2,14 @@ import type { Metadata } from "next";
 import { redirect, notFound } from "next/navigation";
 import { headers } from "next/headers";
 import Link from "next/link";
-import { ArrowLeftIcon, Package, Wrench, UserIcon, BuildingIcon, CalendarIcon } from "lucide-react";
+import {
+  ArrowLeftIcon,
+  Package,
+  Wrench,
+  UserIcon,
+  BuildingIcon,
+  CalendarIcon,
+} from "lucide-react";
 
 import { auth } from "@/shared/lib/better-auth/server";
 import {
@@ -35,7 +42,13 @@ interface Props {
   }>;
 }
 
-const STATUS_INFO: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
+const STATUS_INFO: Record<
+  string,
+  {
+    label: string;
+    variant: "default" | "secondary" | "destructive" | "outline";
+  }
+> = {
   pending: { label: "Pendiente de revisión", variant: "outline" },
   approved: { label: "Aprobado", variant: "default" },
   rejected: { label: "Rechazado", variant: "destructive" },
@@ -48,7 +61,7 @@ const SERVICE_TYPE_LABELS: Record<string, string> = {
 
 export default async function AdminItemDetailPage({ params }: Props) {
   const { type, id } = await params;
-  
+
   // Validar tipo
   if (type !== "product" && type !== "service") {
     notFound();
@@ -102,7 +115,8 @@ export default async function AdminItemDetailPage({ params }: Props) {
                 <Badge variant={statusInfo.variant}>{statusInfo.label}</Badge>
               </div>
               <TypographyMuted>
-                {isProduct ? "Producto" : "Servicio"} • ID: {item.id.slice(0, 8)}...
+                {isProduct ? "Producto" : "Servicio"} • ID:{" "}
+                {item.id.slice(0, 8)}...
               </TypographyMuted>
             </div>
           </div>
@@ -114,28 +128,39 @@ export default async function AdminItemDetailPage({ params }: Props) {
             {/* Información básica */}
             <Card>
               <CardHeader>
-                <CardTitle>Información del {isProduct ? "producto" : "servicio"}</CardTitle>
+                <CardTitle>
+                  Información del {isProduct ? "producto" : "servicio"}
+                </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 {!isProduct && item.serviceType && (
                   <div>
-                    <TypographyMuted className="text-sm">Tipo de servicio</TypographyMuted>
+                    <TypographyMuted className="text-sm">
+                      Tipo de servicio
+                    </TypographyMuted>
                     <Badge variant="secondary" className="mt-1">
-                      {SERVICE_TYPE_LABELS[item.serviceType] || item.serviceType}
+                      {SERVICE_TYPE_LABELS[item.serviceType] ||
+                        item.serviceType}
                     </Badge>
                   </div>
                 )}
 
                 {item.description && (
                   <div>
-                    <TypographyMuted className="text-sm">Descripción</TypographyMuted>
-                    <TypographyP className="mt-1 whitespace-pre-wrap">{item.description}</TypographyP>
+                    <TypographyMuted className="text-sm">
+                      Descripción
+                    </TypographyMuted>
+                    <TypographyP className="mt-1 whitespace-pre-wrap">
+                      {item.description}
+                    </TypographyP>
                   </div>
                 )}
 
                 {!isProduct && item.location && (
                   <div>
-                    <TypographyMuted className="text-sm">Ubicación</TypographyMuted>
+                    <TypographyMuted className="text-sm">
+                      Ubicación
+                    </TypographyMuted>
                     <TypographyP className="mt-1">{item.location}</TypographyP>
                   </div>
                 )}
@@ -144,7 +169,9 @@ export default async function AdminItemDetailPage({ params }: Props) {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <TypographyMuted className="text-sm">Precio</TypographyMuted>
+                    <TypographyMuted className="text-sm">
+                      Precio
+                    </TypographyMuted>
                     <p className="text-2xl font-bold mt-1">
                       ${item.price.toFixed(2)}
                       {item.priceUnit && (
@@ -157,7 +184,9 @@ export default async function AdminItemDetailPage({ params }: Props) {
 
                   {isProduct && item.stock !== undefined && (
                     <div>
-                      <TypographyMuted className="text-sm">Stock disponible</TypographyMuted>
+                      <TypographyMuted className="text-sm">
+                        Stock disponible
+                      </TypographyMuted>
                       <p className="text-2xl font-bold mt-1">{item.stock}</p>
                     </div>
                   )}
@@ -166,150 +195,225 @@ export default async function AdminItemDetailPage({ params }: Props) {
             </Card>
 
             {/* Configuración del servicio (si aplica) */}
-            {!isProduct && item.serviceConfig && Object.keys(item.serviceConfig).length > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Configuración del servicio</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  {/* Información básica del config */}
-                  <dl className="grid grid-cols-2 gap-4 text-sm">
-                    {Boolean(item.serviceConfig.maxCapacity) && (
-                      <div>
-                        <dt className="text-muted-foreground">Capacidad máxima</dt>
-                        <dd className="font-medium">{String(item.serviceConfig.maxCapacity)} personas</dd>
-                      </div>
-                    )}
-                    {/* Campos de Alojamiento */}
-                    {Boolean(item.serviceConfig.checkInTime) && (
-                      <div>
-                        <dt className="text-muted-foreground">Check-in</dt>
-                        <dd className="font-medium">{String(item.serviceConfig.checkInTime)}</dd>
-                      </div>
-                    )}
-                    {Boolean(item.serviceConfig.checkOutTime) && (
-                      <div>
-                        <dt className="text-muted-foreground">Check-out</dt>
-                        <dd className="font-medium">{String(item.serviceConfig.checkOutTime)}</dd>
-                      </div>
-                    )}
-                    {Boolean(item.serviceConfig.minNights) && (
-                      <div>
-                        <dt className="text-muted-foreground">Noches mínimas</dt>
-                        <dd className="font-medium">{String(item.serviceConfig.minNights)}</dd>
-                      </div>
-                    )}
-                    {Boolean(item.serviceConfig.maxNights) && (
-                      <div>
-                        <dt className="text-muted-foreground">Noches máximas</dt>
-                        <dd className="font-medium">{String(item.serviceConfig.maxNights)}</dd>
-                      </div>
-                    )}
-                    {Boolean(item.serviceConfig.bedrooms) && (
-                      <div>
-                        <dt className="text-muted-foreground">Habitaciones</dt>
-                        <dd className="font-medium">{String(item.serviceConfig.bedrooms)}</dd>
-                      </div>
-                    )}
-                    {Boolean(item.serviceConfig.bathrooms) && (
-                      <div>
-                        <dt className="text-muted-foreground">Baños</dt>
-                        <dd className="font-medium">{String(item.serviceConfig.bathrooms)}</dd>
-                      </div>
-                    )}
-                    {Boolean(item.serviceConfig.beds) && (
-                      <div>
-                        <dt className="text-muted-foreground">Camas</dt>
-                        <dd className="font-medium">{String(item.serviceConfig.beds)}</dd>
-                      </div>
-                    )}
-                    {/* Campos de Actividad */}
-                    {Boolean(item.serviceConfig.difficulty) && (
-                      <div>
-                        <dt className="text-muted-foreground">Dificultad</dt>
-                        <dd className="font-medium capitalize">{String(item.serviceConfig.difficulty)}</dd>
-                      </div>
-                    )}
-                    {Boolean(item.serviceConfig.minParticipants) && (
-                      <div>
-                        <dt className="text-muted-foreground">Participantes mínimos</dt>
-                        <dd className="font-medium">{String(item.serviceConfig.minParticipants)}</dd>
-                      </div>
-                    )}
-                    {Boolean(item.serviceConfig.meetingPoint) && (
-                      <div className="col-span-2">
-                        <dt className="text-muted-foreground">Punto de encuentro</dt>
-                        <dd className="font-medium">{String(item.serviceConfig.meetingPoint)}</dd>
-                      </div>
-                    )}
-                  </dl>
+            {!isProduct &&
+              item.serviceConfig &&
+              Object.keys(item.serviceConfig).length > 0 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Configuración del servicio</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    {/* Información básica del config */}
+                    <dl className="grid grid-cols-2 gap-4 text-sm">
+                      {Boolean(item.serviceConfig.maxCapacity) && (
+                        <div>
+                          <dt className="text-muted-foreground">
+                            Capacidad máxima
+                          </dt>
+                          <dd className="font-medium">
+                            {String(item.serviceConfig.maxCapacity)} personas
+                          </dd>
+                        </div>
+                      )}
+                      {/* Campos de Alojamiento */}
+                      {Boolean(item.serviceConfig.checkInTime) && (
+                        <div>
+                          <dt className="text-muted-foreground">Check-in</dt>
+                          <dd className="font-medium">
+                            {String(item.serviceConfig.checkInTime)}
+                          </dd>
+                        </div>
+                      )}
+                      {Boolean(item.serviceConfig.checkOutTime) && (
+                        <div>
+                          <dt className="text-muted-foreground">Check-out</dt>
+                          <dd className="font-medium">
+                            {String(item.serviceConfig.checkOutTime)}
+                          </dd>
+                        </div>
+                      )}
+                      {Boolean(item.serviceConfig.minNights) && (
+                        <div>
+                          <dt className="text-muted-foreground">
+                            Noches mínimas
+                          </dt>
+                          <dd className="font-medium">
+                            {String(item.serviceConfig.minNights)}
+                          </dd>
+                        </div>
+                      )}
+                      {Boolean(item.serviceConfig.maxNights) && (
+                        <div>
+                          <dt className="text-muted-foreground">
+                            Noches máximas
+                          </dt>
+                          <dd className="font-medium">
+                            {String(item.serviceConfig.maxNights)}
+                          </dd>
+                        </div>
+                      )}
+                      {Boolean(item.serviceConfig.bedrooms) && (
+                        <div>
+                          <dt className="text-muted-foreground">
+                            Habitaciones
+                          </dt>
+                          <dd className="font-medium">
+                            {String(item.serviceConfig.bedrooms)}
+                          </dd>
+                        </div>
+                      )}
+                      {Boolean(item.serviceConfig.bathrooms) && (
+                        <div>
+                          <dt className="text-muted-foreground">Baños</dt>
+                          <dd className="font-medium">
+                            {String(item.serviceConfig.bathrooms)}
+                          </dd>
+                        </div>
+                      )}
+                      {Boolean(item.serviceConfig.beds) && (
+                        <div>
+                          <dt className="text-muted-foreground">Camas</dt>
+                          <dd className="font-medium">
+                            {String(item.serviceConfig.beds)}
+                          </dd>
+                        </div>
+                      )}
+                      {/* Campos de Actividad */}
+                      {Boolean(item.serviceConfig.difficulty) && (
+                        <div>
+                          <dt className="text-muted-foreground">Dificultad</dt>
+                          <dd className="font-medium capitalize">
+                            {String(item.serviceConfig.difficulty)}
+                          </dd>
+                        </div>
+                      )}
+                      {Boolean(item.serviceConfig.minParticipants) && (
+                        <div>
+                          <dt className="text-muted-foreground">
+                            Participantes mínimos
+                          </dt>
+                          <dd className="font-medium">
+                            {String(item.serviceConfig.minParticipants)}
+                          </dd>
+                        </div>
+                      )}
+                      {Boolean(item.serviceConfig.meetingPoint) && (
+                        <div className="col-span-2">
+                          <dt className="text-muted-foreground">
+                            Punto de encuentro
+                          </dt>
+                          <dd className="font-medium">
+                            {String(item.serviceConfig.meetingPoint)}
+                          </dd>
+                        </div>
+                      )}
+                    </dl>
 
-                  {/* Amenidades (Alojamiento) */}
-                  {Array.isArray(item.serviceConfig.amenities) && item.serviceConfig.amenities.length > 0 && (
-                    <div>
-                      <TypographyMuted className="text-sm mb-2">Amenidades</TypographyMuted>
-                      <div className="flex flex-wrap gap-2">
-                        {(item.serviceConfig.amenities as string[]).map((amenity, i) => (
-                          <Badge key={i} variant="outline">{amenity}</Badge>
-                        ))}
-                      </div>
-                    </div>
-                  )}
+                    {/* Amenidades (Alojamiento) */}
+                    {Array.isArray(item.serviceConfig.amenities) &&
+                      item.serviceConfig.amenities.length > 0 && (
+                        <div>
+                          <TypographyMuted className="text-sm mb-2">
+                            Amenidades
+                          </TypographyMuted>
+                          <div className="flex flex-wrap gap-2">
+                            {(item.serviceConfig.amenities as string[]).map(
+                              (amenity, i) => (
+                                <Badge key={i} variant="outline">
+                                  {amenity}
+                                </Badge>
+                              ),
+                            )}
+                          </div>
+                        </div>
+                      )}
 
-                  {/* Reglas de la casa (Alojamiento) */}
-                  {Array.isArray(item.serviceConfig.houseRules) && item.serviceConfig.houseRules.length > 0 && (
-                    <div>
-                      <TypographyMuted className="text-sm mb-2">Reglas de la casa</TypographyMuted>
-                      <ul className="list-disc list-inside space-y-1">
-                        {(item.serviceConfig.houseRules as string[]).map((rule, i) => (
-                          <li key={i} className="text-sm">{rule}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
+                    {/* Reglas de la casa (Alojamiento) */}
+                    {Array.isArray(item.serviceConfig.houseRules) &&
+                      item.serviceConfig.houseRules.length > 0 && (
+                        <div>
+                          <TypographyMuted className="text-sm mb-2">
+                            Reglas de la casa
+                          </TypographyMuted>
+                          <ul className="list-disc list-inside space-y-1">
+                            {(item.serviceConfig.houseRules as string[]).map(
+                              (rule, i) => (
+                                <li key={i} className="text-sm">
+                                  {rule}
+                                </li>
+                              ),
+                            )}
+                          </ul>
+                        </div>
+                      )}
 
-                  {/* Requisitos (Actividad) */}
-                  {Array.isArray(item.serviceConfig.requirements) && item.serviceConfig.requirements.length > 0 && (
-                    <div>
-                      <TypographyMuted className="text-sm mb-2">Requisitos</TypographyMuted>
-                      <ul className="list-disc list-inside space-y-1">
-                        {(item.serviceConfig.requirements as string[]).map((req, i) => (
-                          <li key={i} className="text-sm">{req}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
+                    {/* Requisitos (Actividad) */}
+                    {Array.isArray(item.serviceConfig.requirements) &&
+                      item.serviceConfig.requirements.length > 0 && (
+                        <div>
+                          <TypographyMuted className="text-sm mb-2">
+                            Requisitos
+                          </TypographyMuted>
+                          <ul className="list-disc list-inside space-y-1">
+                            {(item.serviceConfig.requirements as string[]).map(
+                              (req, i) => (
+                                <li key={i} className="text-sm">
+                                  {req}
+                                </li>
+                              ),
+                            )}
+                          </ul>
+                        </div>
+                      )}
 
-                  {/* Qué incluye (Actividad) */}
-                  {Array.isArray(item.serviceConfig.inclusions) && item.serviceConfig.inclusions.length > 0 && (
-                    <div>
-                      <TypographyMuted className="text-sm mb-2">Qué incluye</TypographyMuted>
-                      <div className="flex flex-wrap gap-2">
-                        {(item.serviceConfig.inclusions as string[]).map((item, i) => (
-                          <Badge key={i} variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
-                            ✓ {item}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                  )}
+                    {/* Qué incluye (Actividad) */}
+                    {Array.isArray(item.serviceConfig.inclusions) &&
+                      item.serviceConfig.inclusions.length > 0 && (
+                        <div>
+                          <TypographyMuted className="text-sm mb-2">
+                            Qué incluye
+                          </TypographyMuted>
+                          <div className="flex flex-wrap gap-2">
+                            {(item.serviceConfig.inclusions as string[]).map(
+                              (item, i) => (
+                                <Badge
+                                  key={i}
+                                  variant="secondary"
+                                  className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                                >
+                                  ✓ {item}
+                                </Badge>
+                              ),
+                            )}
+                          </div>
+                        </div>
+                      )}
 
-                  {/* Qué NO incluye (Actividad) */}
-                  {Array.isArray(item.serviceConfig.exclusions) && item.serviceConfig.exclusions.length > 0 && (
-                    <div>
-                      <TypographyMuted className="text-sm mb-2">Qué NO incluye</TypographyMuted>
-                      <div className="flex flex-wrap gap-2">
-                        {(item.serviceConfig.exclusions as string[]).map((item, i) => (
-                          <Badge key={i} variant="secondary" className="bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
-                            ✗ {item}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            )}
+                    {/* Qué NO incluye (Actividad) */}
+                    {Array.isArray(item.serviceConfig.exclusions) &&
+                      item.serviceConfig.exclusions.length > 0 && (
+                        <div>
+                          <TypographyMuted className="text-sm mb-2">
+                            Qué NO incluye
+                          </TypographyMuted>
+                          <div className="flex flex-wrap gap-2">
+                            {(item.serviceConfig.exclusions as string[]).map(
+                              (item, i) => (
+                                <Badge
+                                  key={i}
+                                  variant="secondary"
+                                  className="bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
+                                >
+                                  ✗ {item}
+                                </Badge>
+                              ),
+                            )}
+                          </div>
+                        </div>
+                      )}
+                  </CardContent>
+                </Card>
+              )}
 
             {/* Información del vendedor */}
             <Card>
@@ -323,7 +427,9 @@ export default async function AdminItemDetailPage({ params }: Props) {
                   </div>
                   <div>
                     <p className="font-medium">{item.sellerName}</p>
-                    <p className="text-sm text-muted-foreground">{item.sellerEmail}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {item.sellerEmail}
+                    </p>
                   </div>
                 </div>
 
@@ -335,7 +441,9 @@ export default async function AdminItemDetailPage({ params }: Props) {
                   </div>
                   <div>
                     <p className="font-medium">{item.organizationName}</p>
-                    <p className="text-sm text-muted-foreground">Organización</p>
+                    <p className="text-sm text-muted-foreground">
+                      Organización
+                    </p>
                   </div>
                 </div>
               </CardContent>

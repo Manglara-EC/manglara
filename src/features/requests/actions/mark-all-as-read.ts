@@ -11,7 +11,7 @@ import type { ActionResponse } from "@/shared/types";
 
 type ErrorCode = "UNAUTHORIZED" | "INTERNAL_SERVER_ERROR";
 
-export const markAllAsRead = async (): Promise <
+export const markAllAsRead = async (): Promise<
   ActionResponse<boolean, ErrorCode>
 > => {
   const session = await auth.api.getSession({
@@ -32,7 +32,7 @@ export const markAllAsRead = async (): Promise <
     db
       .update(request)
       .set({ read: true })
-      .where(eq(request.userId, session.user.id))
+      .where(eq(request.userId, session.user.id)),
   );
 
   if (updateError) {
