@@ -13,6 +13,7 @@ import {
 import { tryCatch } from "@/shared/utils/try-catch";
 import { formatCurrency } from "@/shared/utils/currency";
 import type { ActionResponse } from "@/shared/types";
+import { validateBookingAvailability } from "@/features/services/data/booking-availability";
 
 export interface CreateBookingInput {
   serviceId: string;
@@ -28,6 +29,7 @@ type ErrorCode =
   | "SERVICE_NOT_FOUND"
   | "INVALID_DATES"
   | "INVALID_QUANTITY"
+  | "UNAVAILABLE"
   | "CAPACITY_EXCEEDED"
   | "INTERNAL_SERVER_ERROR";
 
@@ -73,37 +75,18 @@ export const createBooking = async (
     };
   }
 
-  // Fetch service details
-  const { data: foundService, error: serviceError } = await tryCatch(
-    db.query.service.findFirst({
-      where: (s, { eq, and }) =>
-        and(eq(s.id, serviceId), eq(s.status, "approved"), eq(s.deleted, false)),
-    }),
-  );
-
-  if (serviceError || !foundService) {
-    return {
-      data: null,
-      error: {
-        code: "SERVICE_NOT_FOUND",
-        message: "El servicio solicitado no existe o no está disponible.",
-      },
-    };
-  }
-
-  if (foundService.maxCapacity && quantity > foundService.maxCapacity) {
-    return {
-      data: null,
-      error: {
-        code: "CAPACITY_EXCEEDED",
-        message: `La cantidad ingresada supera la capacidad máxima del servicio (${foundService.maxCapacity}).`,
-      },
-    };
-  }
-
-  // Execute database transaction
   const { data: transactionResult, error: transactionError } = await tryCatch(
     db.transaction(async (tx) => {
+      const availability = await validateBookingAvailability(tx, {
+        serviceId,
+        startDate,
+        endDate,
+        quantity,
+      });
+
+      if (!availability.available) return availability;
+
+      const foundService = availability.service;
       const parentOrderId = crypto.randomUUID();
       const transactionId = crypto.randomUUID();
       const transactionLineId = crypto.randomUUID();
@@ -170,7 +153,7 @@ export const createBooking = async (
         console.error("Error inserting seller notification request:", reqErr);
       }
 
-      return { bookingId: transactionLineId, transactionId };
+      return { available: true as const, bookingId: transactionLineId, transactionId };
     }),
   );
 
@@ -185,8 +168,21 @@ export const createBooking = async (
     };
   }
 
+  if (!transactionResult.available) {
+    return {
+      data: null,
+      error: {
+        code: transactionResult.code,
+        message: transactionResult.message,
+      },
+    };
+  }
+
   return {
-    data: transactionResult,
+    data: {
+      bookingId: transactionResult.bookingId,
+      transactionId: transactionResult.transactionId,
+    },
     error: null,
   };
 };
