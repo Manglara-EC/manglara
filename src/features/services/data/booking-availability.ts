@@ -38,6 +38,40 @@ const WEEKDAYS = [
   "saturday",
 ] as const;
 
+const SERVICE_TIME_ZONE = "America/Bogota";
+
+const serviceTimeFormatter = new Intl.DateTimeFormat("en-CA", {
+  timeZone: SERVICE_TIME_ZONE,
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+  hour: "2-digit",
+  minute: "2-digit",
+  second: "2-digit",
+  hourCycle: "h23",
+});
+
+const toServiceLocalDate = (date: Date) => {
+  const parts = Object.fromEntries(
+    serviceTimeFormatter
+      .formatToParts(date)
+      .filter((part) => part.type !== "literal")
+      .map((part) => [part.type, part.value]),
+  );
+
+  // Use UTC getters to operate on the service's local calendar without changing instants.
+  return new Date(
+    Date.UTC(
+      Number(parts.year),
+      Number(parts.month) - 1,
+      Number(parts.day),
+      Number(parts.hour),
+      Number(parts.minute),
+      Number(parts.second),
+    ),
+  );
+};
+
 const toUtcDayKey = (date: Date) => date.toISOString().slice(0, 10);
 
 const dateAtUtcTime = (date: Date, time: string) => {
@@ -134,7 +168,10 @@ const validateScheduleAndBlockedDates = (
 ): AvailabilityResult | null => {
   if (!rules) return null;
 
-  if (intersectsBlockedDate(rules.blockedDates, startDate, endDate)) {
+  const localStartDate = toServiceLocalDate(startDate);
+  const localEndDate = toServiceLocalDate(endDate);
+
+  if (intersectsBlockedDate(rules.blockedDates, localStartDate, localEndDate)) {
     return {
       available: false,
       code: "UNAVAILABLE",
@@ -142,7 +179,7 @@ const validateScheduleAndBlockedDates = (
     };
   }
 
-  if (!isCoveredBySchedule(rules, startDate, endDate)) {
+  if (!isCoveredBySchedule(rules, localStartDate, localEndDate)) {
     return {
       available: false,
       code: "UNAVAILABLE",
