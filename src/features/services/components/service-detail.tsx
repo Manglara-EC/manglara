@@ -154,6 +154,7 @@ const getScheduleText = (
 
 export function ServiceDetail({ service }: Props) {
   const [isBookingOpen, setIsBookingOpen] = useState(false);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
   const price = formatCurrency(service.price);
 
@@ -185,18 +186,11 @@ export function ServiceDetail({ service }: Props) {
     surfaceType?: string;
   }
 
-  const imageUrl =
-    service.images && service.images.length > 0 ? service.images[0] : null;
+  const images = service.images ?? [];
+  const imageUrl = images[selectedImageIndex] ?? null;
   const config = ((service.serviceConfig as Record<string, unknown>) ??
     {}) as ServiceConfigProps;
   const serviceType = service.serviceType || "other";
-
-  const hasAccommodationAmenities = (serviceType === "accommodation" &&
-    Array.isArray(config.amenities) &&
-    (config.amenities as unknown[])?.length > 0) as boolean;
-  const hasAccommodationHouseRules = (serviceType === "accommodation" &&
-    Array.isArray(config.houseRules) &&
-    (config.houseRules as unknown[])?.length > 0) as boolean;
 
   return (
     <div className="flex flex-col gap-6">
@@ -226,6 +220,31 @@ export function ServiceDetail({ service }: Props) {
                 </div>
               )}
             </div>
+            {images.length > 1 && (
+              <div className="flex gap-2 overflow-x-auto border-t p-3">
+                {images.map((image, index) => (
+                  <button
+                    key={image}
+                    type="button"
+                    onClick={() => setSelectedImageIndex(index)}
+                    className="relative h-16 w-24 shrink-0 overflow-hidden rounded-md border-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    aria-label={`Ver imagen ${index + 1} de ${service.name}`}
+                    aria-pressed={selectedImageIndex === index}
+                  >
+                    <Image
+                      src={image}
+                      alt=""
+                      fill
+                      sizes="96px"
+                      className="object-cover"
+                    />
+                    {selectedImageIndex === index && (
+                      <span className="absolute inset-0 border-2 border-primary" />
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
           </CardHeader>
           <CardContent className="pt-4">
             <div className="space-y-4">

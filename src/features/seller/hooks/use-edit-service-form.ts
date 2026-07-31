@@ -14,7 +14,6 @@ import type {
   PriceUnit,
   ServiceWithOrg,
 } from "@/features/seller/types";
-import { getRecommendedPriceUnit } from "@/features/seller/types";
 
 interface Props {
   serviceId: string;
@@ -58,7 +57,7 @@ export const useEditServiceForm = ({ serviceId, service }: Props) => {
         | "strict"
         | "non_refundable") || "flexible",
     cancellationWindowHours: service.cancellationWindowHours ?? 24,
-    images: [],
+    images: service.images ?? [],
   };
 
   const form = useForm<CreateServiceVariables>({

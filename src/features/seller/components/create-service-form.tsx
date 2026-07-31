@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { LoaderIcon } from "lucide-react";
 
@@ -46,6 +47,7 @@ import { AccommodationConfigFields } from "@/features/seller/components/accommod
 import { ActivityConfigFields } from "@/features/seller/components/activity-config-fields";
 import { RentalConfigFields } from "@/features/seller/components/rental-config-fields";
 import { ParkingConfigFields } from "@/features/seller/components/parking-config-fields";
+import { ServiceImageUpload } from "@/features/seller/components/service-image-upload";
 
 interface Props {
   organizationId: string;
@@ -55,6 +57,7 @@ export function CreateServiceForm({ organizationId }: Props) {
   const { form, onSubmit, isPending, serviceType } = useCreateServiceForm({
     organizationId,
   });
+  const [isUploadingImages, setIsUploadingImages] = useState(false);
 
   return (
     <Form {...form}>
@@ -406,6 +409,35 @@ export function CreateServiceForm({ organizationId }: Props) {
           />
         )}
 
+        <Card>
+          <CardHeader>
+            <CardTitle>Imágenes</CardTitle>
+            <CardDescription>
+              Añade fotos para que las personas conozcan mejor tu servicio
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <FormField
+              control={
+                form.control as unknown as React.ComponentProps<
+                  typeof FormField
+                >["control"]
+              }
+              name="images"
+              render={({ field }) => (
+                <FormItem>
+                  <ServiceImageUpload
+                    value={field.value ?? []}
+                    onChange={field.onChange}
+                    onUploadingChange={setIsUploadingImages}
+                  />
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </CardContent>
+        </Card>
+
         {/* Política de cancelación */}
         <Card>
           <CardHeader>
@@ -484,9 +516,11 @@ export function CreateServiceForm({ organizationId }: Props) {
           <Button type="button" variant="outline" asChild>
             <Link href="/seller/services">Cancelar</Link>
           </Button>
-          <Button type="submit" disabled={isPending}>
-            {isPending && <LoaderIcon className="mr-2 h-4 w-4 animate-spin" />}
-            Crear servicio
+          <Button type="submit" disabled={isPending || isUploadingImages}>
+            {(isPending || isUploadingImages) && (
+              <LoaderIcon className="mr-2 h-4 w-4 animate-spin" />
+            )}
+            {isUploadingImages ? "Subiendo imágenes..." : "Crear servicio"}
           </Button>
         </div>
       </form>
