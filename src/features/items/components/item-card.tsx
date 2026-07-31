@@ -133,9 +133,13 @@ export function ItemCard({ item }: Props) {
               {maxCapacity && maxCapacity > 1 && (
                 <span className="flex items-center gap-1">
                   <UsersIcon className="h-3 w-3" />
-                  {maxCapacity} pers.
+                  Hasta {maxCapacity} pers.
                 </span>
               )}
+              <span className="flex items-center gap-1 text-primary">
+                <CalendarIcon className="h-3 w-3" />
+                Consultar disponibilidad
+              </span>
               {serviceType === "accommodation" && Boolean(config.bedrooms) && (
                 <span className="flex items-center gap-1">
                   🛏️ {String(config.bedrooms)} hab.

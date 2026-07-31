@@ -355,10 +355,8 @@ export function ServiceDetail({ service }: Props) {
                       <UsersIcon className="h-4 w-4 text-muted-foreground" />
                       <span>
                         {service.maxCapacity}{" "}
-                        {service.maxCapacity === 1
-                          ? "hamaca disponible"
-                          : "hamacas disponibles"}{" "}
-                        en total
+                         {service.maxCapacity === 1 ? "hamaca" : "hamacas"}{" "}
+                         de capacidad total
                       </span>
                     </div>
                   )}
@@ -383,9 +381,10 @@ export function ServiceDetail({ service }: Props) {
                       <UsersIcon className="h-4 w-4 text-muted-foreground" />
                       <span>
                         {service.maxCapacity}{" "}
-                        {service.maxCapacity === 1
-                          ? "plaza de parqueo disponible"
-                          : "plazas de parqueo disponibles"}
+                         {service.maxCapacity === 1
+                           ? "plaza de parqueo"
+                           : "plazas de parqueo"}{" "}
+                         de capacidad total
                       </span>
                     </div>
                   )}
@@ -408,7 +407,7 @@ export function ServiceDetail({ service }: Props) {
                   {service.maxCapacity && service.maxCapacity > 1 && (
                     <div className="flex items-center gap-2">
                       <UsersIcon className="h-4 w-4 text-muted-foreground" />
-                      <span>Hasta {service.maxCapacity} personas</span>
+                       <span>Capacidad total: {service.maxCapacity} personas</span>
                     </div>
                   )}
                   {service.durationMinutes && (
@@ -611,7 +610,9 @@ export function ServiceDetail({ service }: Props) {
                 {Boolean(config.maxCapacity) && (
                   <div className="flex items-center gap-2">
                     <UsersIcon className="h-4 w-4 text-muted-foreground" />
-                    <span>Hasta {String(config.maxCapacity)} huéspedes</span>
+                    <span>
+                      Capacidad total: {String(config.maxCapacity)} huéspedes
+                    </span>
                   </div>
                 )}
               </div>
@@ -720,7 +721,7 @@ export function ServiceDetail({ service }: Props) {
                 {service.maxCapacity && (
                   <div>
                     <TypographyMuted className="text-xs">
-                      Capacidad máxima
+                       Capacidad total
                     </TypographyMuted>
                     <p className="font-medium">
                       {service.maxCapacity} personas

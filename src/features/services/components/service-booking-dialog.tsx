@@ -1,13 +1,9 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { format, addDays, differenceInDays, differenceInHours } from "date-fns";
-import {
-  CheckCircle2Icon,
-  Loader2Icon,
-  ShieldCheckIcon,
-} from "lucide-react";
+import { CheckCircle2Icon, Loader2Icon, ShieldCheckIcon } from "lucide-react";
 import { toast } from "sonner";
 
 import {
@@ -26,8 +22,12 @@ import { Badge } from "@/shared/components/ui/badge";
 import { formatCurrency } from "@/shared/utils/currency";
 import { Separator } from "@/shared/components/ui/separator";
 import { Card, CardContent } from "@/shared/components/ui/card";
+import { Calendar } from "@/shared/components/ui/calendar";
 import { createBooking } from "@/features/services/actions/create-booking";
+import { getBookingAvailabilityAction } from "@/features/services/actions/get-booking-availability";
+import { getOccupiedDaysByMonthAction } from "@/features/services/actions/get-occupied-days-by-month";
 import type { PublicService } from "@/features/services/types";
+import type { AccommodationConfig } from "@/shared/lib/drizzle/schema";
 
 interface ServiceBookingDialogProps {
   service: PublicService;
@@ -61,6 +61,17 @@ export function ServiceBookingDialog({
   const [endTimeStr, setEndTimeStr] = useState("17:00");
   const [quantity, setQuantity] = useState<number | "">(1);
   const [notes, setNotes] = useState("");
+  const [availability, setAvailability] = useState<{
+    availableCapacity: number;
+    maxCapacity: number;
+    canBook: boolean;
+    message?: string;
+    loading?: boolean;
+  } | null>(null);
+  const [calendarMonth, setCalendarMonth] = useState(() => new Date());
+  const [occupiedDays, setOccupiedDays] = useState<string[]>([]);
+  const [isCalendarLoading, setIsCalendarLoading] = useState(false);
+  const [calendarError, setCalendarError] = useState<string | null>(null);
 
   const basePrice = Number(service.price) || 0;
   const isAccommodation = service.serviceType === "accommodation";
@@ -69,9 +80,16 @@ export function ServiceBookingDialog({
     service.serviceType === "parking" ||
     service.serviceType === "hammock" ||
     service.serviceType === "rental";
-  const isTimeBased =
-    isSingleDayService ||
-    service.priceUnit === "hour";
+  const isTimeBased = isSingleDayService || service.priceUnit === "hour";
+  const accommodationConfig =
+    service.serviceConfig as AccommodationConfig | null;
+  // Keep the established times only for accommodations created before these fields existed.
+  const checkInTime = accommodationConfig?.checkInTime ?? "14:00";
+  const checkOutTime = accommodationConfig?.checkOutTime ?? "11:00";
+  const occupiedCalendarDays = useMemo(
+    () => occupiedDays.map((day) => new Date(`${day}T12:00:00`)),
+    [occupiedDays],
+  );
 
   // Calculate duration units & total price
   const calculation = useMemo(() => {
@@ -137,40 +155,144 @@ export function ServiceBookingDialog({
     service.priceUnit,
   ]);
 
+  const bookingInterval = useMemo(() => {
+    if (isAccommodation) {
+      return {
+        startIso: new Date(`${startDateStr}T${checkInTime}:00`).toISOString(),
+        endIso: new Date(`${endDateStr}T${checkOutTime}:00`).toISOString(),
+      };
+    }
+
+    if (isActivity) {
+      const start = new Date(`${startDateStr}T${startTimeStr}:00`);
+      const end = new Date(
+        start.getTime() + (service.durationMinutes || 120) * 60000,
+      );
+
+      return { startIso: start.toISOString(), endIso: end.toISOString() };
+    }
+
+    if (isSingleDayService) {
+      return {
+        startIso: new Date(`${startDateStr}T${startTimeStr}:00`).toISOString(),
+        endIso: new Date(`${startDateStr}T${endTimeStr}:00`).toISOString(),
+      };
+    }
+
+    return {
+      startIso: new Date(`${startDateStr}T${startTimeStr}:00`).toISOString(),
+      endIso: new Date(`${endDateStr}T${endTimeStr}:00`).toISOString(),
+    };
+  }, [
+    endDateStr,
+    endTimeStr,
+    isAccommodation,
+    isActivity,
+    isSingleDayService,
+    checkInTime,
+    checkOutTime,
+    service.durationMinutes,
+    startDateStr,
+    startTimeStr,
+  ]);
+
+  useEffect(() => {
+    if (!open || !bookingInterval.startIso || !bookingInterval.endIso) return;
+
+    let ignoreResult = false;
+    setAvailability((current) =>
+      current
+        ? { ...current, loading: true }
+        : {
+            availableCapacity: 0,
+            maxCapacity: service.maxCapacity,
+            canBook: false,
+            loading: true,
+          },
+    );
+
+    const checkAvailability = async () => {
+      const result = await getBookingAvailabilityAction({
+        serviceId: service.id,
+        startDate: bookingInterval.startIso,
+        endDate: bookingInterval.endIso,
+        quantity: typeof quantity === "number" && quantity > 0 ? quantity : 1,
+      });
+
+      if (ignoreResult) return;
+
+      if (result.error) {
+        setAvailability({
+          availableCapacity: 0,
+          maxCapacity: service.maxCapacity,
+          canBook: false,
+          message: result.error.message,
+        });
+        return;
+      }
+
+      setAvailability({ ...result.data, loading: false });
+    };
+
+    void checkAvailability();
+
+    return () => {
+      ignoreResult = true;
+    };
+  }, [
+    bookingInterval.endIso,
+    bookingInterval.startIso,
+    open,
+    quantity,
+    service.id,
+    service.maxCapacity,
+  ]);
+
+  useEffect(() => {
+    if (!open || !isAccommodation) return;
+
+    let ignoreResult = false;
+    setIsCalendarLoading(true);
+    setCalendarError(null);
+
+    const loadOccupiedDays = async () => {
+      const result = await getOccupiedDaysByMonthAction({
+        serviceId: service.id,
+        year: calendarMonth.getFullYear(),
+        month: calendarMonth.getMonth() + 1,
+      });
+
+      if (ignoreResult) return;
+
+      if (result.error) {
+        setOccupiedDays([]);
+        setCalendarError(result.error.message);
+      } else {
+        setOccupiedDays(result.data);
+      }
+
+      setIsCalendarLoading(false);
+    };
+
+    void loadOccupiedDays();
+
+    return () => {
+      ignoreResult = true;
+    };
+  }, [calendarMonth, isAccommodation, open, service.id]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
     try {
-      let startIso: string;
-      let endIso: string;
-
-      if (isAccommodation) {
-        startIso = new Date(`${startDateStr}T14:00:00`).toISOString();
-        endIso = new Date(`${endDateStr}T11:00:00`).toISOString();
-      } else if (isActivity) {
-        startIso = new Date(`${startDateStr}T${startTimeStr}:00`).toISOString();
-        // default duration or 2 hours
-        const durationMins = service.durationMinutes || 120;
-        const endDateObj = new Date(
-          new Date(`${startDateStr}T${startTimeStr}:00`).getTime() +
-            durationMins * 60000,
-        );
-        endIso = endDateObj.toISOString();
-      } else if (isSingleDayService) {
-        startIso = new Date(`${startDateStr}T${startTimeStr}:00`).toISOString();
-        endIso = new Date(`${startDateStr}T${endTimeStr}:00`).toISOString();
-      } else {
-        startIso = new Date(`${startDateStr}T${startTimeStr}:00`).toISOString();
-        endIso = new Date(`${endDateStr}T${endTimeStr}:00`).toISOString();
-      }
-
-      const finalQty = typeof quantity === "number" && quantity >= 1 ? quantity : 1;
+      const finalQty =
+        typeof quantity === "number" && quantity >= 1 ? quantity : 1;
 
       const res = await createBooking({
         serviceId: service.id,
-        startDate: startIso,
-        endDate: endIso,
+        startDate: bookingInterval.startIso,
+        endDate: bookingInterval.endIso,
         quantity: finalQty,
         totalAmount: calculation.totalAmount,
         notes: notes.trim() || undefined,
@@ -204,7 +326,10 @@ export function ServiceBookingDialog({
       <DialogContent className="sm:max-w-[540px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <div className="flex items-center gap-2">
-            <Badge variant="outline" className="text-xs uppercase tracking-wide">
+            <Badge
+              variant="outline"
+              className="text-xs uppercase tracking-wide"
+            >
               {service.serviceType === "accommodation"
                 ? "Alojamiento"
                 : service.serviceType === "activity"
@@ -227,33 +352,65 @@ export function ServiceBookingDialog({
         <form onSubmit={handleSubmit} className="space-y-5 py-2">
           {/* Fechas / Horarios según tipo */}
           {isAccommodation && (
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <Label htmlFor="checkIn" className="text-xs font-semibold">
-                  Fecha de Check-in
-                </Label>
-                <Input
-                  id="checkIn"
-                  type="date"
-                  min={format(today, "yyyy-MM-dd")}
-                  value={startDateStr}
-                  onChange={(e) => setStartDateStr(e.target.value)}
-                  required
-                />
+            <div className="space-y-3">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <Label htmlFor="checkIn" className="text-xs font-semibold">
+                    Fecha de Check-in
+                  </Label>
+                  <Input
+                    id="checkIn"
+                    type="date"
+                    min={format(today, "yyyy-MM-dd")}
+                    value={startDateStr}
+                    onChange={(e) => setStartDateStr(e.target.value)}
+                    required
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="checkOut" className="text-xs font-semibold">
+                    Fecha de Check-out
+                  </Label>
+                  <Input
+                    id="checkOut"
+                    type="date"
+                    min={startDateStr}
+                    value={endDateStr}
+                    onChange={(e) => setEndDateStr(e.target.value)}
+                    required
+                  />
+                </div>
               </div>
 
-              <div className="space-y-1.5">
-                <Label htmlFor="checkOut" className="text-xs font-semibold">
-                  Fecha de Check-out
-                </Label>
-                <Input
-                  id="checkOut"
-                  type="date"
-                  min={startDateStr}
-                  value={endDateStr}
-                  onChange={(e) => setEndDateStr(e.target.value)}
-                  required
-                />
+              <div className="rounded-lg border bg-muted/30 p-3">
+                <div className="mb-2 flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-semibold">Disponibilidad</p>
+                    <p className="text-xs text-muted-foreground">
+                      Las fechas en rojo ya están ocupadas o bloqueadas.
+                    </p>
+                  </div>
+                  {isCalendarLoading && (
+                    <Loader2Icon className="size-4 shrink-0 animate-spin text-muted-foreground" />
+                  )}
+                </div>
+
+                {calendarError ? (
+                  <p className="text-sm text-destructive">{calendarError}</p>
+                ) : (
+                  <Calendar
+                    month={calendarMonth}
+                    onMonthChange={setCalendarMonth}
+                    showOutsideDays={false}
+                    modifiers={{ occupied: occupiedCalendarDays }}
+                    modifiersClassNames={{
+                      occupied:
+                        "bg-destructive/10 text-destructive line-through hover:bg-destructive/15",
+                    }}
+                    className="w-full rounded-md bg-background p-2"
+                  />
+                )}
               </div>
             </div>
           )}
@@ -295,7 +452,7 @@ export function ServiceBookingDialog({
           {isSingleDayService && (
             <div className="space-y-3">
               <div className="space-y-1.5">
-                <Label htmlFor="singleDate" className="text-xs font-semibold">
+                <Label htmlFor="singleDate" className="text-sm font-semibold">
                   Fecha del Servicio / Uso
                 </Label>
                 <Input
@@ -313,7 +470,7 @@ export function ServiceBookingDialog({
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <Label htmlFor="startTime" className="text-xs font-semibold">
+                  <Label htmlFor="startTime" className="text-sm font-semibold">
                     Hora de Entrada / Inicio
                   </Label>
                   <Input
@@ -325,7 +482,7 @@ export function ServiceBookingDialog({
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label htmlFor="endTime" className="text-xs font-semibold">
+                  <Label htmlFor="endTime" className="text-sm font-semibold">
                     Hora de Salida / Fin
                   </Label>
                   <Input
@@ -403,24 +560,37 @@ export function ServiceBookingDialog({
           {/* Cantidad / Huéspedes */}
           <div className="space-y-1.5">
             <div className="flex justify-between items-center">
-              <Label htmlFor="quantity" className="text-xs font-semibold">
+              <Label htmlFor="quantity" className="text-sm font-semibold">
                 {isAccommodation
                   ? "Número de huéspedes"
                   : isActivity
                     ? "Número de participantes"
                     : "Cantidad / Cupos"}
               </Label>
-              {service.maxCapacity && (
-                <span className="text-xs text-muted-foreground">
-                  Máximo: {service.maxCapacity}
-                </span>
-              )}
+              <span className="text-sm text-muted-foreground">
+                {availability?.loading
+                  ? "Consultando disponibilidad..."
+                  : availability?.message
+                    ? availability.message
+                    : availability
+                      ? `Plazas disponibles : ${availability.availableCapacity} de ${availability.maxCapacity}`
+                      : "Selecciona las fechas para consultar disponibilidad"}
+              </span>
             </div>
             <Input
               id="quantity"
               type="number"
               min={1}
-              max={service.maxCapacity || 99}
+              max={
+                availability
+                  ? availability.availableCapacity
+                  : service.maxCapacity || 99
+              }
+              disabled={
+                availability?.loading ||
+                (availability?.availableCapacity === 0 &&
+                  availability.canBook === false)
+              }
               value={quantity}
               onChange={(e) => {
                 const val = e.target.value;
@@ -436,8 +606,12 @@ export function ServiceBookingDialog({
               onBlur={() => {
                 if (quantity === "" || quantity < 1) {
                   setQuantity(1);
-                } else if (service.maxCapacity && quantity > service.maxCapacity) {
-                  setQuantity(service.maxCapacity);
+                } else if (
+                  availability &&
+                  availability.availableCapacity > 0 &&
+                  quantity > availability.availableCapacity
+                ) {
+                  setQuantity(availability.availableCapacity);
                 }
               }}
               required
@@ -502,7 +676,7 @@ export function ServiceBookingDialog({
             </span>
           </div>
 
-          <DialogFooter className="gap-2 sm:gap-0 pt-2">
+          <DialogFooter className="gap-2 pt-2">
             <Button
               type="button"
               variant="outline"
@@ -511,7 +685,11 @@ export function ServiceBookingDialog({
             >
               Cancelar
             </Button>
-            <Button type="submit" disabled={isSubmitting} className="min-w-[140px]">
+            <Button
+              type="submit"
+              disabled={isSubmitting || availability?.canBook !== true}
+              className="min-w-[140px]"
+            >
               {isSubmitting ? (
                 <>
                   <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />

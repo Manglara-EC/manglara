@@ -15,13 +15,27 @@ type BookingTransaction = NeonTransaction<
   ExtractTablesWithRelations<typeof schema>
 >;
 
-type AvailabilityError = "SERVICE_NOT_FOUND" | "UNAVAILABLE" | "CAPACITY_EXCEEDED";
+export type AvailabilityError =
+  "SERVICE_NOT_FOUND" | "UNAVAILABLE" | "CAPACITY_EXCEEDED";
 
-type AvailabilityResult =
-  | { available: true; service: typeof service.$inferSelect }
-  | { available: false; code: AvailabilityError; message: string };
+export type AvailabilityResult =
+  | {
+      available: true;
+      service: typeof service.$inferSelect;
+      maxCapacity: number;
+      reservedQuantity: number;
+      availableCapacity: number;
+    }
+  | {
+      available: false;
+      code: AvailabilityError;
+      message: string;
+      maxCapacity?: number;
+      reservedQuantity?: number;
+      availableCapacity?: number;
+    };
 
-type AvailabilityInput = {
+export type AvailabilityInput = {
   serviceId: string;
   startDate: Date;
   endDate: Date;
@@ -78,7 +92,13 @@ const dateAtUtcTime = (date: Date, time: string) => {
   const [hours, minutes] = time.split(":").map(Number);
 
   return new Date(
-    Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), hours, minutes),
+    Date.UTC(
+      date.getUTCFullYear(),
+      date.getUTCMonth(),
+      date.getUTCDate(),
+      hours,
+      minutes,
+    ),
   );
 };
 
@@ -95,10 +115,18 @@ const getScheduleIntervals = (
 ) => {
   const intervals: Array<{ start: Date; end: Date }> = [];
   const firstDay = new Date(
-    Date.UTC(startDate.getUTCFullYear(), startDate.getUTCMonth(), startDate.getUTCDate()),
+    Date.UTC(
+      startDate.getUTCFullYear(),
+      startDate.getUTCMonth(),
+      startDate.getUTCDate(),
+    ),
   );
   const lastDay = new Date(
-    Date.UTC(endDate.getUTCFullYear(), endDate.getUTCMonth(), endDate.getUTCDate()),
+    Date.UTC(
+      endDate.getUTCFullYear(),
+      endDate.getUTCMonth(),
+      endDate.getUTCDate(),
+    ),
   );
 
   for (let day = addDays(firstDay, -1); day <= lastDay; day = addDays(day, 1)) {
@@ -116,7 +144,9 @@ const getScheduleIntervals = (
     }
   }
 
-  return intervals.sort((left, right) => left.start.getTime() - right.start.getTime());
+  return intervals.sort(
+    (left, right) => left.start.getTime() - right.start.getTime(),
+  );
 };
 
 const isCoveredBySchedule = (
@@ -150,7 +180,11 @@ const intersectsBlockedDate = (
 
   for (
     let day = new Date(
-      Date.UTC(startDate.getUTCFullYear(), startDate.getUTCMonth(), startDate.getUTCDate()),
+      Date.UTC(
+        startDate.getUTCFullYear(),
+        startDate.getUTCMonth(),
+        startDate.getUTCDate(),
+      ),
     );
     day <= lastIncludedDay;
     day = addDays(day, 1)
@@ -183,18 +217,20 @@ const validateScheduleAndBlockedDates = (
     return {
       available: false,
       code: "UNAVAILABLE",
-      message: "El horario seleccionado está fuera de la disponibilidad del servicio.",
+      message:
+        "El horario seleccionado está fuera de la disponibilidad del servicio.",
     };
   }
 
   return null;
 };
 
-export const validateBookingAvailability = async (
+export const getBookingAvailability = async (
   tx: BookingTransaction,
   input: AvailabilityInput,
+  lockService = false,
 ): Promise<AvailabilityResult> => {
-  const [foundService] = await tx
+  const serviceQuery = tx
     .select()
     .from(service)
     .where(
@@ -203,9 +239,11 @@ export const validateBookingAvailability = async (
         eq(service.status, "approved"),
         eq(service.deleted, false),
       ),
-    )
-    .for("update")
-    .limit(1);
+    );
+
+  const [foundService] = lockService
+    ? await serviceQuery.for("update").limit(1)
+    : await serviceQuery.limit(1);
 
   if (!foundService) {
     return {
@@ -244,13 +282,128 @@ export const validateBookingAvailability = async (
       ),
     );
 
-  if ((occupancy?.reservedQuantity ?? 0) + input.quantity > foundService.maxCapacity) {
+  const reservedQuantity = occupancy?.reservedQuantity ?? 0;
+  const availableCapacity = Math.max(
+    0,
+    foundService.maxCapacity - reservedQuantity,
+  );
+
+  if (foundService.serviceType === "accommodation" && reservedQuantity > 0) {
+    return {
+      available: false,
+      code: "UNAVAILABLE",
+      message:
+        "El alojamiento ya está reservado para las fechas seleccionadas.",
+    };
+  }
+
+  if (reservedQuantity + input.quantity > foundService.maxCapacity) {
     return {
       available: false,
       code: "CAPACITY_EXCEEDED",
       message: `No hay suficiente disponibilidad. Capacidad máxima: ${foundService.maxCapacity}.`,
+      maxCapacity: foundService.maxCapacity,
+      reservedQuantity,
+      availableCapacity,
     };
   }
 
-  return { available: true, service: foundService };
+  return {
+    available: true,
+    service: foundService,
+    maxCapacity: foundService.maxCapacity,
+    reservedQuantity,
+    availableCapacity,
+  };
+};
+
+export const validateBookingAvailability = async (
+  tx: BookingTransaction,
+  input: AvailabilityInput,
+): Promise<AvailabilityResult> => getBookingAvailability(tx, input, true);
+
+export type OccupiedDaysByMonthInput = {
+  serviceId: string;
+  year: number;
+  month: number;
+};
+
+export const getOccupiedDaysByMonth = async (
+  tx: BookingTransaction,
+  input: OccupiedDaysByMonthInput,
+): Promise<string[]> => {
+  if (
+    !Number.isInteger(input.year) ||
+    !Number.isInteger(input.month) ||
+    input.month < 1 ||
+    input.month > 12
+  ) {
+    throw new Error("El año y mes deben formar un mes de calendario válido.");
+  }
+
+  const monthStart = new Date(Date.UTC(input.year, input.month - 1, 1));
+  const nextMonthStart = new Date(Date.UTC(input.year, input.month, 1));
+  // Widen the query by one day to safely cover America/Bogota calendar boundaries.
+  const queryStart = addDays(monthStart, -1);
+  const queryEnd = addDays(nextMonthStart, 1);
+
+  const [foundService] = await tx
+    .select({ availabilityRules: service.availabilityRules })
+    .from(service)
+    .where(eq(service.id, input.serviceId))
+    .limit(1);
+
+  const bookings = await tx
+    .select({
+      startDate: bookingLine.startDate,
+      endDate: bookingLine.endDate,
+    })
+    .from(bookingLine)
+    .innerJoin(
+      transactionLine,
+      eq(bookingLine.transactionLineId, transactionLine.id),
+    )
+    .innerJoin(
+      transactionHeader,
+      eq(transactionLine.transactionId, transactionHeader.id),
+    )
+    .where(
+      and(
+        eq(bookingLine.serviceId, input.serviceId),
+        lt(bookingLine.startDate, queryEnd),
+        gt(bookingLine.endDate, queryStart),
+        ne(transactionHeader.status, "cancelled"),
+      ),
+    );
+
+  const occupiedDays = new Set<string>();
+  const isInRequestedMonth = (date: Date) =>
+    date.getUTCFullYear() === input.year &&
+    date.getUTCMonth() === input.month - 1;
+
+  for (const blockedDate of foundService?.availabilityRules?.blockedDates ??
+    []) {
+    const blockedDay = new Date(`${blockedDate.slice(0, 10)}T00:00:00.000Z`);
+    if (!Number.isNaN(blockedDay.getTime()) && isInRequestedMonth(blockedDay)) {
+      occupiedDays.add(toUtcDayKey(blockedDay));
+    }
+  }
+
+  for (const booking of bookings) {
+    const firstOccupiedDay = toServiceLocalDate(booking.startDate);
+    // Reservations use [startDate, endDate), so checkout day stays available.
+    const lastOccupiedDay = toServiceLocalDate(
+      new Date(booking.endDate.getTime() - 1),
+    );
+
+    for (
+      let day = firstOccupiedDay;
+      day <= lastOccupiedDay;
+      day = addDays(day, 1)
+    ) {
+      if (isInRequestedMonth(day)) occupiedDays.add(toUtcDayKey(day));
+    }
+  }
+
+  return [...occupiedDays].sort();
 };
