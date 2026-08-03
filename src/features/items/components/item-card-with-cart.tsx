@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Package, Wrench, ShoppingCart } from "lucide-react";
+import { ArrowRightIcon, Package, Wrench, ShoppingCart } from "lucide-react";
 import Image from "next/image";
 import { toast } from "sonner";
 
@@ -47,8 +47,8 @@ export function ItemCardWithCart({ item }: Props) {
   // Only show cart button for products
   if (item.type !== "product") {
     return (
-      <Link href={`/${item.type}s/${item.id}`}>
-        <Card className="h-full transition-all hover:shadow-md">
+      <Card className="h-full transition-all hover:shadow-md">
+        <Link href={`/${item.type}s/${item.id}`}>
           <CardHeader>
             <div className="relative aspect-video w-full overflow-hidden rounded-lg bg-muted">
               {imageUrl ? (
@@ -84,8 +84,16 @@ export function ItemCardWithCart({ item }: Props) {
               </span>
             </div>
           </CardContent>
-        </Card>
-      </Link>
+        </Link>
+        <div className="px-6 pb-6">
+          <Button asChild className="w-full" size="sm">
+            <Link href={`/${item.type}s/${item.id}`}>
+              Ver detalles
+              <ArrowRightIcon className="ml-2 h-4 w-4" />
+            </Link>
+          </Button>
+        </div>
+      </Card>
     );
   }
 
