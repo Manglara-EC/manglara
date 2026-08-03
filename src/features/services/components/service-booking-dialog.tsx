@@ -1,9 +1,8 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
-import { useRouter } from "next/navigation";
 import { format, addDays, differenceInDays, differenceInHours } from "date-fns";
-import { CheckCircle2Icon, Loader2Icon, ShieldCheckIcon } from "lucide-react";
+import { ShoppingCartIcon, Loader2Icon, ShieldCheckIcon } from "lucide-react";
 import { toast } from "sonner";
 
 import {
@@ -23,11 +22,11 @@ import { formatCurrency } from "@/shared/utils/currency";
 import { Separator } from "@/shared/components/ui/separator";
 import { Card, CardContent } from "@/shared/components/ui/card";
 import { Calendar } from "@/shared/components/ui/calendar";
-import { createBooking } from "@/features/services/actions/create-booking";
 import { getBookingAvailabilityAction } from "@/features/services/actions/get-booking-availability";
 import { getOccupiedDaysByMonthAction } from "@/features/services/actions/get-occupied-days-by-month";
 import type { PublicService } from "@/features/services/types";
 import type { AccommodationConfig } from "@/shared/lib/drizzle/schema";
+import { useCart } from "@/features/cart/context/cart-context";
 
 interface ServiceBookingDialogProps {
   service: PublicService;
@@ -40,7 +39,7 @@ export function ServiceBookingDialog({
   open,
   onOpenChange,
 }: ServiceBookingDialogProps) {
-  const router = useRouter();
+  const { addBooking } = useCart();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Default dates helper
@@ -281,42 +280,29 @@ export function ServiceBookingDialog({
     };
   }, [calendarMonth, isAccommodation, open, service.id]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    try {
-      const finalQty =
-        typeof quantity === "number" && quantity >= 1 ? quantity : 1;
+    const finalQty =
+      typeof quantity === "number" && quantity >= 1 ? quantity : 1;
+    addBooking({
+      serviceId: service.id,
+      serviceName: service.name,
+      serviceImage: service.images?.[0] ?? null,
+      estimatedUnitPrice: service.price,
+      estimatedTotal: calculation.totalAmount,
+      startDate: bookingInterval.startIso,
+      endDate: bookingInterval.endIso,
+      quantity: finalQty,
+      notes: notes.trim() || undefined,
+    });
 
-      const res = await createBooking({
-        serviceId: service.id,
-        startDate: bookingInterval.startIso,
-        endDate: bookingInterval.endIso,
-        quantity: finalQty,
-        totalAmount: calculation.totalAmount,
-        notes: notes.trim() || undefined,
-      });
-
-      if (res.error) {
-        toast.error("Error al realizar la reserva", {
-          description: res.error.message,
-        });
-        setIsSubmitting(false);
-        return;
-      }
-
-      toast.success("¡Reserva realizada con éxito!", {
-        description: `Tu reserva para "${service.name}" ha sido confirmada.`,
-      });
-
-      onOpenChange(false);
-      router.push("/reservations");
-    } catch (err) {
-      console.error(err);
-      toast.error("Ocurrió un error inesperado al procesar la reserva.");
-      setIsSubmitting(false);
-    }
+    toast.success("Reserva agregada al carrito", {
+      description: `Configura el pago para confirmar "${service.name}".`,
+    });
+    onOpenChange(false);
+    setIsSubmitting(false);
   };
 
   const formattedPrice = formatCurrency;
@@ -672,7 +658,7 @@ export function ServiceBookingDialog({
           <div className="flex items-center gap-2 text-xs text-muted-foreground bg-emerald-50 dark:bg-emerald-950/40 p-2.5 rounded-lg border border-emerald-200 dark:border-emerald-900 text-emerald-800 dark:text-emerald-300">
             <ShieldCheckIcon className="h-4 w-4 shrink-0" />
             <span>
-              Reserva instantánea y confirmación directa con el proveedor.
+              La disponibilidad se confirmará nuevamente al realizar el pago.
             </span>
           </div>
 
@@ -697,8 +683,8 @@ export function ServiceBookingDialog({
                 </>
               ) : (
                 <>
-                  <CheckCircle2Icon className="mr-2 h-4 w-4" />
-                  Confirmar Reserva
+                  <ShoppingCartIcon className="mr-2 h-4 w-4" />
+                  Agregar al carrito
                 </>
               )}
             </Button>

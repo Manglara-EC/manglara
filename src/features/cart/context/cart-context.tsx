@@ -9,12 +9,18 @@ import {
   ReactNode,
 } from "react";
 
-import type { CartItem, Cart } from "@/features/cart/types";
+import type {
+  BookingCartItem,
+  CartItem,
+  Cart,
+  ProductCartItem,
+} from "@/features/cart/types";
 
 interface CartContextValue {
   cart: Cart;
-  addItem: (product: CartItem["product"], quantity: number) => boolean;
-  removeItem: (productId: string) => void;
+  addItem: (product: ProductCartItem["product"], quantity: number) => boolean;
+  addBooking: (booking: Omit<BookingCartItem, "id" | "type">) => void;
+  removeItem: (itemId: string) => void;
   updateQuantity: (productId: string, quantity: number) => void;
   clearCart: () => void;
   getTotalItems: () => number;
@@ -33,7 +39,27 @@ function loadCartFromStorage(): Cart {
   try {
     const stored = localStorage.getItem(CART_STORAGE_KEY);
     if (stored) {
-      return JSON.parse(stored);
+      const parsed = JSON.parse(stored) as { items?: unknown[] };
+      const items = Array.isArray(parsed.items) ? parsed.items : [];
+
+      // Cart entries stored before reservations were supported had no discriminator.
+      return {
+        items: items.flatMap((item) => {
+          if (!item || typeof item !== "object") return [];
+          if ("type" in item) return [item as CartItem];
+          if ("product" in item && "quantity" in item) {
+            const legacyItem = item as Omit<ProductCartItem, "id" | "type">;
+            return [
+              {
+                ...legacyItem,
+                id: legacyItem.product.id,
+                type: "product" as const,
+              },
+            ];
+          }
+          return [];
+        }),
+      };
     }
   } catch (error) {
     console.error("Error loading cart from storage:", error);
@@ -65,7 +91,7 @@ export function CartProvider({ children }: CartProviderProps) {
   }, [cart]);
 
   const addItem = useCallback(
-    (product: CartItem["product"], quantity: number): boolean => {
+    (product: ProductCartItem["product"], quantity: number): boolean => {
       // Validate stock
       if (product.stock !== undefined && quantity > product.stock) {
         return false;
@@ -73,7 +99,7 @@ export function CartProvider({ children }: CartProviderProps) {
 
       setCart((prevCart) => {
         const existingItemIndex = prevCart.items.findIndex(
-          (item) => item.product.id === product.id,
+          (item) => item.type === "product" && item.product.id === product.id,
         );
 
         if (existingItemIndex >= 0) {
@@ -90,13 +116,16 @@ export function CartProvider({ children }: CartProviderProps) {
           newItems[existingItemIndex] = {
             ...existingItem,
             quantity: newQuantity,
-          };
+          } as ProductCartItem;
 
           return { items: newItems };
         } else {
           // Add new item
           return {
-            items: [...prevCart.items, { product, quantity }],
+            items: [
+              ...prevCart.items,
+              { id: product.id, type: "product", product, quantity },
+            ],
           };
         }
       });
@@ -106,9 +135,21 @@ export function CartProvider({ children }: CartProviderProps) {
     [],
   );
 
-  const removeItem = useCallback((productId: string) => {
+  const addBooking = useCallback(
+    (booking: Omit<BookingCartItem, "id" | "type">) => {
+      setCart((prevCart) => ({
+        items: [
+          ...prevCart.items,
+          { ...booking, id: crypto.randomUUID(), type: "booking" },
+        ],
+      }));
+    },
+    [],
+  );
+
+  const removeItem = useCallback((itemId: string) => {
     setCart((prevCart) => ({
-      items: prevCart.items.filter((item) => item.product.id !== productId),
+      items: prevCart.items.filter((item) => item.id !== itemId),
     }));
   }, []);
 
@@ -121,9 +162,9 @@ export function CartProvider({ children }: CartProviderProps) {
 
       setCart((prevCart) => {
         const item = prevCart.items.find(
-          (item) => item.product.id === productId,
+          (item) => item.type === "product" && item.product.id === productId,
         );
-        if (!item) return prevCart;
+        if (!item || item.type !== "product") return prevCart;
 
         // Validate stock
         if (item.product.stock !== undefined && quantity > item.product.stock) {
@@ -131,7 +172,9 @@ export function CartProvider({ children }: CartProviderProps) {
         }
 
         const newItems = prevCart.items.map((item) =>
-          item.product.id === productId ? { ...item, quantity } : item,
+          item.type === "product" && item.product.id === productId
+            ? { ...item, quantity }
+            : item,
         );
 
         return { items: newItems };
@@ -150,7 +193,11 @@ export function CartProvider({ children }: CartProviderProps) {
 
   const getTotalPrice = useCallback(() => {
     return cart.items.reduce(
-      (total, item) => total + Number(item.product.price) * item.quantity,
+      (total, item) =>
+        total +
+        (item.type === "product"
+          ? Number(item.product.price) * item.quantity
+          : item.estimatedTotal),
       0,
     );
   }, [cart.items]);
@@ -160,6 +207,7 @@ export function CartProvider({ children }: CartProviderProps) {
       value={{
         cart,
         addItem,
+        addBooking,
         removeItem,
         updateQuantity,
         clearCart,

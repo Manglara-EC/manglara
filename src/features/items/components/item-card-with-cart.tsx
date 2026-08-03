@@ -92,7 +92,8 @@ export function ItemCardWithCart({ item }: Props) {
   // Product card with cart functionality
   const product = item; // Type assertion for product
   const existingItem = cart.items.find(
-    (cartItem) => cartItem.product.id === product.id,
+    (cartItem) =>
+      cartItem.type === "product" && cartItem.product.id === product.id,
   );
   const currentQuantity = existingItem?.quantity ?? 0;
   const availableStock =

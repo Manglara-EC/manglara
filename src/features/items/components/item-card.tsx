@@ -166,7 +166,8 @@ export function ItemCard({ item }: Props) {
 
   const product = item;
   const existingItem = cart.items.find(
-    (cartItem) => cartItem.product.id === product.id,
+    (cartItem) =>
+      cartItem.type === "product" && cartItem.product.id === product.id,
   );
   const currentQuantity = existingItem?.quantity ?? 0;
   const availableStock =

@@ -3,7 +3,9 @@
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import { Package, LoaderIcon } from "lucide-react";
+import { CalendarDays, Package, LoaderIcon } from "lucide-react";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
 import { toast } from "sonner";
 
 import { Button } from "@/shared/components/ui/button";
@@ -49,7 +51,7 @@ export function CheckoutSummary() {
         clearCart();
         router.push("/home");
       }
-    } catch (err) {
+    } catch {
       toast.error("Error inesperado al procesar la compra");
       setIsProcessing(false);
     }
@@ -73,23 +75,67 @@ export function CheckoutSummary() {
       <div className="lg:col-span-2">
         <Card>
           <CardHeader>
-            <CardTitle>Productos seleccionados</CardTitle>
+            <CardTitle>Artículos seleccionados</CardTitle>
           </CardHeader>
           <CardContent>
             <ScrollArea className="max-h-[500px]">
               <div className="space-y-4">
                 {cart.items.map((item) => {
-                  const imageUrl =
-                    item.product.images && item.product.images.length > 0
-                      ? item.product.images[0]
-                      : null;
+                  if (item.type === "booking") {
+                    return (
+                      <div key={item.id} className="space-y-4">
+                        <div className="flex gap-4">
+                          <div className="relative flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-muted">
+                            {item.serviceImage ? (
+                              <Image
+                                src={item.serviceImage}
+                                alt={item.serviceName}
+                                fill
+                                className="object-cover"
+                              />
+                            ) : (
+                              <CalendarDays className="h-7 w-7 text-muted-foreground" />
+                            )}
+                          </div>
+                          <div className="flex flex-1 flex-col gap-1">
+                            <p className="text-lg font-medium">
+                              {item.serviceName}
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              {format(
+                                new Date(item.startDate),
+                                "dd MMM, HH:mm",
+                                { locale: es },
+                              )}{" "}
+                              -{" "}
+                              {format(new Date(item.endDate), "dd MMM, HH:mm", {
+                                locale: es,
+                              })}
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              {item.quantity}{" "}
+                              {item.quantity === 1 ? "persona" : "personas"}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-semibold">
+                              {formatCurrency(item.estimatedTotal)}
+                            </p>
+                          </div>
+                        </div>
+                        <Separator />
+                      </div>
+                    );
+                  }
+
+                  const imageUrl = item.product.images?.[0] ?? null;
                   const price = formatCurrency(item.product.price);
                   const itemTotal = formatCurrency(
                     Number(item.product.price) * item.quantity,
                   );
 
                   return (
-                    <div key={item.product.id} className="space-y-4">
+                    <div key={item.id} className="space-y-4">
                       <div className="flex gap-4">
                         <div className="relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-lg bg-muted">
                           {imageUrl ? (
@@ -135,19 +181,21 @@ export function CheckoutSummary() {
           <CardContent className="space-y-4">
             <div className="space-y-2">
               {cart.items.map((item) => {
-                const itemTotal = Number(item.product.price) * item.quantity;
+                const itemTotal =
+                  item.type === "product"
+                    ? Number(item.product.price) * item.quantity
+                    : item.estimatedTotal;
                 const itemTotalFormatted = new Intl.NumberFormat("es-ES", {
                   style: "currency",
                   currency: "EUR",
                 }).format(itemTotal);
 
                 return (
-                  <div
-                    key={item.product.id}
-                    className="flex justify-between text-sm"
-                  >
+                  <div key={item.id} className="flex justify-between text-sm">
                     <span className="text-muted-foreground">
-                      {item.product.name} (×{item.quantity})
+                      {item.type === "product"
+                        ? `${item.product.name} (×${item.quantity})`
+                        : item.serviceName}
                     </span>
                     <span>{itemTotalFormatted}</span>
                   </div>

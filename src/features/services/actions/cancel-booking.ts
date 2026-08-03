@@ -1,7 +1,7 @@
 "use server";
 
 import { headers } from "next/headers";
-import { eq, and } from "drizzle-orm";
+import { and, count, eq, ne } from "drizzle-orm";
 import { db } from "@/shared/lib/drizzle/server";
 import { auth } from "@/shared/lib/better-auth/server";
 import {
@@ -87,6 +87,24 @@ export const cancelBooking = async (
     };
   }
 
+  const { data: lineCountResult, error: lineCountError } = await tryCatch(
+    db
+      .select({ count: count() })
+      .from(transactionLine)
+      .where(eq(transactionLine.transactionId, booking.transactionId)),
+  );
+
+  if (lineCountError || lineCountResult?.[0]?.count !== 1) {
+    return {
+      data: null,
+      error: {
+        code: "CANNOT_CANCEL",
+        message:
+          "Esta reserva comparte un pedido con otros artículos y no puede cancelarse de forma individual.",
+      },
+    };
+  }
+
   // Perform update in transaction
   const { error: updateError } = await tryCatch(
     db.transaction(async (tx) => {
@@ -95,10 +113,22 @@ export const cancelBooking = async (
         .set({ status: "cancelled" })
         .where(eq(transactionHeader.id, booking.transactionId));
 
-      await tx
-        .update(parentOrder)
-        .set({ status: "cancelled" })
-        .where(eq(parentOrder.id, booking.parentOrderId));
+      const [activeTransactionCount] = await tx
+        .select({ count: count() })
+        .from(transactionHeader)
+        .where(
+          and(
+            eq(transactionHeader.parentOrderId, booking.parentOrderId),
+            ne(transactionHeader.status, "cancelled"),
+          ),
+        );
+
+      if (activeTransactionCount?.count === 0) {
+        await tx
+          .update(parentOrder)
+          .set({ status: "cancelled" })
+          .where(eq(parentOrder.id, booking.parentOrderId));
+      }
     }),
   );
 
