@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -30,6 +31,9 @@ import {
   TypographyMuted,
   TypographyP,
 } from "@/shared/components/ui/typography";
+import { ServiceBookingDialog } from "@/features/services/components/service-booking-dialog";
+import { formatCurrency } from "@/shared/utils/currency";
+import { getValidImageSources } from "@/shared/utils/image-src";
 
 import type { PublicService } from "@/features/services/types";
 import type { AvailabilityRules } from "@/shared/lib/drizzle/schema";
@@ -150,10 +154,10 @@ const getScheduleText = (
 };
 
 export function ServiceDetail({ service }: Props) {
-  const price = new Intl.NumberFormat("es-ES", {
-    style: "currency",
-    currency: "EUR",
-  }).format(Number(service.price));
+  const [isBookingOpen, setIsBookingOpen] = useState(false);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+
+  const price = formatCurrency(service.price);
 
   interface ServiceConfigProps {
     pricingMode?: string;
@@ -183,18 +187,11 @@ export function ServiceDetail({ service }: Props) {
     surfaceType?: string;
   }
 
-  const imageUrl =
-    service.images && service.images.length > 0 ? service.images[0] : null;
+  const images = getValidImageSources(service.images);
+  const imageUrl = images[selectedImageIndex] ?? null;
   const config = ((service.serviceConfig as Record<string, unknown>) ??
     {}) as ServiceConfigProps;
   const serviceType = service.serviceType || "other";
-
-  const hasAccommodationAmenities = (serviceType === "accommodation" &&
-    Array.isArray(config.amenities) &&
-    (config.amenities as unknown[])?.length > 0) as boolean;
-  const hasAccommodationHouseRules = (serviceType === "accommodation" &&
-    Array.isArray(config.houseRules) &&
-    (config.houseRules as unknown[])?.length > 0) as boolean;
 
   return (
     <div className="flex flex-col gap-6">
@@ -224,6 +221,31 @@ export function ServiceDetail({ service }: Props) {
                 </div>
               )}
             </div>
+            {images.length > 1 && (
+              <div className="flex gap-2 overflow-x-auto border-t p-3">
+                {images.map((image, index) => (
+                  <button
+                    key={image}
+                    type="button"
+                    onClick={() => setSelectedImageIndex(index)}
+                    className="relative h-16 w-24 shrink-0 overflow-hidden rounded-md border-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    aria-label={`Ver imagen ${index + 1} de ${service.name}`}
+                    aria-pressed={selectedImageIndex === index}
+                  >
+                    <Image
+                      src={image}
+                      alt=""
+                      fill
+                      sizes="96px"
+                      className="object-cover"
+                    />
+                    {selectedImageIndex === index && (
+                      <span className="absolute inset-0 border-2 border-primary" />
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
           </CardHeader>
           <CardContent className="pt-4">
             <div className="space-y-4">
@@ -353,10 +375,8 @@ export function ServiceDetail({ service }: Props) {
                       <UsersIcon className="h-4 w-4 text-muted-foreground" />
                       <span>
                         {service.maxCapacity}{" "}
-                        {service.maxCapacity === 1
-                          ? "hamaca disponible"
-                          : "hamacas disponibles"}{" "}
-                        en total
+                        {service.maxCapacity === 1 ? "hamaca" : "hamacas"} de
+                        capacidad total
                       </span>
                     </div>
                   )}
@@ -382,8 +402,9 @@ export function ServiceDetail({ service }: Props) {
                       <span>
                         {service.maxCapacity}{" "}
                         {service.maxCapacity === 1
-                          ? "plaza de parqueo disponible"
-                          : "plazas de parqueo disponibles"}
+                          ? "plaza de parqueo"
+                          : "plazas de parqueo"}{" "}
+                        de capacidad total
                       </span>
                     </div>
                   )}
@@ -406,7 +427,9 @@ export function ServiceDetail({ service }: Props) {
                   {service.maxCapacity && service.maxCapacity > 1 && (
                     <div className="flex items-center gap-2">
                       <UsersIcon className="h-4 w-4 text-muted-foreground" />
-                      <span>Hasta {service.maxCapacity} personas</span>
+                      <span>
+                        Capacidad total: {service.maxCapacity} personas
+                      </span>
                     </div>
                   )}
                   {service.durationMinutes && (
@@ -437,7 +460,11 @@ export function ServiceDetail({ service }: Props) {
               </p>
             </div>
 
-            <Button className="w-full" size="lg">
+            <Button
+              className="w-full"
+              size="lg"
+              onClick={() => setIsBookingOpen(true)}
+            >
               {serviceType === "rental"
                 ? "Alquilar ahora"
                 : serviceType === "parking"
@@ -447,6 +474,12 @@ export function ServiceDetail({ service }: Props) {
           </CardContent>
         </Card>
       </div>
+
+      <ServiceBookingDialog
+        service={service}
+        open={isBookingOpen}
+        onOpenChange={setIsBookingOpen}
+      />
 
       {/* Detalles según tipo de servicio */}
       <div className="grid gap-6 lg:grid-cols-2">
@@ -599,7 +632,9 @@ export function ServiceDetail({ service }: Props) {
                 {Boolean(config.maxCapacity) && (
                   <div className="flex items-center gap-2">
                     <UsersIcon className="h-4 w-4 text-muted-foreground" />
-                    <span>Hasta {String(config.maxCapacity)} huéspedes</span>
+                    <span>
+                      Capacidad total: {String(config.maxCapacity)} huéspedes
+                    </span>
                   </div>
                 )}
               </div>
@@ -708,7 +743,7 @@ export function ServiceDetail({ service }: Props) {
                 {service.maxCapacity && (
                   <div>
                     <TypographyMuted className="text-xs">
-                      Capacidad máxima
+                      Capacidad total
                     </TypographyMuted>
                     <p className="font-medium">
                       {service.maxCapacity} personas
@@ -748,7 +783,7 @@ export function ServiceDetail({ service }: Props) {
         {/* Actividad: Requisitos - Mostrar si hay datos */}
         {Boolean(
           Array.isArray(config.requirements) &&
-            (config.requirements as unknown[]).length > 0,
+          (config.requirements as unknown[]).length > 0,
         ) && (
           <Card>
             <CardHeader>
@@ -770,7 +805,7 @@ export function ServiceDetail({ service }: Props) {
         {/* Actividad: Qué incluye - Mostrar si hay datos */}
         {Boolean(
           Array.isArray(config.inclusions) &&
-            (config.inclusions as unknown[]).length > 0,
+          (config.inclusions as unknown[]).length > 0,
         ) && (
           <Card>
             <CardHeader>
@@ -792,7 +827,7 @@ export function ServiceDetail({ service }: Props) {
         {/* Actividad: Qué NO incluye - Mostrar si hay datos */}
         {Boolean(
           Array.isArray(config.exclusions) &&
-            (config.exclusions as unknown[]).length > 0,
+          (config.exclusions as unknown[]).length > 0,
         ) && (
           <Card>
             <CardHeader>

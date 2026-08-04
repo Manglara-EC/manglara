@@ -6,7 +6,6 @@ import { eq, and } from "drizzle-orm";
 import { auth } from "@/shared/lib/better-auth/server";
 import { db } from "@/shared/lib/drizzle/server";
 import { service, organization, member } from "@/shared/lib/drizzle/schema";
-import { tryCatch } from "@/shared/utils/try-catch";
 import {
   createServiceSchema,
   validateServiceByType,
@@ -163,6 +162,7 @@ export async function updateService(
         serviceConfig: validatedData.serviceConfig,
         availabilityRules: validatedData.availabilityRules,
         cancellationPolicy: validatedData.cancellationPolicy,
+        images: validatedData.images ?? null,
         status: "pending", // Vuelve a pendiente para revisión
         approvedBy: null,
         approvedAt: null,

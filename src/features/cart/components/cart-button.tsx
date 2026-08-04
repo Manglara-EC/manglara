@@ -4,13 +4,13 @@ import { useRouter } from "next/navigation";
 import { ShoppingCart } from "lucide-react";
 
 import { Button } from "@/shared/components/ui/button";
-import { Badge } from "@/shared/components/ui/badge";
-
 import { useCart } from "@/features/cart/context/cart-context";
+import { CartItemCount } from "@/features/cart/components/cart-button/cart-item-count";
 
 export function CartButton() {
   const router = useRouter();
   const { getTotalItems } = useCart();
+  const totalItems = getTotalItems();
 
   const handleClick = () => {
     router.push("/cart");
@@ -18,20 +18,13 @@ export function CartButton() {
 
   return (
     <Button
-      variant="ghost"
-      size="icon"
-      className="relative"
+      variant="outline"
+      className="relative h-10 gap-2 border-primary/40 bg-background px-4 text-primary shadow-sm hover:bg-primary hover:text-primary-foreground"
       onClick={handleClick}
     >
-      <ShoppingCart className="h-5 w-5" />
-      {getTotalItems() > 0 && (
-        <Badge
-          variant="destructive"
-          className="absolute -right-1 -top-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs"
-        >
-          {getTotalItems()}
-        </Badge>
-      )}
+      <ShoppingCart className="h-4 w-4" />
+      Carrito
+      {totalItems > 0 && <CartItemCount totalItems={totalItems} />}
     </Button>
   );
 }

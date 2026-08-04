@@ -9,7 +9,7 @@ type ErrorCode = "UNAUTHORIZED" | "FORBIDDEN" | "INTERNAL_SERVER_ERROR";
 
 export const getBackupCodes = async (
   userId: string,
-): Promise<ActionResponse<string, ErrorCode>> => {
+): Promise<ActionResponse<string[], ErrorCode>> => {
   const session = await auth.api.getSession({
     headers: await headers(),
   });

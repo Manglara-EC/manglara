@@ -42,9 +42,9 @@ export function EditProductForm({ productId, product }: Props) {
             : null,
     );
 
-    const updateMutation = useUpdateProductMutation({
-        productId,
-    });
+  const updateMutation = useUpdateProductMutation({
+    productId,
+  });
 
     const handleChange = (field: keyof Omit<typeof formData, "isReservable">) => (
         e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>

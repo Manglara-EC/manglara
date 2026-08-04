@@ -86,5 +86,6 @@ export const bookingLine = pgTable("booking_line", {
 
   // Datos temporales obligatorios para las reservas
   startDate: timestamp("start_date").notNull(),
-  endDate: timestamp("end_date"), // Opcional: solo aplica a reservas de rango (ej. alojamiento). Para productos, la reserva es de un solo día (= startDate).
+  endDate: timestamp("end_date").notNull(),
+  notes: text("notes"),
 });

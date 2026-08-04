@@ -9,9 +9,14 @@ import { LeafletMap, type LatLng } from "@/shared/components/leaflet-map";
 interface LocationPickerProps {
   value: LatLng | null;
   onChange: (value: LatLng) => void;
+  className?: string;
 }
 
-export function LocationPicker({ value, onChange }: LocationPickerProps) {
+export function LocationPicker({
+  value,
+  onChange,
+  className,
+}: LocationPickerProps) {
   const handleUseCurrentLocation = () => {
     if (!navigator.geolocation) return;
 
@@ -48,7 +53,12 @@ export function LocationPicker({ value, onChange }: LocationPickerProps) {
       </div>
 
       <div className="overflow-hidden rounded-lg border border-border">
-        <LeafletMap value={value} interactive onChange={onChange} />
+        <LeafletMap
+          value={value}
+          interactive
+          onChange={onChange}
+          className={className}
+        />
       </div>
 
       <TypographyMuted className="text-xs">

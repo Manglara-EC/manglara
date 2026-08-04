@@ -45,6 +45,9 @@ export async function getProductById(
         rejectionReason: product.rejectionReason,
         createdAt: product.createdAt,
         updatedAt: product.updatedAt,
+        location: product.location,
+        latitude: product.latitude,
+        longitude: product.longitude,
         organizationName: organization.name,
       })
       .from(product)

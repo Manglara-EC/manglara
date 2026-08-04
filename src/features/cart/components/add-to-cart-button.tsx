@@ -30,7 +30,7 @@ export function AddToCartButton({ product }: Props) {
   const [open, setOpen] = useState(false);
 
   const existingItem = cart.items.find(
-    (item) => item.product.id === product.id,
+    (item) => item.type === "product" && item.product.id === product.id,
   );
   const currentQuantity = existingItem?.quantity ?? 0;
   const availableStock =

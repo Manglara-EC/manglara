@@ -12,6 +12,7 @@ import {
   UsersIcon,
   HomeIcon,
   CalendarIcon,
+  ArrowRightIcon,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -37,6 +38,8 @@ import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
 
 import { useCart } from "@/features/cart/context/cart-context";
+import { formatCurrency } from "@/shared/utils/currency";
+import { getValidImageSrc } from "@/shared/utils/image-src";
 import type { PublicItem } from "@/features/items/types";
 
 const SERVICE_TYPE_LABELS: Record<string, string> = {
@@ -56,12 +59,8 @@ interface Props {
 }
 
 export function ItemCard({ item }: Props) {
-  const imageUrl =
-    item.images && item.images.length > 0 ? item.images[0] : null;
-  const price = new Intl.NumberFormat("es-ES", {
-    style: "currency",
-    currency: "EUR",
-  }).format(Number(item.price));
+  const imageUrl = getValidImageSrc(item.images?.[0]);
+  const price = formatCurrency(item.price);
 
   const { addItem, cart } = useCart();
   const [quantity, setQuantity] = useState(1);
@@ -78,8 +77,8 @@ export function ItemCard({ item }: Props) {
     const maxCapacity = serviceItem.maxCapacity;
 
     return (
-      <Link href={`/${item.type}s/${item.id}`}>
-        <Card className="h-full transition-all hover:shadow-md">
+      <Card className="h-full transition-all hover:shadow-md">
+        <Link href={`/${item.type}s/${item.id}`}>
           <CardHeader className="pb-2">
             <div className="relative aspect-video w-full overflow-hidden rounded-lg bg-muted">
               {imageUrl ? (
@@ -135,9 +134,13 @@ export function ItemCard({ item }: Props) {
               {maxCapacity && maxCapacity > 1 && (
                 <span className="flex items-center gap-1">
                   <UsersIcon className="h-3 w-3" />
-                  {maxCapacity} pers.
+                  Hasta {maxCapacity} pers.
                 </span>
               )}
+              <span className="flex items-center gap-1 text-primary">
+                <CalendarIcon className="h-3 w-3" />
+                Consultar disponibilidad
+              </span>
               {serviceType === "accommodation" && Boolean(config.bedrooms) && (
                 <span className="flex items-center gap-1">
                   🛏️ {String(config.bedrooms)} hab.
@@ -157,14 +160,23 @@ export function ItemCard({ item }: Props) {
               </span>
             </div>
           </CardContent>
-        </Card>
-      </Link>
+        </Link>
+        <div className="px-6 pb-6">
+          <Button asChild className="w-full" size="sm">
+            <Link href={`/${item.type}s/${item.id}`}>
+              Ver detalles
+              <ArrowRightIcon className="ml-2 h-4 w-4" />
+            </Link>
+          </Button>
+        </div>
+      </Card>
     );
   }
 
   const product = item;
   const existingItem = cart.items.find(
-    (cartItem) => cartItem.product.id === product.id,
+    (cartItem) =>
+      cartItem.type === "product" && cartItem.product.id === product.id,
   );
   const currentQuantity = existingItem?.quantity ?? 0;
   const availableStock =

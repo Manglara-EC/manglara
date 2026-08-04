@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { LoaderIcon } from "lucide-react";
 
@@ -47,6 +48,7 @@ import { AccommodationConfigFields } from "@/features/seller/components/accommod
 import { ActivityConfigFields } from "@/features/seller/components/activity-config-fields";
 import { RentalConfigFields } from "@/features/seller/components/rental-config-fields";
 import { ParkingConfigFields } from "@/features/seller/components/parking-config-fields";
+import { ServiceImageUpload } from "@/features/seller/components/service-image-upload";
 
 interface Props {
   serviceId: string;
@@ -58,6 +60,7 @@ export function EditServiceForm({ serviceId, service }: Props) {
     serviceId,
     service,
   });
+  const [isUploadingImages, setIsUploadingImages] = useState(false);
 
   return (
     <Form {...form}>
@@ -207,6 +210,7 @@ export function EditServiceForm({ serviceId, service }: Props) {
                     <FormControl>
                       <LocationPicker
                         value={coords}
+                        className="h-96 sm:h-[450px]"
                         onChange={(value) => {
                           form.setValue("latitude", value.lat, { shouldDirty: true });
                           form.setValue("longitude", value.lng, { shouldDirty: true });
@@ -408,6 +412,35 @@ export function EditServiceForm({ serviceId, service }: Props) {
           />
         )}
 
+        <Card>
+          <CardHeader>
+            <CardTitle>Imágenes</CardTitle>
+            <CardDescription>
+              Gestiona las fotos que verán las personas al explorar tu servicio
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <FormField
+              control={
+                form.control as unknown as React.ComponentProps<
+                  typeof FormField
+                >["control"]
+              }
+              name="images"
+              render={({ field }) => (
+                <FormItem>
+                  <ServiceImageUpload
+                    value={field.value ?? []}
+                    onChange={field.onChange}
+                    onUploadingChange={setIsUploadingImages}
+                  />
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </CardContent>
+        </Card>
+
         {/* Política de cancelación */}
         <Card>
           <CardHeader>
@@ -483,9 +516,11 @@ export function EditServiceForm({ serviceId, service }: Props) {
           <Button type="button" variant="outline" asChild>
             <Link href="/seller/services">Cancelar</Link>
           </Button>
-          <Button type="submit" disabled={isPending}>
-            {isPending && <LoaderIcon className="mr-2 h-4 w-4 animate-spin" />}
-            Guardar cambios
+          <Button type="submit" disabled={isPending || isUploadingImages}>
+            {(isPending || isUploadingImages) && (
+              <LoaderIcon className="mr-2 h-4 w-4 animate-spin" />
+            )}
+            {isUploadingImages ? "Subiendo imágenes..." : "Guardar cambios"}
           </Button>
         </div>
       </form>

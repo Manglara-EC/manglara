@@ -109,7 +109,15 @@ export const auth = betterAuth({
   user: {
     changeEmail: {
       enabled: true,
-      sendChangeEmailVerification: async ({ user, newEmail, url }) => {
+      sendChangeEmailVerification: async ({
+        user,
+        newEmail,
+        url,
+      }: {
+        user: { name: string; email: string };
+        newEmail: string;
+        url: string;
+      }) => {
         const { error } = await resend.emails.send({
           from: "onboarding@resend.dev",
           to: [user.email],

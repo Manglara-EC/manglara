@@ -54,6 +54,8 @@ export async function getServiceById(
         rejectionReason: service.rejectionReason,
         createdAt: service.createdAt,
         updatedAt: service.updatedAt,
+        latitude: service.latitude,
+        longitude: service.longitude,
         organizationName: organization.name,
       })
       .from(service)

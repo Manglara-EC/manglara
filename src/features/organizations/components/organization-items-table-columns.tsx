@@ -9,6 +9,7 @@ import { Button } from "@/shared/components/ui/button";
 
 import { OrganizationItemsTableColumnHeader } from "@/features/organizations/components/organization-items-table-column-header";
 import { ItemApprovalActions } from "@/features/admin/components/item-approval-actions";
+import { formatCurrency } from "@/shared/utils/currency";
 import type { OrganizationItem } from "@/features/organizations/types";
 
 export const getOrganizationItemsColumns = (
@@ -65,10 +66,7 @@ export const getOrganizationItemsColumns = (
       <OrganizationItemsTableColumnHeader column={column} title="Precio" />
     ),
     cell: ({ row }) => {
-      const price = new Intl.NumberFormat("es-ES", {
-        style: "currency",
-        currency: "USD",
-      }).format(Number(row.original.price));
+      const price = formatCurrency(row.original.price);
 
       return <div className="ml-2.5 font-medium">{price}</div>;
     },

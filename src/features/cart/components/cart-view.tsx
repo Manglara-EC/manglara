@@ -3,7 +3,16 @@
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { Package, Plus, Minus, Trash2, ShoppingCart } from "lucide-react";
+import {
+  CalendarDays,
+  Package,
+  Plus,
+  Minus,
+  Trash2,
+  ShoppingCart,
+} from "lucide-react";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
 
 import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent } from "@/shared/components/ui/card";
@@ -11,15 +20,14 @@ import { Separator } from "@/shared/components/ui/separator";
 import { ScrollArea } from "@/shared/components/ui/scroll-area";
 
 import { useCart } from "@/features/cart/context/cart-context";
+import { formatCurrency } from "@/shared/utils/currency";
+import { getValidImageSrc } from "@/shared/utils/image-src";
 
 export function CartView() {
   const router = useRouter();
   const { cart, updateQuantity, removeItem, getTotalItems, getTotalPrice, clearCart } = useCart();
 
-  const totalPrice = new Intl.NumberFormat("es-ES", {
-    style: "currency",
-    currency: "EUR",
-  }).format(getTotalPrice());
+  const totalPrice = formatCurrency(getTotalPrice());
 
   const handleProceedToCheckout = () => {
     if (cart.items.length === 0) return;
@@ -54,24 +62,86 @@ export function CartView() {
             <ScrollArea className="max-h-[600px]">
               <div className="space-y-4">
                 {cart.items.map((item) => {
-                  const imageUrl =
-                    item.product.images && item.product.images.length > 0
-                      ? item.product.images[0]
-                      : null;
-                  const price = new Intl.NumberFormat("es-ES", {
-                    style: "currency",
-                    currency: "EUR",
-                  }).format(Number(item.product.price));
-                  const itemTotal = new Intl.NumberFormat("es-ES", {
-                    style: "currency",
-                    currency: "EUR",
-                  }).format(Number(item.product.price) * item.quantity);
+                  if (item.type === "booking") {
+                    const serviceImage = getValidImageSrc(item.serviceImage);
+
+                    return (
+                      <div key={item.id} className="space-y-4">
+                        <div className="flex gap-4">
+                          <Link href={`/services/${item.serviceId}`}>
+                            <div className="relative flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-muted">
+                              {serviceImage ? (
+                                <Image
+                                  src={serviceImage}
+                                  alt={item.serviceName}
+                                  fill
+                                  className="object-cover"
+                                />
+                              ) : (
+                                <CalendarDays className="h-8 w-8 text-muted-foreground" />
+                              )}
+                            </div>
+                          </Link>
+                          <div className="flex flex-1 flex-col gap-1">
+                            <Link href={`/services/${item.serviceId}`}>
+                              <p className="text-lg font-medium hover:underline">
+                                {item.serviceName}
+                              </p>
+                            </Link>
+                            <p className="text-sm text-muted-foreground">
+                              {format(
+                                new Date(item.startDate),
+                                "dd MMM yyyy, HH:mm",
+                                { locale: es },
+                              )}{" "}
+                              -{" "}
+                              {format(
+                                new Date(item.endDate),
+                                "dd MMM yyyy, HH:mm",
+                                { locale: es },
+                              )}
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              {item.quantity}{" "}
+                              {item.quantity === 1 ? "persona" : "personas"}
+                            </p>
+                            {item.notes && (
+                              <p className="line-clamp-1 text-xs text-muted-foreground">
+                                Nota: {item.notes}
+                              </p>
+                            )}
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="mt-1 h-8 w-8 text-destructive"
+                              onClick={() => removeItem(item.id)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                              <span className="sr-only">Eliminar reserva</span>
+                            </Button>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-lg font-semibold">
+                              {formatCurrency(item.estimatedTotal)}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              Estimado
+                            </p>
+                          </div>
+                        </div>
+                        <Separator />
+                      </div>
+                    );
+                  }
+
+                  const imageUrl = getValidImageSrc(item.product.images?.[0]);
+                  const price = formatCurrency(item.product.price);
+                  const itemTotal = formatCurrency(
+                    Number(item.product.price) * item.quantity,
+                  );
 
                   return (
-                    <div
-                      key={`${item.product.id}-${item.reservationDate ?? "no-date"}`}
-                      className="space-y-4"
-                    >
+                    <div key={item.id} className="space-y-4">
                       <div className="flex gap-4">
                         <Link href={`/products/${item.product.id}`}>
                           <div className="relative h-24 w-24 flex-shrink-0 overflow-hidden rounded-lg bg-muted">
@@ -147,7 +217,10 @@ export function CartView() {
                               variant="ghost"
                               size="icon"
                               className="h-8 w-8 ml-auto text-destructive"
-                              onClick={() => removeItem(item.product.id, item.reservationDate)}
+                              {item.type === "booking"
+                                  ? () => removeItem(item.id)
+                                  : () => removeItem(item.product.id, item.reservationDate)
+                              } 
                             >
                               <Trash2 className="h-4 w-4" />
                             </Button>
