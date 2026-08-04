@@ -33,7 +33,7 @@ export default async function StoriesLayout({
         <AppSidebar />
 
         <div className="min-w-0 flex-1 flex flex-col overflow-hidden">
-          <div className="flex justify-end mb-4">
+          <div className="mb-6 flex justify-end px-1 pt-1 sm:px-2">
             <CartButton />
           </div>
           <main className="h-full w-full flex-1 overflow-y-auto">
