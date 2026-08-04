@@ -83,12 +83,20 @@ interface CartProviderProps {
 }
 
 export function CartProvider({ children }: CartProviderProps) {
-  const [cart, setCart] = useState<Cart>(loadCartFromStorage);
+  const [cart, setCart] = useState<Cart>({ items: [] });
+  const [hasHydrated, setHasHydrated] = useState(false);
 
-  // Save to localStorage whenever cart changes
   useEffect(() => {
-    saveCartToStorage(cart);
-  }, [cart]);
+    setCart(loadCartFromStorage());
+    setHasHydrated(true);
+  }, []);
+
+  // Do not overwrite a persisted cart with the server-rendered empty state.
+  useEffect(() => {
+    if (hasHydrated) {
+      saveCartToStorage(cart);
+    }
+  }, [cart, hasHydrated]);
 
   const addItem = useCallback(
     (product: ProductCartItem["product"], quantity: number): boolean => {
