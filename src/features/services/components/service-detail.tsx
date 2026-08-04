@@ -33,6 +33,7 @@ import {
 } from "@/shared/components/ui/typography";
 import { ServiceBookingDialog } from "@/features/services/components/service-booking-dialog";
 import { formatCurrency } from "@/shared/utils/currency";
+import { getValidImageSources } from "@/shared/utils/image-src";
 
 import type { PublicService } from "@/features/services/types";
 import type { AvailabilityRules } from "@/shared/lib/drizzle/schema";
@@ -186,7 +187,7 @@ export function ServiceDetail({ service }: Props) {
     surfaceType?: string;
   }
 
-  const images = service.images ?? [];
+  const images = getValidImageSources(service.images);
   const imageUrl = images[selectedImageIndex] ?? null;
   const config = ((service.serviceConfig as Record<string, unknown>) ??
     {}) as ServiceConfigProps;
@@ -374,8 +375,8 @@ export function ServiceDetail({ service }: Props) {
                       <UsersIcon className="h-4 w-4 text-muted-foreground" />
                       <span>
                         {service.maxCapacity}{" "}
-                         {service.maxCapacity === 1 ? "hamaca" : "hamacas"}{" "}
-                         de capacidad total
+                        {service.maxCapacity === 1 ? "hamaca" : "hamacas"} de
+                        capacidad total
                       </span>
                     </div>
                   )}
@@ -400,10 +401,10 @@ export function ServiceDetail({ service }: Props) {
                       <UsersIcon className="h-4 w-4 text-muted-foreground" />
                       <span>
                         {service.maxCapacity}{" "}
-                         {service.maxCapacity === 1
-                           ? "plaza de parqueo"
-                           : "plazas de parqueo"}{" "}
-                         de capacidad total
+                        {service.maxCapacity === 1
+                          ? "plaza de parqueo"
+                          : "plazas de parqueo"}{" "}
+                        de capacidad total
                       </span>
                     </div>
                   )}
@@ -426,7 +427,9 @@ export function ServiceDetail({ service }: Props) {
                   {service.maxCapacity && service.maxCapacity > 1 && (
                     <div className="flex items-center gap-2">
                       <UsersIcon className="h-4 w-4 text-muted-foreground" />
-                       <span>Capacidad total: {service.maxCapacity} personas</span>
+                      <span>
+                        Capacidad total: {service.maxCapacity} personas
+                      </span>
                     </div>
                   )}
                   {service.durationMinutes && (
@@ -740,7 +743,7 @@ export function ServiceDetail({ service }: Props) {
                 {service.maxCapacity && (
                   <div>
                     <TypographyMuted className="text-xs">
-                       Capacidad total
+                      Capacidad total
                     </TypographyMuted>
                     <p className="font-medium">
                       {service.maxCapacity} personas
@@ -780,7 +783,7 @@ export function ServiceDetail({ service }: Props) {
         {/* Actividad: Requisitos - Mostrar si hay datos */}
         {Boolean(
           Array.isArray(config.requirements) &&
-            (config.requirements as unknown[]).length > 0,
+          (config.requirements as unknown[]).length > 0,
         ) && (
           <Card>
             <CardHeader>
@@ -802,7 +805,7 @@ export function ServiceDetail({ service }: Props) {
         {/* Actividad: Qué incluye - Mostrar si hay datos */}
         {Boolean(
           Array.isArray(config.inclusions) &&
-            (config.inclusions as unknown[]).length > 0,
+          (config.inclusions as unknown[]).length > 0,
         ) && (
           <Card>
             <CardHeader>
@@ -824,7 +827,7 @@ export function ServiceDetail({ service }: Props) {
         {/* Actividad: Qué NO incluye - Mostrar si hay datos */}
         {Boolean(
           Array.isArray(config.exclusions) &&
-            (config.exclusions as unknown[]).length > 0,
+          (config.exclusions as unknown[]).length > 0,
         ) && (
           <Card>
             <CardHeader>

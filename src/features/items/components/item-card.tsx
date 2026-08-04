@@ -39,6 +39,7 @@ import { Label } from "@/shared/components/ui/label";
 
 import { useCart } from "@/features/cart/context/cart-context";
 import { formatCurrency } from "@/shared/utils/currency";
+import { getValidImageSrc } from "@/shared/utils/image-src";
 import type { PublicItem } from "@/features/items/types";
 
 const SERVICE_TYPE_LABELS: Record<string, string> = {
@@ -58,8 +59,7 @@ interface Props {
 }
 
 export function ItemCard({ item }: Props) {
-  const imageUrl =
-    item.images && item.images.length > 0 ? item.images[0] : null;
+  const imageUrl = getValidImageSrc(item.images?.[0]);
   const price = formatCurrency(item.price);
 
   const { addItem, cart } = useCart();

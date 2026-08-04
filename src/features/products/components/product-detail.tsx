@@ -22,6 +22,7 @@ import {
   TypographyMuted,
 } from "@/shared/components/ui/typography";
 import { formatCurrency } from "@/shared/utils/currency";
+import { getValidImageSources } from "@/shared/utils/image-src";
 import {
   Dialog,
   DialogContent,
@@ -55,7 +56,7 @@ export function ProductDetail({ product }: Props) {
 
   const price = formatCurrency(product.price);
 
-  const images = product.images ?? [];
+  const images = getValidImageSources(product.images);
   const imageUrl = images.length > 0 ? images[0] : null;
 
   useEffect(() => {

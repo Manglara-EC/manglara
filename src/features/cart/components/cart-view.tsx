@@ -21,6 +21,7 @@ import { ScrollArea } from "@/shared/components/ui/scroll-area";
 
 import { useCart } from "@/features/cart/context/cart-context";
 import { formatCurrency } from "@/shared/utils/currency";
+import { getValidImageSrc } from "@/shared/utils/image-src";
 
 export function CartView() {
   const router = useRouter();
@@ -62,14 +63,16 @@ export function CartView() {
               <div className="space-y-4">
                 {cart.items.map((item) => {
                   if (item.type === "booking") {
+                    const serviceImage = getValidImageSrc(item.serviceImage);
+
                     return (
                       <div key={item.id} className="space-y-4">
                         <div className="flex gap-4">
                           <Link href={`/services/${item.serviceId}`}>
                             <div className="relative flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-muted">
-                              {item.serviceImage ? (
+                              {serviceImage ? (
                                 <Image
-                                  src={item.serviceImage}
+                                  src={serviceImage}
                                   alt={item.serviceName}
                                   fill
                                   className="object-cover"
@@ -131,7 +134,7 @@ export function CartView() {
                     );
                   }
 
-                  const imageUrl = item.product.images?.[0] ?? null;
+                  const imageUrl = getValidImageSrc(item.product.images?.[0]);
                   const price = formatCurrency(item.product.price);
                   const itemTotal = formatCurrency(
                     Number(item.product.price) * item.quantity,
