@@ -14,6 +14,7 @@ import {
   transactionHeader,
   transactionLine,
 } from "@/shared/lib/drizzle/transactions";
+import { getBookedQuantityForDate } from "@/features/products/lib/availability";
 import { tryCatch } from "@/shared/utils/try-catch";
 import type { ActionResponse } from "@/shared/types";
 import { validateBookingAvailability } from "@/features/services/data/booking-availability";
@@ -47,10 +48,18 @@ type ErrorCode =
   | "PRODUCT_NOT_FOUND"
   | "SERVICE_NOT_FOUND"
   | "INSUFFICIENT_STOCK"
+  | "INVALID_QUANTITY"
+  | "PRICE_MISMATCH"
+  | "RESERVATION_DATE_REQUIRED"
+  | "DATE_NOT_AVAILABLE"
+  | "INTERNAL_SERVER_ERROR"
   | "INVALID_DATES"
   | "UNAVAILABLE"
   | "CAPACITY_EXCEEDED"
   | "INTERNAL_SERVER_ERROR";
+
+const DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
+  
 
 class CheckoutError extends Error {
   constructor(
@@ -117,6 +126,14 @@ export const simulatePurchase = async (
     };
   }
 
+  const productMap = new Map(products.map((p) => [p.id, p]));
+
+  // Suma de cantidades pedidas dentro de este mismo carrito, agrupadas por
+  // producto + fecha, para validar contra la disponibilidad de ese día
+  // incluso si el carrito tuviera más de una línea para el mismo día.
+  const requestedPerProductDate = new Map<string, number>();
+
+  // Validate each item
   const items = parsedItems.data;
   const now = new Date();
   for (const item of items) {
@@ -321,12 +338,18 @@ export const simulatePurchase = async (
         });
         transactionIds.push(transactionId);
 
+        // 4. Create line items, and either update stock (productos normales)
+        // o crear la reserva (productos reservables)
         for (const item of sellerItems) {
           const transactionLineId = crypto.randomUUID();
+
           await tx.insert(transactionLine).values({
             id: transactionLineId,
             transactionId,
-            type: item.type,
+            type:
+              item.type === "product" && item.isReservable
+                ? "booking"
+                : item.type,
             unitPrice: item.unitPrice.toFixed(2),
             quantity: item.item.quantity,
             discount: "0",
@@ -336,10 +359,24 @@ export const simulatePurchase = async (
           });
 
           if (item.type === "product") {
-            await tx.insert(productLine).values({
-              transactionLineId,
-              productId: item.productId,
-            });
+            if (item.isReservable) {
+              const reservationDate = new Date(
+                `${item.reservationDate}T00:00:00`,
+              );
+
+              await tx.insert(bookingLine).values({
+                transactionLineId,
+                productId: item.productId,
+                userId: session.user.id,
+                startDate: reservationDate,
+                endDate: reservationDate,
+              });
+            } else {
+              await tx.insert(productLine).values({
+                transactionLineId,
+                productId: item.productId,
+              });
+            }
           } else {
             await tx.insert(bookingLine).values({
               transactionLineId,

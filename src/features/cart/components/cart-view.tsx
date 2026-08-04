@@ -25,7 +25,7 @@ import { getValidImageSrc } from "@/shared/utils/image-src";
 
 export function CartView() {
   const router = useRouter();
-  const { cart, updateQuantity, removeItem, getTotalPrice } = useCart();
+  const { cart, updateQuantity, removeItem, getTotalItems, getTotalPrice, clearCart } = useCart();
 
   const totalPrice = formatCurrency(getTotalPrice());
 
@@ -168,6 +168,15 @@ export function CartView() {
                           <p className="text-sm text-muted-foreground">
                             {price} cada uno
                           </p>
+                          {item.reservationDate && (
+                            <p className="text-sm text-primary">
+                              Reservado para el{" "}
+                              {new Date(item.reservationDate + "T00:00:00").toLocaleDateString(
+                                "es-ES",
+                                { day: "numeric", month: "long", year: "numeric" },
+                              )}
+                            </p>
+                          )}
                           <div className="flex items-center gap-2 mt-2">
                             <Button
                               variant="outline"
@@ -177,6 +186,7 @@ export function CartView() {
                                 updateQuantity(
                                   item.product.id,
                                   item.quantity - 1,
+                                  item.reservationDate,
                                 )
                               }
                             >
@@ -193,6 +203,7 @@ export function CartView() {
                                 updateQuantity(
                                   item.product.id,
                                   item.quantity + 1,
+                                  item.reservationDate,
                                 )
                               }
                               disabled={
@@ -206,7 +217,10 @@ export function CartView() {
                               variant="ghost"
                               size="icon"
                               className="h-8 w-8 ml-auto text-destructive"
-                              onClick={() => removeItem(item.id)}
+                              {item.type === "booking"
+                                  ? () => removeItem(item.id)
+                                  : () => removeItem(item.product.id, item.reservationDate)
+                              } 
                             >
                               <Trash2 className="h-4 w-4" />
                             </Button>
@@ -240,11 +254,7 @@ export function CartView() {
                 <span className="text-lg font-semibold">{totalPrice}</span>
               </div>
             </div>
-            <Button
-              className="w-full"
-              size="lg"
-              onClick={handleProceedToCheckout}
-            >
+            <Button className="w-full" size="lg" onClick={handleProceedToCheckout}>
               Proceder al pago
             </Button>
           </CardContent>
