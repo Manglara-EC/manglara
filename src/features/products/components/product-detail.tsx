@@ -10,6 +10,7 @@ import {
   Minus,
   ShoppingCart,
   Maximize2,
+  CalendarIcon
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -21,6 +22,10 @@ import {
   TypographyH3,
   TypographyMuted,
 } from "@/shared/components/ui/typography";
+
+import { Input } from "@/shared/components/ui/input";
+import { Label } from "@/shared/components/ui/label";
+
 import { formatCurrency } from "@/shared/utils/currency";
 import { getValidImageSources } from "@/shared/utils/image-src";
 import {
@@ -58,6 +63,13 @@ export function ProductDetail({ product }: Props) {
 
   const images = getValidImageSources(product.images);
   const imageUrl = images.length > 0 ? images[0] : null;
+  // Para productos reservables: consultamos cuánto stock queda disponible
+  // para la fecha elegida (el stock ya reservado por otros compradores en
+  // esa misma fecha se descuenta del cálculo).
+  const { data: availability, isLoading: isLoadingAvailability } = useProductAvailability(
+    product.id,
+    product.isReservable ? reservationDate || null : null,
+  );
 
   useEffect(() => {
     if (!api) return;
@@ -74,14 +86,29 @@ export function ProductDetail({ product }: Props) {
   };
 
   const existingItem = cart.items.find(
-    (item) => item.type === "product" && item.product.id === product.id,
+    (item) =>
+      item.type === "product" && item.product.id === product.id &&
+      item.reservationDate === (product.isReservable ? reservationDate : undefined)
   );
-  const currentQuantity = existingItem?.quantity ?? 0;
-  const availableStock =
-    product.stock !== undefined ? product.stock - currentQuantity : undefined;
-  const maxQuantity = availableStock !== undefined ? availableStock : 999;
+
+  const currentQuantityInCart = existingItem?.quantity ?? 0;
+
+  const availableStock = product.isReservable
+    ? availability
+      ? availability.availableQuantity - currentQuantityInCart
+      : undefined
+    : product.stock !== undefined
+      ? product.stock - currentQuantityInCart
+      : undefined;
+
+  const maxQuantity = availableStock !== undefined ? Math.max(0, availableStock) : 999;
 
   const handleAddToCart = () => {
+    if (product.isReservable && !reservationDate) {
+      toast.error("Elige una fecha para tu reserva");
+      return;
+    }
+
     if (quantity <= 0) {
       toast.error("La cantidad debe ser mayor a 0");
       return;
@@ -95,7 +122,13 @@ export function ProductDetail({ product }: Props) {
     const success = addItem(product, quantity);
     if (success) {
       toast.success(
-        `${quantity} ${quantity === 1 ? "unidad" : "unidades"} agregada${quantity > 1 ? "s" : ""} al carrito`,
+        product.isReservable
+          ? `Reserva agregada al carrito para el ${new Date(
+            reservationDate + "T00:00:00",
+          ).toLocaleDateString("es-ES", {
+            day: "numeric", month: "long", year: "numeric"
+          })}`
+          : `${quantity} ${quantity === 1 ? "unidad" : "unidades"} agregada${quantity > 1 ? "s" : ""} al carrito`,
       );
       setQuantity(1);
     } else {
@@ -127,10 +160,8 @@ export function ProductDetail({ product }: Props) {
       <div className="grid gap-6 md:grid-cols-2">
         <Card className="overflow-hidden">
           <CardHeader className="p-4 sm:p-6">
-            <div
-              className="group relative aspect-square w-full cursor-pointer overflow-hidden rounded-lg bg-muted"
-              onClick={() => imageUrl && openModal(0)}
-            >
+            <div className="group relative aspect-square w-full cursor-pointer overflow-hidden rounded-lg bg-muted"
+              onClick={() => imageUrl && openModal(0)}>
               {imageUrl ? (
                 <>
                   <Image
@@ -175,6 +206,7 @@ export function ProductDetail({ product }: Props) {
               </div>
             </CardContent>
           )}
+
         </Card>
 
         <div className="flex flex-col gap-4">

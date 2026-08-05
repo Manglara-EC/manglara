@@ -18,6 +18,8 @@ import { tryCatch } from "@/shared/utils/try-catch";
 import type { ActionResponse } from "@/shared/types";
 import { validateBookingAvailability } from "@/features/services/data/booking-availability";
 
+const DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
+
 const cartInputSchema = z
   .array(
     z.discriminatedUnion("type", [
@@ -25,6 +27,8 @@ const cartInputSchema = z
         type: z.literal("product"),
         product: z.object({ id: z.string().min(1) }).passthrough(),
         quantity: z.number().int().positive(),
+        // Solo aplica a productos reservables (product.isReservable === true).
+        reservationDate: z.string().regex(DATE_REGEX).optional(),
       }),
       z.object({
         type: z.literal("booking"),
@@ -47,6 +51,8 @@ type ErrorCode =
   | "PRODUCT_NOT_FOUND"
   | "SERVICE_NOT_FOUND"
   | "INSUFFICIENT_STOCK"
+  | "RESERVATION_DATE_REQUIRED"
+  | "DATE_NOT_AVAILABLE"
   | "INVALID_DATES"
   | "UNAVAILABLE"
   | "CAPACITY_EXCEEDED"
@@ -169,6 +175,11 @@ export const simulatePurchase = async (
         );
       }
 
+      // Suma de cantidades pedidas dentro de este mismo carrito, agrupadas
+      // por producto + fecha, para validar la disponibilidad de ese día
+      // aunque el carrito tenga más de una línea para la misma fecha.
+      const requestedPerProductDate = new Map<string, number>();
+
       const resolvedItems: Array<
         | {
             type: "product";
@@ -177,6 +188,8 @@ export const simulatePurchase = async (
             unitPrice: number;
             total: number;
             productId: string;
+            isReservable: boolean;
+            reservationDate?: string;
           }
         | {
             type: "booking";
@@ -198,12 +211,29 @@ export const simulatePurchase = async (
             "Un producto ya no está disponible.",
           );
         }
-        if (product.stock < productQuantities.get(product.id)!) {
+
+        if (product.isReservable) {
+          // Productos reservables: la fecha es obligatoria y el stock se
+          // valida por día (más abajo), no de forma global.
+          if (!item.reservationDate) {
+            throw new CheckoutError(
+              "RESERVATION_DATE_REQUIRED",
+              `Elige una fecha de reserva para ${product.name}.`,
+            );
+          }
+
+          const key = `${product.id}__${item.reservationDate}`;
+          requestedPerProductDate.set(
+            key,
+            (requestedPerProductDate.get(key) ?? 0) + item.quantity,
+          );
+        } else if (product.stock < productQuantities.get(product.id)!) {
           throw new CheckoutError(
             "INSUFFICIENT_STOCK",
             `Stock insuficiente para ${product.name}. Disponible: ${product.stock}.`,
           );
         }
+
         resolvedItems.push({
           type: "product",
           item,
@@ -211,7 +241,27 @@ export const simulatePurchase = async (
           unitPrice: Number(product.price),
           total: toAmount(Number(product.price) * item.quantity),
           productId: product.id,
+          isReservable: product.isReservable,
+          reservationDate: item.reservationDate,
         });
+      }
+
+      // Validar disponibilidad por fecha para productos reservables. El
+      // bloqueo `for("update")` sobre `product` de arriba ya sirve para
+      // serializar reservas concurrentes del mismo producto.
+      for (const [key, requestedQuantity] of requestedPerProductDate.entries()) {
+        const [productId, date] = key.split("__");
+        const product = productsById.get(productId)!;
+
+        const bookedQuantity = await getBookedQuantityForDate(tx, productId, date);
+
+        if (bookedQuantity + requestedQuantity > product.stock) {
+          const remaining = Math.max(0, product.stock - bookedQuantity);
+          throw new CheckoutError(
+            "DATE_NOT_AVAILABLE",
+            `Solo quedan ${remaining} unidades de ${product.name} disponibles para el ${date}.`,
+          );
+        }
       }
 
       const bookingItems = items
@@ -326,7 +376,13 @@ export const simulatePurchase = async (
           await tx.insert(transactionLine).values({
             id: transactionLineId,
             transactionId,
-            type: item.type,
+            // Un producto reservable también se registra como "booking" a
+            // nivel de línea de transacción, para que quede claro que su
+            // detalle vive en booking_line y no en product_line.
+            type:
+              item.type === "product" && item.isReservable
+                ? "booking"
+                : item.type,
             unitPrice: item.unitPrice.toFixed(2),
             quantity: item.item.quantity,
             discount: "0",
@@ -336,10 +392,24 @@ export const simulatePurchase = async (
           });
 
           if (item.type === "product") {
-            await tx.insert(productLine).values({
-              transactionLineId,
-              productId: item.productId,
-            });
+            if (item.isReservable) {
+              // El stock NO se descuenta globalmente aquí: ya se validó que
+              // hay cupo para esta fecha específica (ver arriba).
+              const reservationDate = new Date(`${item.reservationDate}T00:00:00`);
+              await tx.insert(bookingLine).values({
+                transactionLineId,
+                productId: item.productId,
+                serviceId: null,
+                userId: session.user.id,
+                startDate: reservationDate,
+                endDate: reservationDate,
+              }as any);
+            } else {
+              await tx.insert(productLine).values({
+                transactionLineId,
+                productId: item.productId,
+              });
+            }
           } else {
             await tx.insert(bookingLine).values({
               transactionLineId,
@@ -363,11 +433,17 @@ export const simulatePurchase = async (
         });
       }
 
+      // Actualizar stock solo para productos NO reservables. El stock de un
+      // producto reservable representa la capacidad diaria compartida, no
+      // un inventario que se consume por compra.
       for (const [productId, quantity] of productQuantities) {
+        const product = productsById.get(productId)!;
+        if (product.isReservable) continue;
+
         await tx
           .update(productTable)
           .set({
-            stock: productsById.get(productId)!.stock - quantity,
+            stock: product.stock - quantity,
             updatedAt: new Date(),
           })
           .where(eq(productTable.id, productId));

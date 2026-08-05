@@ -10,12 +10,13 @@ import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
 import { Textarea } from "@/shared/components/ui/textarea";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle
 } from "@/shared/components/ui/card";
+import { Checkbox } from "@/shared/components/ui/checkbox";
 import { Badge } from "@/shared/components/ui/badge";
 import { LocationPicker } from "@/shared/components/location-picker";
 import type { LatLng } from "@/shared/components/leaflet-map";
@@ -32,28 +33,27 @@ interface Props {
 }
 
 export function EditProductForm({ productId, product }: Props) {
-  const router = useRouter();
+    const router = useRouter();
 
-  const [formData, setFormData] = useState({
-    name: product.name,
-    description: product.description || "",
-    price: String(product.price),
-    stock: product.stock,
-    location: product.location || "",
-    organizationId: product.organizationId,
-  });
-  const [coords, setCoords] = useState<LatLng | null>(
-    product.latitude !== null &&
-      product.latitude !== undefined &&
-      product.longitude !== null &&
-      product.longitude !== undefined
-      ? { lat: Number(product.latitude), lng: Number(product.longitude) }
-      : null,
-  );
+    const [formData, setFormData] = useState({
+        name: product.name,
+        description: product.description || "",
+        price: String(product.price),
+        stock: product.stock,
+        location: product.location || "",
+        isReservable: product.isReservable ?? false,
+        organizationId: product.organizationId,
+    });
+    const [coords, setCoords] = useState<LatLng | null>(
+        product.latitude !== null && product.latitude !== undefined &&
+            product.longitude !== null && product.longitude !== undefined
+            ? { lat: Number(product.latitude), lng: Number(product.longitude) }
+            : null,
+    );
 
-  const updateMutation = useUpdateProductMutation({
-    productId,
-  });
+    const updateMutation = useUpdateProductMutation({
+        productId,
+    });
 
   const handleChange =
     (field: keyof typeof formData) =>

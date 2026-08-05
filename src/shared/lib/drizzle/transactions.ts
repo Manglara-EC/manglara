@@ -81,12 +81,13 @@ export const bookingLine = pgTable("booking_line", {
   serviceId: text("service_id")
     .notNull()
     .references(() => service.id),
+  productId: text("product_id").references(() => product.id),
   userId: text("user_id") // Duplicado para conveniencia de consultas rápidas del cliente
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
 
   // Datos temporales obligatorios para las reservas
   startDate: timestamp("start_date").notNull(),
-  endDate: timestamp("end_date").notNull(),
+  endDate: timestamp("end_date").notNull(), // Opcional: solo aplica a reservas de rango (ej. alojamiento). Para productos, la reserva es de un solo día (= startDate).
   notes: text("notes"),
 });

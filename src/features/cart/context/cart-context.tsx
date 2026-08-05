@@ -18,10 +18,10 @@ import type {
 
 interface CartContextValue {
   cart: Cart;
-  addItem: (product: ProductCartItem["product"], quantity: number) => boolean;
+  addItem: (product: ProductCartItem["product"], quantity: number, reservationDate?: string) => boolean;
   addBooking: (booking: Omit<BookingCartItem, "id" | "type">) => void;
-  removeItem: (itemId: string) => void;
-  updateQuantity: (productId: string, quantity: number) => void;
+  removeItem: (productId: string, reservationDate?: string) => void;
+  updateQuantity: (productId: string, quantity: number, reservationDate?: string) => void;
   clearCart: () => void;
   getTotalItems: () => number;
   getTotalPrice: () => number;
@@ -99,15 +99,19 @@ export function CartProvider({ children }: CartProviderProps) {
   }, [cart, hasHydrated]);
 
   const addItem = useCallback(
-    (product: ProductCartItem["product"], quantity: number): boolean => {
-      // Validate stock
+    (product: ProductCartItem["product"], quantity: number, reservationDate?: string): boolean => {
+      if (product.isReservable && !reservationDate) {
+        // No se puede agregar un producto reservable sin fecha.
+        return false;
+      }
+
       if (product.stock !== undefined && quantity > product.stock) {
         return false;
       }
 
       setCart((prevCart) => {
-        const existingItemIndex = prevCart.items.findIndex(
-          (item) => item.type === "product" && item.product.id === product.id,
+        const existingItemIndex = prevCart.items.findIndex((item) =>
+          item.type === "product" && item.product.id === product.id && item.reservationDate === reservationDate,
         );
 
         if (existingItemIndex >= 0) {
@@ -130,9 +134,8 @@ export function CartProvider({ children }: CartProviderProps) {
         } else {
           // Add new item
           return {
-            items: [
-              ...prevCart.items,
-              { id: product.id, type: "product", product, quantity },
+            items: [...prevCart.items,
+            { id: crypto.randomUUID(), type: "product", product, quantity, reservationDate }
             ],
           };
         }
@@ -155,11 +158,18 @@ export function CartProvider({ children }: CartProviderProps) {
     [],
   );
 
-  const removeItem = useCallback((itemId: string) => {
-    setCart((prevCart) => ({
-      items: prevCart.items.filter((item) => item.id !== itemId),
-    }));
-  }, []);
+  const removeItem = useCallback(
+    (productId: string, reservationDate?: string) => {
+      setCart((prevCart) => ({
+        items: prevCart.items.filter(
+          (item) => !(
+            item.type === "product" &&
+            item.product.id === productId &&
+            item.reservationDate === reservationDate
+          ),
+        ),
+      }));
+    }, []);
 
   const updateQuantity = useCallback(
     (productId: string, quantity: number) => {
@@ -170,7 +180,7 @@ export function CartProvider({ children }: CartProviderProps) {
 
       setCart((prevCart) => {
         const item = prevCart.items.find(
-          (item) => item.type === "product" && item.product.id === productId,
+          (item) => item.type === "product" && item.product.id === productId && item.reservationDate === reservationDate,
         );
         if (!item || item.type !== "product") return prevCart;
 
@@ -180,7 +190,7 @@ export function CartProvider({ children }: CartProviderProps) {
         }
 
         const newItems = prevCart.items.map((item) =>
-          item.type === "product" && item.product.id === productId
+          item.type === "product" && item.product.id === productId && item.reservationDate === reservationDate
             ? { ...item, quantity }
             : item,
         );

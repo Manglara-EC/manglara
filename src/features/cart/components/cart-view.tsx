@@ -63,16 +63,14 @@ export function CartView() {
               <div className="space-y-4">
                 {cart.items.map((item) => {
                   if (item.type === "booking") {
-                    const serviceImage = getValidImageSrc(item.serviceImage);
-
                     return (
                       <div key={item.id} className="space-y-4">
                         <div className="flex gap-4">
                           <Link href={`/services/${item.serviceId}`}>
                             <div className="relative flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-muted">
-                              {serviceImage ? (
+                              {item.serviceImage ? (
                                 <Image
-                                  src={serviceImage}
+                                  src={item.serviceImage}
                                   alt={item.serviceName}
                                   fill
                                   className="object-cover"
@@ -168,17 +166,21 @@ export function CartView() {
                           <p className="text-sm text-muted-foreground">
                             {price} cada uno
                           </p>
-                          <div className="flex items-center gap-2 mt-2">
+                          {item.reservationDate && (
+                            <p className="text-sm text-primary">
+                              Reservado para el{" "}
+                              {new Date(item.reservationDate + "T00:00:00").toLocaleDateString(
+                                "es-ES",
+                                { day: "numeric", month: "long", year: "numeric" },
+                              )}
+                            </p>
+                          )}
+                          <div className="flex items-center gap-2 mt-2">                          
                             <Button
                               variant="outline"
                               size="icon"
                               className="h-8 w-8"
-                              onClick={() =>
-                                updateQuantity(
-                                  item.product.id,
-                                  item.quantity - 1,
-                                )
-                              }
+                              onClick={() => updateQuantity(item.id, item.quantity - 1)}
                             >
                               <Minus className="h-4 w-4" />
                             </Button>
@@ -189,12 +191,7 @@ export function CartView() {
                               variant="outline"
                               size="icon"
                               className="h-8 w-8"
-                              onClick={() =>
-                                updateQuantity(
-                                  item.product.id,
-                                  item.quantity + 1,
-                                )
-                              }
+                              onClick={() => updateQuantity(item.id, item.quantity + 1)}
                               disabled={
                                 item.product.stock !== undefined &&
                                 item.quantity >= item.product.stock

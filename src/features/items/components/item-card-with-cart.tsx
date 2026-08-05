@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowRightIcon, Package, Wrench, ShoppingCart } from "lucide-react";
+import { Package, Wrench, ShoppingCart } from "lucide-react";
 import Image from "next/image";
 import { toast } from "sonner";
 
@@ -28,8 +28,6 @@ import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
 
 import { useCart } from "@/features/cart/context/cart-context";
-import { formatCurrency } from "@/shared/utils/currency";
-import { getValidImageSrc } from "@/shared/utils/image-src";
 import type { PublicItem } from "@/features/items/types";
 
 interface Props {
@@ -37,8 +35,11 @@ interface Props {
 }
 
 export function ItemCardWithCart({ item }: Props) {
-  const imageUrl = getValidImageSrc(item.images?.[0]);
-  const price = formatCurrency(item.price);
+  const imageUrl = item.images && item.images.length > 0 ? item.images[0] : null;
+  const price = new Intl.NumberFormat("es-ES", {
+    style: "currency",
+    currency: "EUR",
+  }).format(Number(item.price));
 
   const { addItem, cart } = useCart();
   const [quantity, setQuantity] = useState(1);
@@ -47,8 +48,8 @@ export function ItemCardWithCart({ item }: Props) {
   // Only show cart button for products
   if (item.type !== "product") {
     return (
-      <Card className="h-full transition-all hover:shadow-md">
-        <Link href={`/${item.type}s/${item.id}`}>
+      <Link href={`/${item.type}s/${item.id}`}>
+        <Card className="h-full transition-all hover:shadow-md">
           <CardHeader>
             <div className="relative aspect-video w-full overflow-hidden rounded-lg bg-muted">
               {imageUrl ? (
@@ -84,25 +85,14 @@ export function ItemCardWithCart({ item }: Props) {
               </span>
             </div>
           </CardContent>
-        </Link>
-        <div className="px-6 pb-6">
-          <Button asChild className="w-full" size="sm">
-            <Link href={`/${item.type}s/${item.id}`}>
-              Ver detalles
-              <ArrowRightIcon className="ml-2 h-4 w-4" />
-            </Link>
-          </Button>
-        </div>
-      </Card>
+        </Card>
+      </Link>
     );
   }
 
   // Product card with cart functionality
   const product = item; // Type assertion for product
-  const existingItem = cart.items.find(
-    (cartItem) =>
-      cartItem.type === "product" && cartItem.product.id === product.id,
-  );
+  const existingItem = cart.items.find((cartItem) => cartItem.product.id === product.id);
   const currentQuantity = existingItem?.quantity ?? 0;
   const availableStock =
     product.stock !== undefined ? product.stock - currentQuantity : undefined;
