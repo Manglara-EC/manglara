@@ -81,9 +81,8 @@ export interface CreateProductVariables {
   location?: string;
   latitude?: number;
   longitude?: number;
-  isReservable?: boolean;
   images?: string[];
-  sellerId: string;
+  sellerId?: string;
   organizationId: string;
 }
 
@@ -131,7 +130,6 @@ export interface UpdateProductVariables {
   location?: string;
   latitude?: number;
   longitude?: number;
-  isReservable?: boolean;
   images?: string[];
   organizationId?: string;
 }

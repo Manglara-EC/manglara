@@ -119,7 +119,6 @@ export const product = pgTable("product", {
   location: text("location"),
   latitude: decimal("latitude", { precision: 10, scale: 7 }),
   longitude: decimal("longitude", { precision: 10, scale: 7 }),
-  isReservable: boolean("is_reservable").default(false).notNull(),
 
   sellerId: text("seller_id")
     .notNull()
