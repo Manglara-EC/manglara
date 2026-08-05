@@ -14,7 +14,6 @@ import {
   transactionHeader,
   transactionLine,
 } from "@/shared/lib/drizzle/transactions";
-import { getBookedQuantityForDate } from "@/features/products/lib/availability";
 import { tryCatch } from "@/shared/utils/try-catch";
 import type { ActionResponse } from "@/shared/types";
 import { validateBookingAvailability } from "@/features/services/data/booking-availability";

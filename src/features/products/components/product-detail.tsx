@@ -44,7 +44,6 @@ import {
 } from "@/shared/components/ui/carousel";
 
 import { useCart } from "@/features/cart/context/cart-context";
-import { useProductAvailability } from "@/features/products/hooks/use-product-availability";
 import { MapPreview } from "@/shared/components/map-preview";
 import type { PublicProduct } from "@/features/products/types";
 
@@ -52,16 +51,9 @@ interface Props {
   product: PublicProduct;
 }
 
-function getTomorrowISODate(): string {
-  const tomorrow = new Date();
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  return tomorrow.toISOString().slice(0, 10);
-}
-
 export function ProductDetail({ product }: Props) {
   const { addItem, cart } = useCart();
   const [quantity, setQuantity] = useState(1);
-  const [reservationDate, setReservationDate] = useState<string>("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [api, setApi] = useState<CarouselApi>();
@@ -123,11 +115,11 @@ export function ProductDetail({ product }: Props) {
     }
 
     if (availableStock !== undefined && quantity > availableStock) {
-      toast.error(`Solo hay ${availableStock} unidades disponibles para esa fecha`);
+      toast.error(`Solo hay ${availableStock} unidades disponibles`);
       return;
     }
 
-    const success = addItem(product, quantity, product.isReservable ? reservationDate : undefined);
+    const success = addItem(product, quantity);
     if (success) {
       toast.success(
         product.isReservable
@@ -155,13 +147,6 @@ export function ProductDetail({ product }: Props) {
       setQuantity(quantity + 1);
     }
   };
-
-  const isOutOfStock =
-    !product.isReservable && product.stock !== undefined && product.stock <= 0;
-
-  const canAddToCart = product.isReservable
-    ? Boolean(reservationDate) && availableStock !== undefined && availableStock > 0
-    : availableStock === undefined || availableStock > 0;
 
   return (
     <div className="flex flex-col gap-6">
@@ -229,12 +214,6 @@ export function ProductDetail({ product }: Props) {
             <div className="flex items-center gap-2">
               <TypographyH1>{product.name}</TypographyH1>
               <Badge>Producto</Badge>
-              {product.isReservable && (
-                <Badge variant="secondary">
-                  <CalendarIcon className="mr-1 h-3 w-3" />
-                  Requiere reserva
-                </Badge>
-              )}
             </div>
             <TypographyMuted className="text-sm">
               Por {product.sellerName} · {product.organizationName}
@@ -244,7 +223,7 @@ export function ProductDetail({ product }: Props) {
           <div className="space-y-4">
             <div>
               <TypographyH3 className="text-3xl">{price}</TypographyH3>
-              {!product.isReservable && product.stock !== undefined && (
+              {product.stock !== undefined && (
                 <TypographyMuted className="text-sm">
                   Stock disponible: {product.stock}
                 </TypographyMuted>
@@ -267,33 +246,6 @@ export function ProductDetail({ product }: Props) {
             />
 
             <div className="space-y-4">
-              {product.isReservable && (
-                <div className="space-y-2">
-                  <Label htmlFor="reservationDate">Fecha de la reserva</Label>
-                  <Input
-                    id="reservationDate"
-                    type="date"
-                    min={getTomorrowISODate()}
-                    value={reservationDate}
-                    onChange={(e) => {
-                      setReservationDate(e.target.value);
-                      setQuantity(1);
-                    }}
-                  />
-                  {reservationDate && (
-                    <TypographyMuted className="text-sm">
-                      {isLoadingAvailability
-                        ? "Consultando disponibilidad..."
-                        : availability
-                          ? availability.availableQuantity > 0
-                            ? `${availability.availableQuantity} disponibles para esa fecha`
-                            : "Sin disponibilidad para esa fecha"
-                          : null}
-                    </TypographyMuted>
-                  )}
-                </div>
-              )}
-
               <div className="flex items-center gap-4">
                 <TypographyH3 className="text-sm">Cantidad:</TypographyH3>
                 <div className="flex items-center gap-2">
@@ -314,12 +266,14 @@ export function ProductDetail({ product }: Props) {
                     size="icon"
                     className="h-10 w-10"
                     onClick={handleIncreaseQuantity}
-                    disabled={availableStock !== undefined && quantity >= availableStock}
+                    disabled={
+                      availableStock !== undefined && quantity >= availableStock
+                    }
                   >
                     <Plus className="h-4 w-4" />
                   </Button>
                 </div>
-                {!product.isReservable && availableStock !== undefined && (
+                {availableStock !== undefined && (
                   <TypographyMuted className="text-sm">
                     {availableStock > 0
                       ? `${availableStock} disponibles`
@@ -328,7 +282,7 @@ export function ProductDetail({ product }: Props) {
                 )}
               </div>
 
-              {isOutOfStock ? (
+              {product.stock !== undefined && product.stock <= 0 ? (
                 <Button disabled className="w-full" size="lg">
                   <ShoppingCart className="mr-2 h-4 w-4" />
                   Sin stock
@@ -338,10 +292,10 @@ export function ProductDetail({ product }: Props) {
                   className="w-full"
                   size="lg"
                   onClick={handleAddToCart}
-                  disabled={!canAddToCart}
+                  disabled={availableStock !== undefined && availableStock <= 0}
                 >
                   <ShoppingCart className="mr-2 h-4 w-4" />
-                  {product.isReservable ? "Reservar" : "Agregar al carrito"}
+                  Agregar al carrito
                 </Button>
               )}
             </div>

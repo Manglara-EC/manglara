@@ -73,7 +73,7 @@ export const productLine = pgTable("product_line", {
     .references(() => product.id),
 });
 
-// Detalle de Reserva (Servicio o Producto reservable)
+// Detalle de Reserva de Servicio
 export const bookingLine = pgTable("booking_line", {
   transactionLineId: text("transaction_line_id")
     .primaryKey()

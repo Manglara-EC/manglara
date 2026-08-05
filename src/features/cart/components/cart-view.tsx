@@ -175,7 +175,7 @@ export function CartView() {
                               )}
                             </p>
                           )}
-                          <div className="flex items-center gap-2 mt-2">
+                          <div className="flex items-center gap-2 mt-2">                          
                             <Button
                               variant="outline"
                               size="icon"
@@ -237,7 +237,11 @@ export function CartView() {
                 <span className="text-lg font-semibold">{totalPrice}</span>
               </div>
             </div>
-            <Button className="w-full" size="lg" onClick={handleProceedToCheckout}>
+            <Button
+              className="w-full"
+              size="lg"
+              onClick={handleProceedToCheckout}
+            >
               Proceder al pago
             </Button>
           </CardContent>

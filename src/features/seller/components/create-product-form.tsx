@@ -25,8 +25,8 @@ import { useCreateProductMutation } from "@/features/seller/hooks/use-create-pro
 import { authClient } from "@/shared/lib/better-auth/client";
 
 interface Props {
-    organizationId: string;
-    onSuccess?: () => void;
+  organizationId: string;
+  onSuccess?: () => void;
 }
 
 export function CreateProductForm({ organizationId, onSuccess }: Props) {
@@ -34,38 +34,30 @@ export function CreateProductForm({ organizationId, onSuccess }: Props) {
     const mutation = useCreateProductMutation();
     const [isUploading, setIsUploading] = useState(false);
 
-    const [form, setForm] = useState({
-        name: "",
-        description: "",
-        price: "",
-        stock: 0,
-        location: "",
-        isReservable: false,
-        images: [] as File[],
-    });
-    const [coords, setCoords] = useState<LatLng | null>(null);
+  const [form, setForm] = useState({
+    name: "",
+    description: "",
+    price: "",
+    stock: 0,
+    location: "",
+    images: [] as File[],
+  });
+  const [coords, setCoords] = useState<LatLng | null>(null);
 
-    const handleChange = (field: keyof Omit<typeof form, "images" | "isReservable">) => (
-        e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-    ) => {
-        const value = field === "stock" ? Number(e.target.value) : e.target.value;
-        setForm((prev) => ({ ...prev, [field]: value }));
+  const handleChange =
+    (field: keyof Omit<typeof form, "images">) =>
+    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+      const value = field === "stock" ? Number(e.target.value) : e.target.value;
+      setForm((prev) => ({ ...prev, [field]: value }));
     };
 
-    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const files = Array.from(e.target.files || []);
-        setForm((prev) => ({
-            ...prev,
-            images: [...prev.images, ...files],
-        }));
-    };
-
-    const removeImage = (index: number) => {
-        setForm((prev) => ({
-            ...prev,
-            images: prev.images.filter((_, i) => i !== index),
-        }));
-    };
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    setForm((prev) => ({
+      ...prev,
+      images: [...prev.images, ...files],
+    }));
+  };
 
     const uploadImagesToR2 = async (images: File[]): Promise<string[]> => {
         const imageUrls: string[] = [];
@@ -271,37 +263,27 @@ export function CreateProductForm({ organizationId, onSuccess }: Props) {
                 </CardContent>
             </Card>
 
-            {/* Reserva por fecha */}
-            <Card>
-                <CardHeader>
-                    <CardTitle>Reserva por fecha</CardTitle>
-                    <CardDescription>
-                        Actívalo si el comprador debe elegir una fecha para recibir o disfrutar
-                        el producto (ej: comida de restaurante, mesa reservada)
-                    </CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <div className="flex items-start gap-3 rounded-lg border border-border p-4">
-                        <Checkbox
-                            id="isReservable"
-                            checked={form.isReservable}
-                            onCheckedChange={(checked) =>
-                                setForm((prev) => ({ ...prev, isReservable: checked === true }))
-                            }
-                        />
-                        <div className="space-y-1">
-                            <Label htmlFor="isReservable" className="cursor-pointer">
-                                Este producto requiere reserva por fecha
-                            </Label>
-                            <p className="text-xs text-muted-foreground">
-                                El stock se calculará por día en vez de descontarse al comprar.
-                            </p>
-                        </div>
-                    </div>
-                </CardContent>
-            </Card>
-
-            <Separator />
+  return (
+    <form onSubmit={handleSubmit} className="space-y-8">
+      {/* Información del producto */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Información del producto</CardTitle>
+          <CardDescription>
+            Describe tu producto para que los clientes sepan qué ofreces
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="space-y-2">
+            <Label htmlFor="name">Nombre *</Label>
+            <Input
+              id="name"
+              value={form.name}
+              onChange={handleChange("name")}
+              placeholder="Ej. Artesanía de madera"
+              required
+            />
+          </div>
 
             {/* Botones de acción */}
             <div className="flex justify-end gap-4">

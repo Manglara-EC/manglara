@@ -109,20 +109,19 @@ export function CartProvider({ children }: CartProviderProps) {
         return false;
       }
 
-      let didAdd = true;
-
       setCart((prevCart) => {
         const existingItemIndex = prevCart.items.findIndex((item) =>
           item.type === "product" && item.product.id === product.id && item.reservationDate === reservationDate,
         );
 
         if (existingItemIndex >= 0) {
+          // Update existing item
           const existingItem = prevCart.items[existingItemIndex];
           const newQuantity = existingItem.quantity + quantity;
 
+          // Validate stock for updated quantity
           if (product.stock !== undefined && newQuantity > product.stock) {
-            didAdd = false;
-            return prevCart;
+            return prevCart; // Don't update if exceeds stock
           }
 
           const newItems = [...prevCart.items];
@@ -133,6 +132,7 @@ export function CartProvider({ children }: CartProviderProps) {
 
           return { items: newItems };
         } else {
+          // Add new item
           return {
             items: [...prevCart.items,
             { id: crypto.randomUUID(), type: "product", product, quantity, reservationDate }
@@ -141,7 +141,7 @@ export function CartProvider({ children }: CartProviderProps) {
         }
       });
 
-      return didAdd;
+      return true;
     },
     [],
   );
@@ -172,9 +172,9 @@ export function CartProvider({ children }: CartProviderProps) {
     }, []);
 
   const updateQuantity = useCallback(
-    (productId: string, quantity: number, reservationDate?: string) => {
+    (productId: string, quantity: number) => {
       if (quantity <= 0) {
-        removeItem(productId, reservationDate);
+        removeItem(productId);
         return;
       }
 
@@ -184,8 +184,9 @@ export function CartProvider({ children }: CartProviderProps) {
         );
         if (!item || item.type !== "product") return prevCart;
 
+        // Validate stock
         if (item.product.stock !== undefined && quantity > item.product.stock) {
-          return prevCart;
+          return prevCart; // Don't update if exceeds stock
         }
 
         const newItems = prevCart.items.map((item) =>
