@@ -9,7 +9,13 @@ import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
 import { Textarea } from "@/shared/components/ui/textarea";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/components/ui/card";
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle
+} from "@/shared/components/ui/card";
 import { Checkbox } from "@/shared/components/ui/checkbox";
 import { Badge } from "@/shared/components/ui/badge";
 import { LocationPicker } from "@/shared/components/location-picker";
@@ -37,7 +43,7 @@ export function EditProductForm({ productId, product }: Props) {
     });
     const [coords, setCoords] = useState<LatLng | null>(
         product.latitude !== null && product.latitude !== undefined &&
-        product.longitude !== null && product.longitude !== undefined
+            product.longitude !== null && product.longitude !== undefined
             ? { lat: Number(product.latitude), lng: Number(product.longitude) }
             : null,
     );

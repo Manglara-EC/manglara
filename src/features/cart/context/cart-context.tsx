@@ -1,16 +1,25 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+  ReactNode,
+} from "react";
 
-import type { CartItem, Cart } from "@/features/cart/types";
+import type {
+  BookingCartItem,
+  CartItem,
+  Cart,
+  ProductCartItem,
+} from "@/features/cart/types";
 
 interface CartContextValue {
   cart: Cart;
-  addItem: (
-    product: CartItem["product"],
-    quantity: number,
-    reservationDate?: string,
-  ) => boolean;
+  addItem: (product: ProductCartItem["product"], quantity: number, reservationDate?: string) => boolean;
+  addBooking: (booking: Omit<BookingCartItem, "id" | "type">) => void;
   removeItem: (productId: string, reservationDate?: string) => void;
   updateQuantity: (productId: string, quantity: number, reservationDate?: string) => void;
   clearCart: () => void;
@@ -30,7 +39,27 @@ function loadCartFromStorage(): Cart {
   try {
     const stored = localStorage.getItem(CART_STORAGE_KEY);
     if (stored) {
-      return JSON.parse(stored);
+      const parsed = JSON.parse(stored) as { items?: unknown[] };
+      const items = Array.isArray(parsed.items) ? parsed.items : [];
+
+      // Cart entries stored before reservations were supported had no discriminator.
+      return {
+        items: items.flatMap((item) => {
+          if (!item || typeof item !== "object") return [];
+          if ("type" in item) return [item as CartItem];
+          if ("product" in item && "quantity" in item) {
+            const legacyItem = item as Omit<ProductCartItem, "id" | "type">;
+            return [
+              {
+                ...legacyItem,
+                id: legacyItem.product.id,
+                type: "product" as const,
+              },
+            ];
+          }
+          return [];
+        }),
+      };
     }
   } catch (error) {
     console.error("Error loading cart from storage:", error);
@@ -49,41 +78,33 @@ function saveCartToStorage(cart: Cart): void {
   }
 }
 
-// Dos items del carrito son "el mismo" si es el mismo producto Y la misma
-// fecha de reserva (o ninguno de los dos tiene fecha, para productos normales).
-// Así, el mismo producto reservado para dos fechas distintas queda como dos
-// líneas separadas del carrito.
-function isSameCartLine(
-  item: CartItem,
-  productId: string,
-  reservationDate?: string,
-): boolean {
-  return item.product.id === productId && item.reservationDate === reservationDate;
-}
-
 interface CartProviderProps {
   children: ReactNode;
 }
 
 export function CartProvider({ children }: CartProviderProps) {
-  const [cart, setCart] = useState<Cart>(loadCartFromStorage);
+  const [cart, setCart] = useState<Cart>({ items: [] });
+  const [hasHydrated, setHasHydrated] = useState(false);
 
   useEffect(() => {
-    saveCartToStorage(cart);
-  }, [cart]);
+    setCart(loadCartFromStorage());
+    setHasHydrated(true);
+  }, []);
+
+  // Do not overwrite a persisted cart with the server-rendered empty state.
+  useEffect(() => {
+    if (hasHydrated) {
+      saveCartToStorage(cart);
+    }
+  }, [cart, hasHydrated]);
 
   const addItem = useCallback(
-    (product: CartItem["product"], quantity: number, reservationDate?: string): boolean => {
+    (product: ProductCartItem["product"], quantity: number, reservationDate?: string): boolean => {
       if (product.isReservable && !reservationDate) {
         // No se puede agregar un producto reservable sin fecha.
         return false;
       }
 
-      // Validación de sanidad: nunca exceder el stock/capacidad total del
-      // producto. La disponibilidad real para la fecha elegida (en el caso
-      // de productos reservables) ya debió validarse antes de llamar a esto
-      // (ver useProductAvailability); la validación definitiva ocurre en el
-      // servidor al momento de la compra.
       if (product.stock !== undefined && quantity > product.stock) {
         return false;
       }
@@ -92,7 +113,7 @@ export function CartProvider({ children }: CartProviderProps) {
 
       setCart((prevCart) => {
         const existingItemIndex = prevCart.items.findIndex((item) =>
-          isSameCartLine(item, product.id, reservationDate),
+          item.type === "product" && item.product.id === product.id && item.reservationDate === reservationDate,
         );
 
         if (existingItemIndex >= 0) {
@@ -108,12 +129,14 @@ export function CartProvider({ children }: CartProviderProps) {
           newItems[existingItemIndex] = {
             ...existingItem,
             quantity: newQuantity,
-          };
+          } as ProductCartItem;
 
           return { items: newItems };
         } else {
           return {
-            items: [...prevCart.items, { product, quantity, reservationDate }],
+            items: [...prevCart.items,
+            { id: crypto.randomUUID(), type: "product", product, quantity, reservationDate }
+            ],
           };
         }
       });
@@ -123,13 +146,30 @@ export function CartProvider({ children }: CartProviderProps) {
     [],
   );
 
-  const removeItem = useCallback((productId: string, reservationDate?: string) => {
-    setCart((prevCart) => ({
-      items: prevCart.items.filter(
-        (item) => !isSameCartLine(item, productId, reservationDate),
-      ),
-    }));
-  }, []);
+  const addBooking = useCallback(
+    (booking: Omit<BookingCartItem, "id" | "type">) => {
+      setCart((prevCart) => ({
+        items: [
+          ...prevCart.items,
+          { ...booking, id: crypto.randomUUID(), type: "booking" },
+        ],
+      }));
+    },
+    [],
+  );
+
+  const removeItem = useCallback(
+    (productId: string, reservationDate?: string) => {
+      setCart((prevCart) => ({
+        items: prevCart.items.filter(
+          (item) => !(
+            item.type === "product" &&
+            item.product.id === productId &&
+            item.reservationDate === reservationDate
+          ),
+        ),
+      }));
+    }, []);
 
   const updateQuantity = useCallback(
     (productId: string, quantity: number, reservationDate?: string) => {
@@ -139,17 +179,19 @@ export function CartProvider({ children }: CartProviderProps) {
       }
 
       setCart((prevCart) => {
-        const item = prevCart.items.find((item) =>
-          isSameCartLine(item, productId, reservationDate),
+        const item = prevCart.items.find(
+          (item) => item.type === "product" && item.product.id === productId && item.reservationDate === reservationDate,
         );
-        if (!item) return prevCart;
+        if (!item || item.type !== "product") return prevCart;
 
         if (item.product.stock !== undefined && quantity > item.product.stock) {
           return prevCart;
         }
 
         const newItems = prevCart.items.map((item) =>
-          isSameCartLine(item, productId, reservationDate) ? { ...item, quantity } : item,
+          item.type === "product" && item.product.id === productId && item.reservationDate === reservationDate
+            ? { ...item, quantity }
+            : item,
         );
 
         return { items: newItems };
@@ -168,8 +210,12 @@ export function CartProvider({ children }: CartProviderProps) {
 
   const getTotalPrice = useCallback(() => {
     return cart.items.reduce(
-      (total, item) => total + Number(item.product.price) * item.quantity,
-      0
+      (total, item) =>
+        total +
+        (item.type === "product"
+          ? Number(item.product.price) * item.quantity
+          : item.estimatedTotal),
+      0,
     );
   }, [cart.items]);
 
@@ -178,6 +224,7 @@ export function CartProvider({ children }: CartProviderProps) {
       value={{
         cart,
         addItem,
+        addBooking,
         removeItem,
         updateQuantity,
         clearCart,

@@ -3,13 +3,20 @@
 import { useState } from "react";
 import Link from "next/link";
 import { LoaderIcon, X } from "lucide-react";
+import { toast } from "sonner";
 
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
 import { Textarea } from "@/shared/components/ui/textarea";
 import { Checkbox } from "@/shared/components/ui/checkbox";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/components/ui/card";
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle
+} from "@/shared/components/ui/card";
 import { Separator } from "@/shared/components/ui/separator";
 import { LocationPicker } from "@/shared/components/location-picker";
 import type { LatLng } from "@/shared/components/leaflet-map";
@@ -25,6 +32,7 @@ interface Props {
 export function CreateProductForm({ organizationId, onSuccess }: Props) {
     const { data: session } = authClient.useSession();
     const mutation = useCreateProductMutation();
+    const [isUploading, setIsUploading] = useState(false);
 
     const [form, setForm] = useState({
         name: "",
@@ -59,18 +67,50 @@ export function CreateProductForm({ organizationId, onSuccess }: Props) {
         }));
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const uploadImagesToR2 = async (images: File[]): Promise<string[]> => {
+        const imageUrls: string[] = [];
+        for (const file of images) {
+            const formData = new FormData();
+            formData.append("file", file);
+
+            const response = await fetch("/api/upload", {
+                method: "POST",
+                body: formData,
+            });
+
+            if (!response.ok) {
+                const data = await response.json().catch(() => ({}));
+                throw new Error(data.error || "Error al subir la imagen");
+            }
+
+            const data = await response.json();
+            if (data.url) {
+                imageUrls.push(data.url);
+            }
+        }
+        return imageUrls;
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
         if (!session?.user?.id) {
             return;
         }
 
-        // Por ahora, las imágenes se manejan como placeholders
-        // En producción, aquí se subirían las imágenes a un servicio de almacenamiento
-        const imageUrls: string[] = [];
+        let imageUrls: string[] = [];
+
         if (form.images.length > 0) {
-            imageUrls.push(...form.images.map((_, index) => `placeholder-${index}`));
+            setIsUploading(true);
+            try {
+                imageUrls = await uploadImagesToR2(form.images);
+            } catch (error) {
+                console.error("Error uploading images:", error);
+                toast.error("Error al subir las imágenes");
+                setIsUploading(false);
+                return;
+            }
+            setIsUploading(false);
         }
 
         mutation.mutate({
@@ -87,6 +127,8 @@ export function CreateProductForm({ organizationId, onSuccess }: Props) {
             organizationId,
         });
     };
+
+    const isLoading = mutation.isPending || isUploading;
 
     return (
         <form onSubmit={handleSubmit} className="space-y-8">
