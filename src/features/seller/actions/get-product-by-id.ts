@@ -36,6 +36,7 @@ export async function getProductById(
         price: product.price,
         stock: product.stock,
         images: product.images,
+        isReservable: product.isReservable,
         organizationId: product.organizationId,
         sellerId: product.sellerId,
         status: product.status,

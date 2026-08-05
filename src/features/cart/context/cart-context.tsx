@@ -2,12 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react";
 
-import type {
-  BookingCartItem,
-  CartItem,
-  Cart,
-  ProductCartItem,
-} from "@/features/cart/types";
+import type { CartItem, Cart } from "@/features/cart/types";
 
 interface CartContextValue {
   cart: Cart;
@@ -18,7 +13,6 @@ interface CartContextValue {
   ) => boolean;
   removeItem: (productId: string, reservationDate?: string) => void;
   updateQuantity: (productId: string, quantity: number, reservationDate?: string) => void;
-  addBooking: (booking: Omit<BookingCartItem, "id" | "type">) => void;
   clearCart: () => void;
   getTotalItems: () => number;
   getTotalPrice: () => number;
@@ -36,27 +30,7 @@ function loadCartFromStorage(): Cart {
   try {
     const stored = localStorage.getItem(CART_STORAGE_KEY);
     if (stored) {
-      const parsed = JSON.parse(stored) as { items?: unknown[] };
-      const items = Array.isArray(parsed.items) ? parsed.items : [];
-
-      // Cart entries stored before reservations were supported had no discriminator.
-      return {
-        items: items.flatMap((item) => {
-          if (!item || typeof item !== "object") return [];
-          if ("type" in item) return [item as CartItem];
-          if ("product" in item && "quantity" in item) {
-            const legacyItem = item as Omit<ProductCartItem, "id" | "type">;
-            return [
-              {
-                ...legacyItem,
-                id: legacyItem.product.id,
-                type: "product" as const,
-              },
-            ];
-          }
-          return [];
-        }),
-      };
+      return JSON.parse(stored);
     }
   } catch (error) {
     console.error("Error loading cart from storage:", error);
@@ -92,20 +66,11 @@ interface CartProviderProps {
 }
 
 export function CartProvider({ children }: CartProviderProps) {
-  const [cart, setCart] = useState<Cart>({ items: [] });
-  const [hasHydrated, setHasHydrated] = useState(false);
+  const [cart, setCart] = useState<Cart>(loadCartFromStorage);
 
   useEffect(() => {
-    setCart(loadCartFromStorage());
-    setHasHydrated(true);
-  }, []);
-
-  // Do not overwrite a persisted cart with the server-rendered empty state.
-  useEffect(() => {
-    if (hasHydrated) {
-      saveCartToStorage(cart);
-    }
-  }, [cart, hasHydrated]);
+    saveCartToStorage(cart);
+  }, [cart]);
 
   const addItem = useCallback(
     (product: CartItem["product"], quantity: number, reservationDate?: string): boolean => {
@@ -143,7 +108,7 @@ export function CartProvider({ children }: CartProviderProps) {
           newItems[existingItemIndex] = {
             ...existingItem,
             quantity: newQuantity,
-          } as ProductCartItem;
+          };
 
           return { items: newItems };
         } else {
@@ -157,20 +122,8 @@ export function CartProvider({ children }: CartProviderProps) {
     },
     [],
   );
-  
-  const addBooking = useCallback(
-    (booking: Omit<BookingCartItem, "id" | "type">) => {
-      setCart((prevCart) => ({
-        items: [
-          ...prevCart.items,
-          { ...booking, id: crypto.randomUUID(), type: "booking" },
-        ],
-      }));
-    },
-    [],
-  );
- 
-  const removeItem = useCallback((itemId: string, reservationDate?: string) => {
+
+  const removeItem = useCallback((productId: string, reservationDate?: string) => {
     setCart((prevCart) => ({
       items: prevCart.items.filter(
         (item) => !isSameCartLine(item, productId, reservationDate),
@@ -189,7 +142,7 @@ export function CartProvider({ children }: CartProviderProps) {
         const item = prevCart.items.find((item) =>
           isSameCartLine(item, productId, reservationDate),
         );
-        if (!item || item.type !== "product") return prevCart;
+        if (!item) return prevCart;
 
         if (item.product.stock !== undefined && quantity > item.product.stock) {
           return prevCart;
@@ -215,12 +168,8 @@ export function CartProvider({ children }: CartProviderProps) {
 
   const getTotalPrice = useCallback(() => {
     return cart.items.reduce(
-      (total, item) =>
-        total +
-        (item.type === "product"
-          ? Number(item.product.price) * item.quantity
-          : item.estimatedTotal),
-      0,
+      (total, item) => total + Number(item.product.price) * item.quantity,
+      0
     );
   }, [cart.items]);
 
@@ -229,7 +178,6 @@ export function CartProvider({ children }: CartProviderProps) {
       value={{
         cart,
         addItem,
-        addBooking,
         removeItem,
         updateQuantity,
         clearCart,
