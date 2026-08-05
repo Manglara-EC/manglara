@@ -9,7 +9,12 @@ import { es } from "date-fns/locale";
 import { toast } from "sonner";
 
 import { Button } from "@/shared/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/shared/components/ui/card";
 import { Separator } from "@/shared/components/ui/separator";
 import { ScrollArea } from "@/shared/components/ui/scroll-area";
 
@@ -150,19 +155,12 @@ export function CheckoutSummary() {
                           )}
                         </div>
                         <div className="flex flex-1 flex-col gap-1">
-                          <p className="font-medium text-lg">{item.product.name}</p>
+                          <p className="font-medium text-lg">
+                            {item.product.name}
+                          </p>
                           <p className="text-sm text-muted-foreground">
                             {price} × {item.quantity}
                           </p>
-                          {item.reservationDate && (
-                            <p className="text-sm text-primary">
-                              Reservado para el{" "}
-                              {new Date(item.reservationDate + "T00:00:00").toLocaleDateString(
-                                "es-ES",
-                                { day: "numeric", month: "long", year: "numeric" },
-                              )}
-                            </p>
-                          )}
                         </div>
                         <div className="text-right">
                           <p className="font-semibold">{itemTotal}</p>
