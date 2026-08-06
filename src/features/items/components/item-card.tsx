@@ -77,8 +77,11 @@ export function ItemCard({ item }: Props) {
     const maxCapacity = serviceItem.maxCapacity;
 
     return (
-      <Card className="h-full transition-all hover:shadow-md">
-        <Link href={`/${item.type}s/${item.id}`}>
+      <Card className="flex h-full flex-col transition-all hover:shadow-md">
+        <Link
+          href={`/${item.type}s/${item.id}`}
+          className="flex min-w-0 flex-1 flex-col"
+        >
           <CardHeader className="pb-2">
             <div className="relative aspect-video w-full overflow-hidden rounded-lg bg-muted">
               {imageUrl ? (
@@ -108,7 +111,7 @@ export function ItemCard({ item }: Props) {
               </Badge>
             </div>
           </CardHeader>
-          <CardContent className="flex flex-col gap-2">
+          <CardContent className="flex flex-1 flex-col gap-2">
             <CardTitle className="line-clamp-2 text-lg">{item.name}</CardTitle>
 
             {item.description && (
@@ -210,8 +213,11 @@ export function ItemCard({ item }: Props) {
   };
 
   return (
-    <Card className="h-full transition-all hover:shadow-md">
-      <Link href={`/products/${item.id}`}>
+    <Card className="flex h-full flex-col transition-all hover:shadow-md">
+      <Link
+        href={`/products/${item.id}`}
+        className="flex min-w-0 flex-1 flex-col"
+      >
         <CardHeader>
           <div className="relative aspect-video w-full overflow-hidden rounded-lg bg-muted">
             {imageUrl ? (
@@ -228,7 +234,7 @@ export function ItemCard({ item }: Props) {
             )}
           </div>
         </CardHeader>
-        <CardContent className="flex flex-col gap-2">
+        <CardContent className="flex flex-1 flex-col gap-2">
           <div className="flex items-start justify-between gap-2">
             <CardTitle className="line-clamp-2 text-lg">{item.name}</CardTitle>
             <Badge>Producto</Badge>
@@ -238,7 +244,7 @@ export function ItemCard({ item }: Props) {
               {item.description}
             </CardDescription>
           )}
-          <div className="mt-auto flex items-center justify-between pt-2">
+          <div className="mt-auto flex items-center justify-between border-t pt-2">
             <span className="text-lg font-semibold">{price}</span>
             <span className="text-sm text-muted-foreground">
               {item.organizationName}
