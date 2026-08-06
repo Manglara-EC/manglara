@@ -247,7 +247,14 @@ export function ItemCard({ item }: Props) {
         </CardContent>
       </Link>
       <div className="px-6 pb-6" onClick={(e) => e.stopPropagation()}>
-        {product.stock !== undefined && product.stock <= 0 ? (
+        {product.isReservable ? (
+          <Button asChild className="w-full" size="sm">
+            <Link href={`/products/${product.id}`}>
+              <CalendarIcon className="mr-2 h-4 w-4" />
+              Elegir fecha de reserva
+            </Link>
+          </Button>
+        ) : product.stock !== undefined && product.stock <= 0 ? (
           <Button disabled className="w-full" size="sm">
             <ShoppingCart className="mr-2 h-4 w-4" />
             Sin stock
