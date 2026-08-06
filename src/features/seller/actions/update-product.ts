@@ -145,6 +145,7 @@ export async function updateProduct(
         longitude:
           validatedData.longitude !== undefined ? validatedData.longitude.toString() : null,
         organizationId: validatedData.organizationId,
+        isReservable: validatedData.isReservable,
         status: "pending", // Vuelve a pendiente para revisión
         approvedBy: null,
         approvedAt: null,

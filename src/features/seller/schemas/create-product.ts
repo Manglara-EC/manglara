@@ -52,6 +52,8 @@ export const createProductSchema = z.object({
     .transform((val) => val.toString())
     .optional(),
 
+  isReservable: z.boolean().optional().default(false),
+
   sellerId: z.string().min(1, { message: "Seller ID es requerido" }),
   organizationId: z.string().min(1, { message: "Organization ID es requerido" }),
 }).refine(

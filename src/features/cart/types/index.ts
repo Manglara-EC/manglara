@@ -5,6 +5,7 @@ export interface ProductCartItem {
   type: "product";
   product: PublicProduct;
   quantity: number;
+  reservationDate?: string;
 }
 
 export interface BookingCartItem {

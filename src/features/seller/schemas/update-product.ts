@@ -41,6 +41,7 @@ export const updateProductSchema = z.object({
     .optional(),
   latitude: z.coerce.number().min(-90).max(90).optional(),
   longitude: z.coerce.number().min(-180).max(180).optional(),
+  isReservable: z.boolean().optional(),
 
   organizationId: z.string().min(1, { message: "Organization ID es requerido" }),
 });

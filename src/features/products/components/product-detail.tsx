@@ -17,15 +17,13 @@ import { toast } from "sonner";
 import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/shared/components/ui/card";
 import { Badge } from "@/shared/components/ui/badge";
+import { Input } from "@/shared/components/ui/input";
+import { Label } from "@/shared/components/ui/label";
 import {
   TypographyH1,
   TypographyH3,
   TypographyMuted,
 } from "@/shared/components/ui/typography";
-
-import { Input } from "@/shared/components/ui/input";
-import { Label } from "@/shared/components/ui/label";
-
 import { formatCurrency } from "@/shared/utils/currency";
 import { getValidImageSources } from "@/shared/utils/image-src";
 import {
@@ -44,6 +42,7 @@ import {
 } from "@/shared/components/ui/carousel";
 
 import { useCart } from "@/features/cart/context/cart-context";
+import { useProductAvailability } from "@/features/products/hooks/use-product-availability";
 import { MapPreview } from "@/shared/components/map-preview";
 import type { PublicProduct } from "@/features/products/types";
 
@@ -51,9 +50,17 @@ interface Props {
   product: PublicProduct;
 }
 
+function getTomorrowISODate(): string {
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  return tomorrow.toISOString().slice(0, 10);
+}
+
 export function ProductDetail({ product }: Props) {
   const { addItem, cart } = useCart();
   const [quantity, setQuantity] = useState(1);
+  const [reservationDate, setReservationDate] = useState<string>("");
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [api, setApi] = useState<CarouselApi>();
@@ -85,10 +92,15 @@ export function ProductDetail({ product }: Props) {
     setIsModalOpen(true);
   };
 
+  const currentCartItemId = product.isReservable
+    ? reservationDate
+      ? `${product.id}::${reservationDate}`
+      : null
+    : product.id;
+
   const existingItem = cart.items.find(
     (item) =>
-      item.type === "product" && item.product.id === product.id &&
-      item.reservationDate === (product.isReservable ? reservationDate : undefined)
+      item.type === "product" && item.product.id === product.id
   );
 
   const currentQuantityInCart = existingItem?.quantity ?? 0;
@@ -119,7 +131,7 @@ export function ProductDetail({ product }: Props) {
       return;
     }
 
-    const success = addItem(product, quantity);
+    const success = addItem(product, quantity, product.isReservable ? reservationDate : undefined);
     if (success) {
       toast.success(
         product.isReservable
@@ -147,6 +159,13 @@ export function ProductDetail({ product }: Props) {
       setQuantity(quantity + 1);
     }
   };
+
+  const isOutOfStock =
+    !product.isReservable && product.stock !== undefined && product.stock <= 0;
+
+  const canAddToCart = product.isReservable
+    ? Boolean(reservationDate) && availableStock !== undefined && availableStock > 0
+    : availableStock === undefined || availableStock > 0;
 
   return (
     <div className="flex flex-col gap-6">
@@ -214,36 +233,71 @@ export function ProductDetail({ product }: Props) {
             <div className="flex items-center gap-2">
               <TypographyH1>{product.name}</TypographyH1>
               <Badge>Producto</Badge>
-            </div>
-            <TypographyMuted className="text-sm">
-              Por {product.sellerName} · {product.organizationName}
-            </TypographyMuted>
-          </div>
-
-          <div className="space-y-4">
-            <div>
-              <TypographyH3 className="text-3xl">{price}</TypographyH3>
-              {product.stock !== undefined && (
-                <TypographyMuted className="text-sm">
-                  Stock disponible: {product.stock}
-                </TypographyMuted>
+              {product.isReservable && (
+                <Badge variant="secondary">
+                  <CalendarIcon className="mr-1 h-3 w-3" />
+                  Requiere reserva
+                </Badge>
               )}
             </div>
+          </div>
+          <TypographyMuted className="text-sm">
+            Por {product.sellerName} · {product.organizationName}
+          </TypographyMuted>
+        </div>
 
-            {product.description && (
+        <div className="space-y-4">
+          <div>
+            <TypographyH3 className="text-3xl">{price}</TypographyH3>
+            {!product.isReservable && product.stock !== undefined && (
+              <TypographyMuted className="text-sm">
+                Stock disponible: {product.stock}
+              </TypographyMuted>
+            )}
+          </div>
+
+          {product.description && (
+            <div className="space-y-2">
+              <TypographyH3>Descripción</TypographyH3>
+              <TypographyMuted className="whitespace-pre-wrap">
+                {product.description}
+              </TypographyMuted>
+            </div>
+          )}
+
+          <MapPreview
+            latitude={product.latitude}
+            longitude={product.longitude}
+            label={product.location}
+          />
+
+          <div className="space-y-4">
+            {product.isReservable && (
               <div className="space-y-2">
-                <TypographyH3>Descripción</TypographyH3>
-                <TypographyMuted className="whitespace-pre-wrap">
-                  {product.description}
-                </TypographyMuted>
+                <Label htmlFor="reservationDate">Fecha de la reserva</Label>
+                <Input
+                  id="reservationDate"
+                  type="date"
+                  min={getTomorrowISODate()}
+                  value={reservationDate}
+                  onChange={(e) => {
+                    setReservationDate(e.target.value);
+                    setQuantity(1);
+                  }}
+                />
+                {reservationDate && (
+                  <TypographyMuted className="text-sm">
+                    {isLoadingAvailability
+                      ? "Consultando disponibilidad..."
+                      : availability
+                        ? availability.availableQuantity > 0
+                          ? `${availability.availableQuantity} disponibles para esa fecha`
+                          : "Sin disponibilidad para esa fecha"
+                        : null}
+                  </TypographyMuted>
+                )}
               </div>
             )}
-
-            <MapPreview
-              latitude={product.latitude}
-              longitude={product.longitude}
-              label={product.location}
-            />
 
             <div className="space-y-4">
               <div className="flex items-center gap-4">
@@ -273,7 +327,7 @@ export function ProductDetail({ product }: Props) {
                     <Plus className="h-4 w-4" />
                   </Button>
                 </div>
-                {availableStock !== undefined && (
+                {!product.isReservable && availableStock !== undefined && (
                   <TypographyMuted className="text-sm">
                     {availableStock > 0
                       ? `${availableStock} disponibles`
@@ -282,7 +336,7 @@ export function ProductDetail({ product }: Props) {
                 )}
               </div>
 
-              {product.stock !== undefined && product.stock <= 0 ? (
+              {isOutOfStock ? (
                 <Button disabled className="w-full" size="lg">
                   <ShoppingCart className="mr-2 h-4 w-4" />
                   Sin stock
@@ -295,7 +349,7 @@ export function ProductDetail({ product }: Props) {
                   disabled={availableStock !== undefined && availableStock <= 0}
                 >
                   <ShoppingCart className="mr-2 h-4 w-4" />
-                  Agregar al carrito
+                  {product.isReservable ? "Reservar" : "Agregar al carrito"}
                 </Button>
               )}
             </div>
@@ -304,52 +358,54 @@ export function ProductDetail({ product }: Props) {
       </div>
 
       {/* Modal con Carrusel de Imágenes */}
-      {images.length > 0 && (
-        <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-          <DialogContent className="max-w-4xl w-[95vw] border-none bg-black/95 p-4 text-white sm:p-6">
-            <DialogHeader className="flex flex-row items-center justify-between">
-              <DialogTitle className="text-base text-white">
-                {product.name} ({current} de {images.length})
-              </DialogTitle>
-            </DialogHeader>
+      {
+        images.length > 0 && (
+          <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+            <DialogContent className="max-w-4xl w-[95vw] border-none bg-black/95 p-4 text-white sm:p-6">
+              <DialogHeader className="flex flex-row items-center justify-between">
+                <DialogTitle className="text-base text-white">
+                  {product.name} ({current} de {images.length})
+                </DialogTitle>
+              </DialogHeader>
 
-            <div className="relative flex items-center justify-center px-8 py-4 sm:px-12">
-              <Carousel
-                setApi={setApi}
-                opts={{
-                  startIndex: selectedImageIndex,
-                  loop: true,
-                }}
-                className="w-full max-w-2xl"
-              >
-                <CarouselContent>
-                  {images.map((imgUrl, idx) => (
-                    <CarouselItem
-                      key={idx}
-                      className="flex items-center justify-center"
-                    >
-                      <div className="relative aspect-4/3 max-h-[70vh] w-full overflow-hidden rounded-lg">
-                        <Image
-                          src={imgUrl}
-                          alt={`${product.name} - Imagen ${idx + 1}`}
-                          fill
-                          className="object-contain"
-                        />
-                      </div>
-                    </CarouselItem>
-                  ))}
-                </CarouselContent>
-                {images.length > 1 && (
-                  <>
-                    <CarouselPrevious className="-left-4 bg-background/80 text-foreground hover:bg-background sm:-left-8" />
-                    <CarouselNext className="-right-4 bg-background/80 text-foreground hover:bg-background sm:-right-8" />
-                  </>
-                )}
-              </Carousel>
-            </div>
-          </DialogContent>
-        </Dialog>
-      )}
-    </div>
+              <div className="relative flex items-center justify-center px-8 py-4 sm:px-12">
+                <Carousel
+                  setApi={setApi}
+                  opts={{
+                    startIndex: selectedImageIndex,
+                    loop: true,
+                  }}
+                  className="w-full max-w-2xl"
+                >
+                  <CarouselContent>
+                    {images.map((imgUrl, idx) => (
+                      <CarouselItem
+                        key={idx}
+                        className="flex items-center justify-center"
+                      >
+                        <div className="relative aspect-4/3 max-h-[70vh] w-full overflow-hidden rounded-lg">
+                          <Image
+                            src={imgUrl}
+                            alt={`${product.name} - Imagen ${idx + 1}`}
+                            fill
+                            className="object-contain"
+                          />
+                        </div>
+                      </CarouselItem>
+                    ))}
+                  </CarouselContent>
+                  {images.length > 1 && (
+                    <>
+                      <CarouselPrevious className="-left-4 bg-background/80 text-foreground hover:bg-background sm:-left-8" />
+                      <CarouselNext className="-right-4 bg-background/80 text-foreground hover:bg-background sm:-right-8" />
+                    </>
+                  )}
+                </Carousel>
+              </div>
+            </DialogContent>
+          </Dialog>
+        )
+      }
+    </div >
   );
 }
