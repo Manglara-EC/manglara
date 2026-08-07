@@ -72,7 +72,7 @@ export function BookingTimelineEntry({
           aria-hidden="true"
         />
         <Card
-          className={`overflow-hidden transition-colors ${
+          className={`overflow-hidden transition-colors gap-0! p-2! ${
             isCancelled ? "border-muted opacity-75" : "hover:border-primary/50"
           }`}
         >
@@ -100,13 +100,13 @@ export function BookingTimelineEntry({
 
               <Link
                 href={href}
-                className="mt-1 block line-clamp-1 text-base font-bold hover:underline"
+                className="mt-1 block line-clamp-1 text-xl font-bold hover:underline"
               >
                 {booking.itemName}
               </Link>
 
               {booking.sellerName && (
-                <p className="flex items-center gap-1 text-xs text-muted-foreground">
+                <p className="flex items-center gap-1 text-sm text-muted-foreground">
                   <Building2Icon className="h-3 w-3" />
                   {booking.sellerName}
                 </p>
@@ -125,7 +125,7 @@ export function BookingTimelineEntry({
 
           <div className="px-3 pb-3 pt-0">
             <Separator />
-            <div className="flex justify-end gap-2 pt-2">
+            <div className="flex justify-start gap-2 pt-2">
               <Button asChild variant="ghost" size="sm">
                 <Link href={href}>
                   Ver {itemAction}

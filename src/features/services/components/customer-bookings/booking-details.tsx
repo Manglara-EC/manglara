@@ -19,7 +19,7 @@ export function BookingDetails({
   const isProductReservation = booking.kind === "product-reservation";
 
   return (
-    <div className="space-y-2 text-xs">
+    <div className="space-y-2 text-sm">
       <div className="flex items-center gap-2 text-foreground">
         <CalendarIcon className="h-4 w-4 shrink-0 text-primary" />
         <span>
