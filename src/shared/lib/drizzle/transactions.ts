@@ -78,9 +78,7 @@ export const bookingLine = pgTable("booking_line", {
   transactionLineId: text("transaction_line_id")
     .primaryKey()
     .references(() => transactionLine.id, { onDelete: "cascade" }),
-  serviceId: text("service_id")
-    .notNull()
-    .references(() => service.id),
+  serviceId: text("service_id").references(() => service.id),
   productId: text("product_id").references(() => product.id),
   userId: text("user_id") // Duplicado para conveniencia de consultas rápidas del cliente
     .notNull()

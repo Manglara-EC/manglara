@@ -15,7 +15,7 @@ import {
 
 interface BookingCancelActionProps {
   bookingId: string;
-  serviceName: string;
+  itemName: string;
   isCancelling: boolean;
   isPending: boolean;
   onCancel: (bookingId: string) => void;
@@ -23,7 +23,7 @@ interface BookingCancelActionProps {
 
 export function BookingCancelAction({
   bookingId,
-  serviceName,
+  itemName,
   isCancelling,
   isPending,
   onCancel,
@@ -49,7 +49,7 @@ export function BookingCancelAction({
           <AlertDialogTitle>¿Cancelar esta reserva?</AlertDialogTitle>
           <AlertDialogDescription>
             ¿Estás seguro de que deseas cancelar tu reserva para{" "}
-            <strong>{serviceName}</strong>? Esta acción actualizará el estado a
+            <strong>{itemName}</strong>? Esta acción actualizará el estado a
             cancelado.
           </AlertDialogDescription>
         </AlertDialogHeader>

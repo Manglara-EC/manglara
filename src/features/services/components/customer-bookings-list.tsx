@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useTransition } from "react";
 import Link from "next/link";
-import { isSameDay } from "date-fns";
+import { endOfDay, isSameDay } from "date-fns";
 import { CalendarIcon, HistoryIcon, ShoppingBagIcon } from "lucide-react";
 import { toast } from "sonner";
 
@@ -10,8 +10,14 @@ import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/shared/components/ui/card";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import {
-  getCustomerBookings,
-  type CustomerBooking,
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/shared/components/ui/tabs";
+import {
+  getCustomerActivities,
+  type CustomerActivity,
 } from "@/features/services/actions/get-customer-bookings";
 import { cancelBooking } from "@/features/services/actions/cancel-booking";
 import { BookingTimelineEntry } from "@/features/services/components/customer-bookings/booking-timeline-entry";
@@ -19,27 +25,27 @@ import { BookingTimelineEntry } from "@/features/services/components/customer-bo
 type BookingView = "active" | "past";
 
 export function CustomerBookingsList() {
-  const [bookings, setBookings] = useState<CustomerBooking[]>([]);
+  const [activities, setActivities] = useState<CustomerActivity[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [cancellingId, setCancellingId] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
-  const [view, setView] = useState<BookingView>("active");
+  const [bookingView, setBookingView] = useState<BookingView>("active");
 
-  const fetchBookings = async () => {
+  const fetchActivities = async () => {
     setIsLoading(true);
     setErrorMsg(null);
-    const res = await getCustomerBookings();
+    const res = await getCustomerActivities();
     if (res.error) {
       setErrorMsg(res.error.message);
     } else if (res.data) {
-      setBookings(res.data);
+      setActivities(res.data);
     }
     setIsLoading(false);
   };
 
   useEffect(() => {
-    void fetchBookings();
+    void fetchActivities();
   }, []);
 
   const handleCancelBooking = (bookingId: string) => {
@@ -52,11 +58,11 @@ export function CustomerBookingsList() {
         });
       } else {
         toast.success("Reserva cancelada correctamente");
-        setBookings((previousBookings) =>
-          previousBookings.map((booking) =>
-            booking.id === bookingId
-              ? { ...booking, status: "cancelled" }
-              : booking,
+        setActivities((previousActivities) =>
+          previousActivities.map((activity) =>
+            activity.id === bookingId
+              ? { ...activity, status: "cancelled" }
+              : activity,
           ),
         );
       }
@@ -88,7 +94,7 @@ export function CustomerBookingsList() {
       <Card className="border-dashed p-8 text-center">
         <CardContent className="space-y-3">
           <p className="font-medium text-destructive">{errorMsg}</p>
-          <Button variant="outline" onClick={fetchBookings}>
+          <Button variant="outline" onClick={fetchActivities}>
             Reintentar
           </Button>
         </CardContent>
@@ -96,7 +102,7 @@ export function CustomerBookingsList() {
     );
   }
 
-  if (bookings.length === 0) {
+  if (activities.length === 0) {
     return (
       <Card className="border-dashed p-12 text-center">
         <CardContent className="flex flex-col items-center gap-4">
@@ -104,16 +110,15 @@ export function CustomerBookingsList() {
             <CalendarIcon className="h-8 w-8 text-muted-foreground" />
           </div>
           <div className="space-y-1">
-            <h3 className="text-lg font-semibold">No tienes reservas aún</h3>
+            <h3 className="text-lg font-semibold">No tienes actividades aún</h3>
             <p className="max-w-sm text-sm text-muted-foreground">
-              Explora los servicios disponibles en Manglara y realiza tu primera
-              reserva.
+              Explora los productos y servicios disponibles en Manglara.
             </p>
           </div>
           <Button asChild className="mt-2">
             <Link href="/explore">
               <ShoppingBagIcon className="mr-2 h-4 w-4" />
-              Explorar servicios
+              Explorar Manglara
             </Link>
           </Button>
         </CardContent>
@@ -121,114 +126,169 @@ export function CustomerBookingsList() {
     );
   }
 
-  const now = new Date();
-  const activeBookings = bookings
-    .filter(
-      (booking) =>
-        booking.status !== "cancelled" && new Date(booking.startDate) >= now,
-    )
+  const scheduledActivities = activities.filter(
+    (activity) => activity.kind !== "product-purchase",
+  );
+  const purchases = activities
+    .filter((activity) => activity.kind === "product-purchase")
     .toSorted(
-      (left, right) =>
-        new Date(left.startDate).getTime() -
-        new Date(right.startDate).getTime(),
+      (left, right) => right.createdAt.getTime() - left.createdAt.getTime(),
     );
-  const pastBookings = bookings
-    .filter(
-      (booking) =>
-        booking.status === "cancelled" || new Date(booking.startDate) < now,
-    )
+  const isPastActivity = (activity: CustomerActivity) => {
+    if (activity.status === "cancelled") return true;
+    if (!activity.startDate) return false;
+
+    const endDate =
+      activity.kind === "product-reservation"
+        ? endOfDay(activity.startDate)
+        : activity.endDate;
+
+    return !!endDate && endDate < new Date();
+  };
+  const activeBookings = scheduledActivities
+    .filter((activity) => !isPastActivity(activity))
     .toSorted(
-      (left, right) =>
-        new Date(right.startDate).getTime() -
-        new Date(left.startDate).getTime(),
+      (left, right) => left.startDate!.getTime() - right.startDate!.getTime(),
     );
-  const visibleBookings = view === "active" ? activeBookings : pastBookings;
+  const pastBookings = scheduledActivities
+    .filter(isPastActivity)
+    .toSorted(
+      (left, right) => right.startDate!.getTime() - left.startDate!.getTime(),
+    );
+  const visibleBookings =
+    bookingView === "active" ? activeBookings : pastBookings;
 
   return (
-    <div className="space-y-6">
-      <div
-        className="inline-flex rounded-full border bg-muted/50 p-1"
-        role="tablist"
-      >
-        <Button
-          type="button"
-          variant={view === "active" ? "default" : "ghost"}
-          size="sm"
-          className="rounded-full"
-          role="tab"
-          aria-selected={view === "active"}
-          onClick={() => setView("active")}
-        >
-          Activas
-          <span className="ml-1.5 text-xs opacity-75">
-            {activeBookings.length}
+    <Tabs defaultValue="bookings" className="gap-6">
+      <TabsList className="h-11 rounded-xl p-1">
+        <TabsTrigger value="bookings" className="gap-2 px-4">
+          <CalendarIcon className="h-4 w-4" />
+          Reservas
+          <span className="text-xs text-muted-foreground">
+            {scheduledActivities.length}
           </span>
-        </Button>
-        <Button
-          type="button"
-          variant={view === "past" ? "default" : "ghost"}
-          size="sm"
-          className="rounded-full"
-          role="tab"
-          aria-selected={view === "past"}
-          onClick={() => setView("past")}
-        >
-          <HistoryIcon className="mr-1.5 h-3.5 w-3.5" />
-          Anteriores
-          <span className="ml-1.5 text-xs opacity-75">
-            {pastBookings.length}
+        </TabsTrigger>
+        <TabsTrigger value="purchases" className="gap-2 px-4">
+          <ShoppingBagIcon className="h-4 w-4" />
+          Compras
+          <span className="text-xs text-muted-foreground">
+            {purchases.length}
           </span>
-        </Button>
-      </div>
+        </TabsTrigger>
+      </TabsList>
 
-      {visibleBookings.length === 0 ? (
-        <Card className="border-dashed py-10 text-center">
-          <CardContent className="flex flex-col items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
-              {view === "active" ? (
-                <CalendarIcon className="h-6 w-6 text-muted-foreground" />
-              ) : (
-                <HistoryIcon className="h-6 w-6 text-muted-foreground" />
-              )}
-            </div>
-            <div className="space-y-1">
-              <h3 className="font-semibold">
-                {view === "active"
-                  ? "No tienes reservas activas"
-                  : "No tienes reservas anteriores"}
-              </h3>
-              <p className="text-sm text-muted-foreground">
-                {view === "active"
-                  ? "Tus próximas reservas aparecerán aquí."
-                  : "Tu historial de reservas aparecerá aquí."}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="space-y-8">
-          {visibleBookings.map((booking, index) => {
-            const previousBooking = visibleBookings[index - 1];
-            const showDate =
-              !previousBooking ||
-              !isSameDay(
-                new Date(booking.startDate),
-                new Date(previousBooking.startDate),
+      <TabsContent value="bookings" className="mt-0 space-y-5">
+        <Tabs
+          value={bookingView}
+          onValueChange={(value) =>
+            setBookingView(value === "past" ? "past" : "active")
+          }
+          className="gap-5"
+        >
+          <TabsList className="rounded-full bg-muted/50 p-1">
+            <TabsTrigger value="active" className="rounded-full px-3">
+              Próximas
+              <span className="ml-1.5 text-xs text-muted-foreground">
+                {activeBookings.length}
+              </span>
+            </TabsTrigger>
+            <TabsTrigger value="past" className="rounded-full px-3">
+              <HistoryIcon className="h-3.5 w-3.5" />
+              Anteriores
+              <span className="ml-1.5 text-xs text-muted-foreground">
+                {pastBookings.length}
+              </span>
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value={bookingView} className="mt-0">
+            {visibleBookings.length === 0 ? (
+              <Card className="border-dashed py-10 text-center">
+                <CardContent className="flex flex-col items-center gap-3">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
+                    {bookingView === "active" ? (
+                      <CalendarIcon className="h-6 w-6 text-muted-foreground" />
+                    ) : (
+                      <HistoryIcon className="h-6 w-6 text-muted-foreground" />
+                    )}
+                  </div>
+                  <div className="space-y-1">
+                    <h3 className="font-semibold">
+                      {bookingView === "active"
+                        ? "No tienes reservas próximas"
+                        : "No tienes reservas anteriores"}
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                      {bookingView === "active"
+                        ? "Tus próximas reservas aparecerán aquí."
+                        : "Tu historial de reservas aparecerá aquí."}
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="space-y-8">
+                {visibleBookings.map((booking, index) => {
+                  const previousBooking = visibleBookings[index - 1];
+                  const showDate =
+                    !previousBooking ||
+                    !isSameDay(booking.startDate!, previousBooking.startDate!);
+
+                  return (
+                    <BookingTimelineEntry
+                      key={booking.id}
+                      booking={booking}
+                      showDate={showDate}
+                      isPending={isPending}
+                      cancellingId={cancellingId}
+                      onCancel={handleCancelBooking}
+                    />
+                  );
+                })}
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
+      </TabsContent>
+
+      <TabsContent value="purchases" className="mt-0">
+        {purchases.length === 0 ? (
+          <Card className="border-dashed py-10 text-center">
+            <CardContent className="flex flex-col items-center gap-3">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
+                <ShoppingBagIcon className="h-6 w-6 text-muted-foreground" />
+              </div>
+              <div className="space-y-1">
+                <h3 className="font-semibold">No tienes compras aún</h3>
+                <p className="text-sm text-muted-foreground">
+                  Los productos que compres sin una fecha de reserva aparecerán
+                  aquí.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="space-y-8">
+            {purchases.map((purchase, index) => {
+              const previousPurchase = purchases[index - 1];
+              const showDate =
+                !previousPurchase ||
+                !isSameDay(purchase.createdAt, previousPurchase.createdAt);
+
+              return (
+                <BookingTimelineEntry
+                  key={purchase.id}
+                  booking={purchase}
+                  showDate={showDate}
+                  isPending={isPending}
+                  cancellingId={cancellingId}
+                  onCancel={handleCancelBooking}
+                />
               );
-
-            return (
-              <BookingTimelineEntry
-                key={booking.id}
-                booking={booking}
-                showDate={showDate}
-                isPending={isPending}
-                cancellingId={cancellingId}
-                onCancel={handleCancelBooking}
-              />
-            );
-          })}
-        </div>
-      )}
-    </div>
+            })}
+          </div>
+        )}
+      </TabsContent>
+    </Tabs>
   );
 }
