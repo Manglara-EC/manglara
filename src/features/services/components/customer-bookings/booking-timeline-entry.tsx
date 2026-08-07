@@ -1,11 +1,12 @@
 import Link from "next/link";
 import { ArrowRightIcon, Building2Icon, CheckCircle2Icon } from "lucide-react";
+import { endOfDay } from "date-fns";
 
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/shared/components/ui/card";
 import { Separator } from "@/shared/components/ui/separator";
-import type { CustomerBooking } from "@/features/services/actions/get-customer-bookings";
+import type { CustomerActivity } from "@/features/services/actions/get-customer-bookings";
 import { BookingCancelAction } from "@/features/services/components/customer-bookings/booking-cancel-action";
 import { BookingDateColumn } from "@/features/services/components/customer-bookings/booking-date-column";
 import { BookingDetails } from "@/features/services/components/customer-bookings/booking-details";
@@ -21,7 +22,7 @@ const SERVICE_TYPE_LABELS: Record<string, string> = {
 };
 
 interface BookingTimelineEntryProps {
-  booking: CustomerBooking;
+  booking: CustomerActivity;
   showDate: boolean;
   isPending: boolean;
   cancellingId: string | null;
@@ -36,13 +37,33 @@ export function BookingTimelineEntry({
   onCancel,
 }: BookingTimelineEntryProps) {
   const isCancelled = booking.status === "cancelled";
-  const startDate = new Date(booking.startDate);
-  const endDate = new Date(booking.endDate);
-  const isFuture = startDate > new Date();
+  const startDate = booking.startDate ?? booking.createdAt;
+  const endDate = booking.endDate;
+  const isReservation = booking.kind !== "product-purchase";
+  const isFuture =
+    isReservation &&
+    (booking.kind === "product-reservation"
+      ? endOfDay(startDate)
+      : (endDate ?? startDate)) > new Date();
+  const href =
+    booking.kind === "service"
+      ? `/services/${booking.itemId}`
+      : `/products/${booking.itemId}`;
+  const itemType =
+    booking.kind === "service"
+      ? SERVICE_TYPE_LABELS[booking.serviceType ?? "other"] || "Servicio"
+      : booking.kind === "product-reservation"
+        ? "Producto reservado"
+        : "Producto";
+  const itemAction = booking.kind === "service" ? "servicio" : "producto";
 
   return (
     <div className="grid grid-cols-[5.5rem_minmax(0,1fr)] gap-5 sm:grid-cols-[7rem_minmax(0,1fr)] sm:gap-7">
-      <BookingDateColumn startDate={startDate} showDate={showDate} />
+      <BookingDateColumn
+        startDate={startDate}
+        showDate={showDate}
+        showTime={booking.kind !== "product-reservation"}
+      />
       <div className="relative before:absolute before:-left-[11px] before:top-0 before:h-full before:w-px before:bg-border sm:before:-left-[15px]">
         <span
           className={`absolute -left-[18px] top-3 flex h-4 w-4 rounded-full border-4 border-background sm:-left-[22px] ${
@@ -59,7 +80,7 @@ export function BookingTimelineEntry({
             <div className="space-y-1">
               <div className="flex flex-wrap items-center gap-2">
                 <Badge variant="outline" className="text-xs">
-                  {SERVICE_TYPE_LABELS[booking.serviceType] || "Servicio"}
+                  {itemType}
                 </Badge>
 
                 {isCancelled ? (
@@ -78,10 +99,10 @@ export function BookingTimelineEntry({
               </div>
 
               <Link
-                href={`/services/${booking.serviceId}`}
+                href={href}
                 className="mt-1 block line-clamp-1 text-base font-bold hover:underline"
               >
-                {booking.serviceName}
+                {booking.itemName}
               </Link>
 
               {booking.sellerName && (
@@ -106,15 +127,15 @@ export function BookingTimelineEntry({
             <Separator />
             <div className="flex justify-end gap-2 pt-2">
               <Button asChild variant="ghost" size="sm">
-                <Link href={`/services/${booking.serviceId}`}>
-                  Ver servicio
+                <Link href={href}>
+                  Ver {itemAction}
                   <ArrowRightIcon className="ml-1.5 h-3.5 w-3.5" />
                 </Link>
               </Button>
-              {!isCancelled && isFuture && (
+              {isReservation && !isCancelled && isFuture && (
                 <BookingCancelAction
                   bookingId={booking.id}
-                  serviceName={booking.serviceName}
+                  itemName={booking.itemName}
                   isCancelling={cancellingId === booking.id}
                   isPending={isPending}
                   onCancel={onCancel}

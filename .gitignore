@@ -40,3 +40,5 @@ pnpm-lock.yaml
 pnpm-workspace.yaml
 docs/
 .agents/skills/
+.herenow/
+.opencode/

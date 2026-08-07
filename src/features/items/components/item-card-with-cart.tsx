@@ -35,7 +35,8 @@ interface Props {
 }
 
 export function ItemCardWithCart({ item }: Props) {
-  const imageUrl = item.images && item.images.length > 0 ? item.images[0] : null;
+  const imageUrl =
+    item.images && item.images.length > 0 ? item.images[0] : null;
   const price = new Intl.NumberFormat("es-ES", {
     style: "currency",
     currency: "EUR",
@@ -91,8 +92,11 @@ export function ItemCardWithCart({ item }: Props) {
   }
 
   // Product card with cart functionality
-  const product = item; // Type assertion for product
-  const existingItem = cart.items.find((cartItem) => cartItem.product.id === product.id);
+  const product = item;
+  const existingItem = cart.items.find(
+    (cartItem) =>
+      cartItem.type === "product" && cartItem.product.id === product.id,
+  );
   const currentQuantity = existingItem?.quantity ?? 0;
   const availableStock =
     product.stock !== undefined ? product.stock - currentQuantity : undefined;

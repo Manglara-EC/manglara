@@ -4,11 +4,13 @@ import { es } from "date-fns/locale";
 interface BookingDateColumnProps {
   startDate: Date;
   showDate: boolean;
+  showTime?: boolean;
 }
 
 export function BookingDateColumn({
   startDate,
   showDate,
+  showTime = true,
 }: BookingDateColumnProps) {
   return (
     <time
@@ -25,13 +27,15 @@ export function BookingDateColumn({
           </span>
         </>
       )}
-      <span
-        className={`block text-sm font-semibold text-primary ${
-          showDate ? "mt-1" : "pt-3"
-        }`}
-      >
-        {format(startDate, "HH:mm")}
-      </span>
+      {showTime && (
+        <span
+          className={`block text-sm font-semibold text-primary ${
+            showDate ? "mt-1" : "pt-3"
+          }`}
+        >
+          {format(startDate, "HH:mm")}
+        </span>
+      )}
     </time>
   );
 }

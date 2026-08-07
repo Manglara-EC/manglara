@@ -64,11 +64,11 @@ export const MENU_CONFIG: MenuItem[] = [
 
   {
     id: "reservations",
-    label: "Mis Reservas",
+    label: "Mis actividades",
     icon: CalendarIcon,
     href: "/reservations",
     allowedRoles: [UserRole.USER, UserRole.SELLER, UserRole.ADMIN],
-    description: "Consulta y gestiona tus reservas de servicios",
+    description: "Consulta tus reservas y compras",
   },
 
   {

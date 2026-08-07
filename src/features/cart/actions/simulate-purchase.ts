@@ -250,11 +250,18 @@ export const simulatePurchase = async (
       // Validar disponibilidad por fecha para productos reservables. El
       // bloqueo `for("update")` sobre `product` de arriba ya sirve para
       // serializar reservas concurrentes del mismo producto.
-      for (const [key, requestedQuantity] of requestedPerProductDate.entries()) {
+      for (const [
+        key,
+        requestedQuantity,
+      ] of requestedPerProductDate.entries()) {
         const [productId, date] = key.split("__");
         const product = productsById.get(productId)!;
 
-        const bookedQuantity = await getBookedQuantityForDate(tx, productId, date);
+        const bookedQuantity = await getBookedQuantityForDate(
+          tx,
+          productId,
+          date,
+        );
 
         if (bookedQuantity + requestedQuantity > product.stock) {
           const remaining = Math.max(0, product.stock - bookedQuantity);
@@ -396,7 +403,9 @@ export const simulatePurchase = async (
             if (item.isReservable) {
               // El stock NO se descuenta globalmente aquí: ya se validó que
               // hay cupo para esta fecha específica (ver arriba).
-              const reservationDate = new Date(`${item.reservationDate}T00:00:00`);
+              const reservationDate = new Date(
+                `${item.reservationDate}T00:00:00`,
+              );
               await tx.insert(bookingLine).values({
                 transactionLineId,
                 productId: item.productId,
@@ -404,7 +413,7 @@ export const simulatePurchase = async (
                 userId: session.user.id,
                 startDate: reservationDate,
                 endDate: reservationDate,
-              }as any);
+              });
             } else {
               await tx.insert(productLine).values({
                 transactionLineId,
