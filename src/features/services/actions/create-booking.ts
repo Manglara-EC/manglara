@@ -35,7 +35,9 @@ type ErrorCode =
 
 export const createBooking = async (
   input: CreateBookingInput,
-): Promise<ActionResponse<{ bookingId: string; transactionId: string }, ErrorCode>> => {
+): Promise<
+  ActionResponse<{ bookingId: string; transactionId: string }, ErrorCode>
+> => {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
@@ -50,17 +52,29 @@ export const createBooking = async (
     };
   }
 
-  const { serviceId, startDate: startStr, endDate: endStr, quantity, totalAmount, notes } = input;
+  const {
+    serviceId,
+    startDate: startStr,
+    endDate: endStr,
+    quantity,
+    totalAmount,
+    notes,
+  } = input;
 
   const startDate = new Date(startStr);
   const endDate = new Date(endStr);
 
-  if (isNaN(startDate.getTime()) || isNaN(endDate.getTime()) || endDate <= startDate) {
+  if (
+    isNaN(startDate.getTime()) ||
+    isNaN(endDate.getTime()) ||
+    endDate <= startDate
+  ) {
     return {
       data: null,
       error: {
         code: "INVALID_DATES",
-        message: "La fecha y hora de fin debe ser posterior a la fecha y hora de inicio.",
+        message:
+          "La fecha y hora de fin debe ser posterior a la fecha y hora de inicio.",
       },
     };
   }
@@ -117,6 +131,7 @@ export const createBooking = async (
         id: transactionLineId,
         transactionId: transactionId,
         type: "booking",
+        status: "completed",
         unitPrice: unitPrice,
         quantity: quantity,
         discount: "0",
@@ -153,7 +168,11 @@ export const createBooking = async (
         console.error("Error inserting seller notification request:", reqErr);
       }
 
-      return { available: true as const, bookingId: transactionLineId, transactionId };
+      return {
+        available: true as const,
+        bookingId: transactionLineId,
+        transactionId,
+      };
     }),
   );
 

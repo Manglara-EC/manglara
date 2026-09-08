@@ -279,6 +279,7 @@ export const getBookingAvailability = async (
         lt(bookingLine.startDate, input.endDate),
         gt(bookingLine.endDate, input.startDate),
         ne(transactionHeader.status, "cancelled"),
+        ne(transactionLine.status, "cancelled"),
       ),
     );
 
@@ -373,6 +374,7 @@ export const getOccupiedDaysByMonth = async (
         lt(bookingLine.startDate, queryEnd),
         gt(bookingLine.endDate, queryStart),
         ne(transactionHeader.status, "cancelled"),
+        ne(transactionLine.status, "cancelled"),
       ),
     );
 

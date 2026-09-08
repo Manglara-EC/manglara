@@ -391,6 +391,7 @@ export const simulatePurchase = async (
               item.type === "product" && item.isReservable
                 ? "booking"
                 : item.type,
+            status: "completed",
             unitPrice: item.unitPrice.toFixed(2),
             quantity: item.item.quantity,
             discount: "0",

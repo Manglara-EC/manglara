@@ -75,7 +75,7 @@ export const getCustomerActivities = async (): Promise<
         unitPrice: transactionLine.unitPrice,
         totalAmount: transactionLine.totalAmount,
         createdAt: transactionLine.createdAt,
-        status: transactionHeader.status,
+        status: transactionLine.status,
         serviceName: serviceTable.name,
         serviceImages: serviceTable.images,
         serviceType: serviceTable.serviceType,
@@ -158,10 +158,7 @@ export const getCustomerActivities = async (): Promise<
           }
         : null;
     const productReservation =
-      row.bookingProductId &&
-      row.productName &&
-      row.startDate &&
-      row.endDate
+      row.bookingProductId && row.productName && row.startDate && row.endDate
         ? {
             id: row.bookingProductId,
             name: row.productName,

@@ -51,6 +51,10 @@ export const transactionLine = pgTable("transaction_line", {
 
   type: text("type").notNull(), // 'product' o 'booking'
 
+  // Estado individual de la línea: permite cancelar una reserva sin cancelar
+  // los demás artículos de la misma transacción del vendedor.
+  status: text("status").notNull().default("completed"), // completed, cancelled
+
   // Auditoría e histórico financiero común
   unitPrice: decimal("unit_price", { precision: 12, scale: 2 }).notNull(),
   quantity: integer("quantity").notNull().default(1),

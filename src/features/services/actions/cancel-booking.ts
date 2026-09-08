@@ -44,8 +44,8 @@ export const cancelBooking = async (
         userId: bookingLine.userId,
         startDate: bookingLine.startDate,
         transactionId: transactionLine.transactionId,
+        lineStatus: transactionLine.status,
         parentOrderId: transactionHeader.parentOrderId,
-        status: transactionHeader.status,
       })
       .from(bookingLine)
       .innerJoin(
@@ -77,7 +77,7 @@ export const cancelBooking = async (
 
   const booking = bookingRecord[0];
 
-  if (booking.status === "cancelled") {
+  if (booking.lineStatus === "cancelled") {
     return {
       data: null,
       error: {
@@ -87,31 +87,30 @@ export const cancelBooking = async (
     };
   }
 
-  const { data: lineCountResult, error: lineCountError } = await tryCatch(
-    db
-      .select({ count: count() })
-      .from(transactionLine)
-      .where(eq(transactionLine.transactionId, booking.transactionId)),
-  );
-
-  if (lineCountError || lineCountResult?.[0]?.count !== 1) {
-    return {
-      data: null,
-      error: {
-        code: "CANNOT_CANCEL",
-        message:
-          "Esta reserva comparte un pedido con otros artículos y no puede cancelarse de forma individual.",
-      },
-    };
-  }
-
   // Perform update in transaction
   const { error: updateError } = await tryCatch(
     db.transaction(async (tx) => {
       await tx
-        .update(transactionHeader)
+        .update(transactionLine)
         .set({ status: "cancelled" })
-        .where(eq(transactionHeader.id, booking.transactionId));
+        .where(eq(transactionLine.id, bookingLineId));
+
+      const [activeLineCount] = await tx
+        .select({ count: count() })
+        .from(transactionLine)
+        .where(
+          and(
+            eq(transactionLine.transactionId, booking.transactionId),
+            ne(transactionLine.status, "cancelled"),
+          ),
+        );
+
+      if (activeLineCount?.count === 0) {
+        await tx
+          .update(transactionHeader)
+          .set({ status: "cancelled" })
+          .where(eq(transactionHeader.id, booking.transactionId));
+      }
 
       const [activeTransactionCount] = await tx
         .select({ count: count() })
