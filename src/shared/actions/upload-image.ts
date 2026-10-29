@@ -1,5 +1,8 @@
 "use server";
 
+import { headers } from "next/headers";
+
+import { auth } from "@/shared/lib/better-auth/server";
 import {
   uploadImage,
   buildImageKey,
@@ -9,6 +12,14 @@ import {
 const uploadImageAction = async (
   formData: FormData,
 ): Promise<{ url?: string; error?: string }> => {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  if (!session) {
+    return { error: "Unauthorized" };
+  }
+
   try {
     const file = formData.get("file");
 

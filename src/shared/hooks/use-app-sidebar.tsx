@@ -2,7 +2,10 @@ import { useMemo } from "react";
 
 import { useSession } from "@/shared/hooks/use-session";
 import { useUserRole } from "@/shared/hooks/use-user-role";
-import { getMenuItemsForRole } from "@/shared/constants/menu";
+import {
+  getMenuItemsForGuest,
+  getMenuItemsForRole,
+} from "@/shared/constants/menu";
 import type { MenuItem } from "@/shared/constants/menu";
 
 interface NavLink {
@@ -35,7 +38,14 @@ export const useAppSidebar = () => {
     description: item.description,
   });
 
+  // Sin sesión = invitado (navegación pública de solo lectura)
+  const isGuest = isSessionSuccess && !session;
+
   const links = useMemo(() => {
+    if (isGuest) {
+      return getMenuItemsForGuest().map(convertMenuItemToNavLink);
+    }
+
     // Si el rol aún se está cargando, retornar array vacío
     if (!role || isRoleLoading) {
       return [];
@@ -51,13 +61,14 @@ export const useAppSidebar = () => {
       .map(convertMenuItemToNavLink);
 
     return navLinks;
-  }, [role, isRoleLoading]);
+  }, [isGuest, role, isRoleLoading]);
 
   return {
     links,
     session,
+    isGuest,
     isSessionSuccess,
-    isSessionLoading: isSessionLoading || isRoleLoading,
+    isSessionLoading: isSessionLoading || (!isGuest && isRoleLoading),
     isSessionError,
     refetchSession,
     isSessionRefetching,

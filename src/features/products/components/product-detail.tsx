@@ -10,7 +10,7 @@ import {
   Minus,
   ShoppingCart,
   Maximize2,
-  CalendarIcon
+  CalendarIcon,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -41,6 +41,7 @@ import {
   type CarouselApi,
 } from "@/shared/components/ui/carousel";
 
+import { useAuthGuard } from "@/shared/hooks/use-auth-guard";
 import { useCart } from "@/features/cart/context/cart-context";
 import { useProductAvailability } from "@/features/products/hooks/use-product-availability";
 import { MapPreview } from "@/shared/components/map-preview";
@@ -58,6 +59,7 @@ function getTomorrowISODate(): string {
 
 export function ProductDetail({ product }: Props) {
   const { addItem, cart } = useCart();
+  const { requireAuth } = useAuthGuard();
   const [quantity, setQuantity] = useState(1);
   const [reservationDate, setReservationDate] = useState<string>("");
 
@@ -73,10 +75,11 @@ export function ProductDetail({ product }: Props) {
   // Para productos reservables: consultamos cuánto stock queda disponible
   // para la fecha elegida (el stock ya reservado por otros compradores en
   // esa misma fecha se descuenta del cálculo).
-  const { data: availability, isLoading: isLoadingAvailability } = useProductAvailability(
-    product.id,
-    product.isReservable ? reservationDate || null : null,
-  );
+  const { data: availability, isLoading: isLoadingAvailability } =
+    useProductAvailability(
+      product.id,
+      product.isReservable ? reservationDate || null : null,
+    );
 
   useEffect(() => {
     if (!api) return;
@@ -99,8 +102,7 @@ export function ProductDetail({ product }: Props) {
     : product.id;
 
   const existingItem = cart.items.find(
-    (item) =>
-      item.type === "product" && item.product.id === product.id
+    (item) => item.type === "product" && item.product.id === product.id,
   );
 
   const currentQuantityInCart = existingItem?.quantity ?? 0;
@@ -113,9 +115,20 @@ export function ProductDetail({ product }: Props) {
       ? product.stock - currentQuantityInCart
       : undefined;
 
-  const maxQuantity = availableStock !== undefined ? Math.max(0, availableStock) : 999;
+  const maxQuantity =
+    availableStock !== undefined ? Math.max(0, availableStock) : 999;
 
   const handleAddToCart = () => {
+    if (
+      !requireAuth(
+        product.isReservable
+          ? "Inicia sesión para reservar"
+          : "Inicia sesión para agregar al carrito",
+      )
+    ) {
+      return;
+    }
+
     if (product.isReservable && !reservationDate) {
       toast.error("Elige una fecha para tu reserva");
       return;
@@ -131,15 +144,21 @@ export function ProductDetail({ product }: Props) {
       return;
     }
 
-    const success = addItem(product, quantity, product.isReservable ? reservationDate : undefined);
+    const success = addItem(
+      product,
+      quantity,
+      product.isReservable ? reservationDate : undefined,
+    );
     if (success) {
       toast.success(
         product.isReservable
           ? `Reserva agregada al carrito para el ${new Date(
-            reservationDate + "T00:00:00",
-          ).toLocaleDateString("es-ES", {
-            day: "numeric", month: "long", year: "numeric"
-          })}`
+              reservationDate + "T00:00:00",
+            ).toLocaleDateString("es-ES", {
+              day: "numeric",
+              month: "long",
+              year: "numeric",
+            })}`
           : `${quantity} ${quantity === 1 ? "unidad" : "unidades"} agregada${quantity > 1 ? "s" : ""} al carrito`,
       );
       setQuantity(1);
@@ -164,7 +183,9 @@ export function ProductDetail({ product }: Props) {
     !product.isReservable && product.stock !== undefined && product.stock <= 0;
 
   const canAddToCart = product.isReservable
-    ? Boolean(reservationDate) && availableStock !== undefined && availableStock > 0
+    ? Boolean(reservationDate) &&
+      availableStock !== undefined &&
+      availableStock > 0
     : availableStock === undefined || availableStock > 0;
 
   return (
@@ -179,8 +200,10 @@ export function ProductDetail({ product }: Props) {
       <div className="grid gap-6 md:grid-cols-2">
         <Card className="overflow-hidden">
           <CardHeader className="p-4 sm:p-6">
-            <div className="group relative aspect-square w-full cursor-pointer overflow-hidden rounded-lg bg-muted"
-              onClick={() => imageUrl && openModal(0)}>
+            <div
+              className="group relative aspect-square w-full cursor-pointer overflow-hidden rounded-lg bg-muted"
+              onClick={() => imageUrl && openModal(0)}
+            >
               {imageUrl ? (
                 <>
                   <Image
@@ -225,7 +248,6 @@ export function ProductDetail({ product }: Props) {
               </div>
             </CardContent>
           )}
-
         </Card>
 
         <div className="flex flex-col gap-4">
@@ -358,54 +380,52 @@ export function ProductDetail({ product }: Props) {
       </div>
 
       {/* Modal con Carrusel de Imágenes */}
-      {
-        images.length > 0 && (
-          <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-            <DialogContent className="max-w-4xl w-[95vw] border-none bg-black/95 p-4 text-white sm:p-6">
-              <DialogHeader className="flex flex-row items-center justify-between">
-                <DialogTitle className="text-base text-white">
-                  {product.name} ({current} de {images.length})
-                </DialogTitle>
-              </DialogHeader>
+      {images.length > 0 && (
+        <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+          <DialogContent className="max-w-4xl w-[95vw] border-none bg-black/95 p-4 text-white sm:p-6">
+            <DialogHeader className="flex flex-row items-center justify-between">
+              <DialogTitle className="text-base text-white">
+                {product.name} ({current} de {images.length})
+              </DialogTitle>
+            </DialogHeader>
 
-              <div className="relative flex items-center justify-center px-8 py-4 sm:px-12">
-                <Carousel
-                  setApi={setApi}
-                  opts={{
-                    startIndex: selectedImageIndex,
-                    loop: true,
-                  }}
-                  className="w-full max-w-2xl"
-                >
-                  <CarouselContent>
-                    {images.map((imgUrl, idx) => (
-                      <CarouselItem
-                        key={idx}
-                        className="flex items-center justify-center"
-                      >
-                        <div className="relative aspect-4/3 max-h-[70vh] w-full overflow-hidden rounded-lg">
-                          <Image
-                            src={imgUrl}
-                            alt={`${product.name} - Imagen ${idx + 1}`}
-                            fill
-                            className="object-contain"
-                          />
-                        </div>
-                      </CarouselItem>
-                    ))}
-                  </CarouselContent>
-                  {images.length > 1 && (
-                    <>
-                      <CarouselPrevious className="-left-4 bg-background/80 text-foreground hover:bg-background sm:-left-8" />
-                      <CarouselNext className="-right-4 bg-background/80 text-foreground hover:bg-background sm:-right-8" />
-                    </>
-                  )}
-                </Carousel>
-              </div>
-            </DialogContent>
-          </Dialog>
-        )
-      }
-    </div >
+            <div className="relative flex items-center justify-center px-8 py-4 sm:px-12">
+              <Carousel
+                setApi={setApi}
+                opts={{
+                  startIndex: selectedImageIndex,
+                  loop: true,
+                }}
+                className="w-full max-w-2xl"
+              >
+                <CarouselContent>
+                  {images.map((imgUrl, idx) => (
+                    <CarouselItem
+                      key={idx}
+                      className="flex items-center justify-center"
+                    >
+                      <div className="relative aspect-4/3 max-h-[70vh] w-full overflow-hidden rounded-lg">
+                        <Image
+                          src={imgUrl}
+                          alt={`${product.name} - Imagen ${idx + 1}`}
+                          fill
+                          className="object-contain"
+                        />
+                      </div>
+                    </CarouselItem>
+                  ))}
+                </CarouselContent>
+                {images.length > 1 && (
+                  <>
+                    <CarouselPrevious className="-left-4 bg-background/80 text-foreground hover:bg-background sm:-left-8" />
+                    <CarouselNext className="-right-4 bg-background/80 text-foreground hover:bg-background sm:-right-8" />
+                  </>
+                )}
+              </Carousel>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
+    </div>
   );
 }

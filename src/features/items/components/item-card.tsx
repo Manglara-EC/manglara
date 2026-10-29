@@ -37,6 +37,7 @@ import {
 import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
 
+import { useAuthGuard } from "@/shared/hooks/use-auth-guard";
 import { useCart } from "@/features/cart/context/cart-context";
 import { formatCurrency } from "@/shared/utils/currency";
 import { getValidImageSrc } from "@/shared/utils/image-src";
@@ -63,6 +64,7 @@ export function ItemCard({ item }: Props) {
   const price = formatCurrency(item.price);
 
   const { addItem, cart } = useCart();
+  const { requireAuth } = useAuthGuard();
   const [quantity, setQuantity] = useState(1);
   const [open, setOpen] = useState(false);
 
@@ -271,7 +273,12 @@ export function ItemCard({ item }: Props) {
               <Button
                 className="w-full"
                 size="sm"
-                onClick={(e) => e.stopPropagation()}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (!requireAuth("Inicia sesión para agregar al carrito")) {
+                    e.preventDefault();
+                  }
+                }}
               >
                 <ShoppingCart className="mr-2 h-4 w-4" />
                 Agregar al carrito

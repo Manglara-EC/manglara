@@ -5,6 +5,7 @@ import { LoaderIcon, RotateCcwIcon, TreePalmIcon } from "lucide-react";
 import { TypographyLarge } from "@/shared/components/ui/typography";
 import { NavLink } from "@/shared/components/nav-link";
 import { NavUser } from "@/shared/components/nav-user";
+import { NavGuest } from "@/shared/components/nav-guest";
 import { useAppSidebar } from "@/shared/hooks/use-app-sidebar";
 import { NavUserSkeleton } from "@/shared/components/nav-user-skeleton";
 import { Button } from "@/shared/components/ui/button";
@@ -13,6 +14,7 @@ export const AppSidebar = () => {
   const {
     links,
     session,
+    isGuest,
     isSessionSuccess,
     isSessionLoading,
     isSessionError,
@@ -56,6 +58,8 @@ export const AppSidebar = () => {
         )}
 
         {isSessionSuccess && session && <NavUser user={session.user} />}
+
+        {isGuest && <NavGuest />}
       </div>
     </div>
   );

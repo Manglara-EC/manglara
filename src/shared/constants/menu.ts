@@ -157,11 +157,11 @@ export const MENU_CONFIG: MenuItem[] = [
   // ============================================================
   {
     id: "organizations",
-    label: "Organizaciones",
+    label: "Comunas",
     icon: BuildingIcon,
     href: "/organizations",
     allowedRoles: [UserRole.USER, UserRole.SELLER, UserRole.ADMIN],
-    description: "Mis organizaciones",
+    description: "Comunidades",
   },
 
   {
@@ -193,6 +193,16 @@ export const getMenuItemsForRole = (userRole: UserRole | null): MenuItem[] => {
     }),
   );
 };
+
+/**
+ * Items visibles para invitados (sin sesión): navegación de solo lectura
+ */
+export const GUEST_MENU_ITEM_IDS = ["home", "explore"] as const;
+
+export const getMenuItemsForGuest = (): MenuItem[] =>
+  MENU_CONFIG.filter((item) =>
+    (GUEST_MENU_ITEM_IDS as readonly string[]).includes(item.id),
+  );
 
 /**
  * Obtiene un item específico del menú

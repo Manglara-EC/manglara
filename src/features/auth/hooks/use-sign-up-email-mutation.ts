@@ -4,6 +4,7 @@ import { toast } from "sonner";
 
 import { RATE_LIMIT_ERROR_CODE } from "@/shared/constants";
 import { authClient } from "@/shared/lib/better-auth/client";
+import { getPostAuthRedirect } from "@/shared/utils/redirect";
 import type { AuthClientError } from "@/shared/types";
 import { getHash } from "@/shared/utils/get-hash";
 
@@ -26,7 +27,7 @@ export const useSignUpEmailMutation = ({ form }: Props) => {
         username: variables.username,
         displayUsername: variables.username,
         image,
-        callbackURL: "/home",
+        callbackURL: getPostAuthRedirect(),
       });
 
       if (error) return Promise.reject(error);
@@ -78,7 +79,7 @@ export const useSignUpEmailMutation = ({ form }: Props) => {
 
                   const { error } = await authClient.sendVerificationEmail({
                     email: variables.email,
-                    callbackURL: "/home",
+                    callbackURL: getPostAuthRedirect(),
                   });
 
                   if (error) {

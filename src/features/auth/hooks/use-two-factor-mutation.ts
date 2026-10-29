@@ -5,6 +5,7 @@ import { toast } from "sonner";
 
 import { RATE_LIMIT_ERROR_CODE } from "@/shared/constants";
 import { authClient } from "@/shared/lib/better-auth/client";
+import { getPostAuthRedirect } from "@/shared/utils/redirect";
 import type { AuthClientError, TwoFactorVariables } from "@/shared/types";
 
 interface Props {
@@ -23,7 +24,7 @@ export const useTwoFactorMutation = ({ form }: Props) => {
       if (error) return Promise.reject(error);
     },
     onSuccess: () => {
-      router.push("/home");
+      router.push(getPostAuthRedirect());
     },
     onError: (error: AuthClientError) => {
       if (error.status === RATE_LIMIT_ERROR_CODE) return;

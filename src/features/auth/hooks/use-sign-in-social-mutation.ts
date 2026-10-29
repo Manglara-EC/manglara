@@ -4,6 +4,7 @@ import { toast } from "sonner";
 
 import { RATE_LIMIT_ERROR_CODE } from "@/shared/constants";
 import { authClient } from "@/shared/lib/better-auth/client";
+import { getPostAuthRedirect } from "@/shared/utils/redirect";
 import type { AuthClientError } from "@/shared/types";
 
 export const useSignInSocialMutation = () => {
@@ -13,7 +14,7 @@ export const useSignInSocialMutation = () => {
     mutationFn: async ({ provider }: { provider: "google" | "github" }) => {
       const { data, error } = await authClient.signIn.social({
         provider,
-        callbackURL: "/home",
+        callbackURL: getPostAuthRedirect(),
       });
 
       if (error) return Promise.reject(error);

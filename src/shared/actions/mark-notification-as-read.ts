@@ -1,4 +1,5 @@
-"use server";
+// Helper interno: solo se invoca desde server actions que ya validan la sesión.
+// No lleva "use server" para no exponerlo como endpoint invocable desde el cliente.
 
 import { eq, and } from "drizzle-orm";
 

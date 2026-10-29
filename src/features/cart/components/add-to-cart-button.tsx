@@ -17,6 +17,7 @@ import {
 import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
 
+import { useAuthGuard } from "@/shared/hooks/use-auth-guard";
 import { useCart } from "@/features/cart/context/cart-context";
 import type { PublicProduct } from "@/features/products/types";
 
@@ -26,6 +27,7 @@ interface Props {
 
 export function AddToCartButton({ product }: Props) {
   const { addItem, cart } = useCart();
+  const { requireAuth } = useAuthGuard();
   const [quantity, setQuantity] = useState(1);
   const [open, setOpen] = useState(false);
 
@@ -72,7 +74,14 @@ export function AddToCartButton({ product }: Props) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="w-full">
+        <Button
+          className="w-full"
+          onClick={(e) => {
+            if (!requireAuth("Inicia sesión para agregar al carrito")) {
+              e.preventDefault();
+            }
+          }}
+        >
           <ShoppingCart className="mr-2 h-4 w-4" />
           Agregar al carrito
         </Button>
