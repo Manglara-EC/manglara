@@ -258,8 +258,8 @@ export function ItemCard({ item }: Props) {
         {product.isReservable ? (
           <Button asChild className="w-full" size="sm">
             <Link href={`/products/${product.id}`}>
-              <CalendarIcon className="mr-2 h-4 w-4" />
-              Elegir fecha de reserva
+              Ver detalles
+              <ArrowRightIcon className="ml-2 h-4 w-4" />
             </Link>
           </Button>
         ) : product.stock !== undefined && product.stock <= 0 ? (
@@ -268,7 +268,7 @@ export function ItemCard({ item }: Props) {
             Sin stock
           </Button>
         ) : (
-          <Dialog open={open} onOpenChange={setOpen}>
+          /*<Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
               <Button
                 className="w-full"
@@ -335,7 +335,14 @@ export function ItemCard({ item }: Props) {
                 </Button>
               </DialogFooter>
             </DialogContent>
-          </Dialog>
+          </Dialog>*/
+
+          <Button asChild className="w-full" size="sm">
+            <Link href={`/products/${product.id}`}>
+              Ver detalles
+              <ArrowRightIcon className="ml-2 h-4 w-4" />
+            </Link>
+          </Button>
         )}
       </div>
     </Card>

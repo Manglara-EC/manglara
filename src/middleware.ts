@@ -24,8 +24,8 @@ export async function middleware(request: NextRequest) {
   const isPublicURL = publicURLs.includes(pathname);
 
   // Navegación de invitado (solo lectura): inicio, catálogo y detalles.
-  // Las mutaciones siguen protegidas en cada server action / API route.
-  const guestURLs: string[] = ["/", "/home", "/explore"];
+
+  const guestURLs: string[] = ["/explore"];
   const guestURLPrefixes: string[] = ["/products/", "/services/"];
   const isGuestURL =
     guestURLs.includes(pathname) ||
@@ -34,6 +34,10 @@ export async function middleware(request: NextRequest) {
   const sessionCookie = getSessionCookie(request, {
     cookiePrefix: "manglara",
   });
+
+  if (pathname === "/" && !sessionCookie) {
+    return NextResponse.redirect(new URL("/sign-in", request.url));
+  }
 
   if (isPublicURL || (isGuestURL && !sessionCookie)) {
     return NextResponse.next();

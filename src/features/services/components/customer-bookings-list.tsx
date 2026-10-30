@@ -176,8 +176,12 @@ export function CustomerBookingsList() {
           </span>
         </TabsTrigger>
       </TabsList>
+      <div className="w-full border-t border-border my-2" />
 
-      <TabsContent value="bookings" className="mt-0 space-y-5">
+      <TabsContent
+        value="bookings"
+        className="mt-0 rounded-xl border border-border bg-card p-6 shadow-sm"
+      >
         <Tabs
           value={bookingView}
           onValueChange={(value) =>
@@ -201,7 +205,10 @@ export function CustomerBookingsList() {
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value={bookingView} className="mt-0">
+          <TabsContent
+            value={bookingView}
+            className="mt-0 border-t border-border pt-6"
+          >
             {visibleBookings.length === 0 ? (
               <Card className="border-dashed py-10 text-center">
                 <CardContent className="flex flex-col items-center gap-3">
