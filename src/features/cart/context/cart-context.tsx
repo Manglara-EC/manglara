@@ -15,6 +15,7 @@ import type {
   Cart,
   ProductCartItem,
 } from "@/features/cart/types";
+import { authClient } from "@/shared/lib/better-auth/client";
 
 interface CartContextValue {
   cart: Cart;
@@ -25,7 +26,11 @@ interface CartContextValue {
   ) => boolean;
   addBooking: (booking: Omit<BookingCartItem, "id" | "type">) => void;
   removeItem: (productId: string, reservationDate?: string) => void;
-  updateQuantity: (productId: string, quantity: number, reservationDate?: string) => void;
+  updateQuantity: (
+    productId: string,
+    quantity: number,
+    reservationDate?: string,
+  ) => void;
   clearCart: () => void;
   getTotalItems: () => number;
   getTotalPrice: () => number;
@@ -33,22 +38,30 @@ interface CartContextValue {
 
 const CartContext = createContext<CartContextValue | undefined>(undefined);
 
-const CART_STORAGE_KEY = "manglara-cart";
+const LEGACY_CART_STORAGE_KEY = "manglara-cart";
+const EMPTY_CART: Cart = { items: [] };
+
+function cartStorageKey(userId: string): string {
+  return `manglara-cart:${userId}`;
+}
 
 // Un producto reservado usa un id compuesto "productId::YYYY-MM-DD" para que
 // la misma reserva en dos fechas distintas quede como dos líneas separadas
 // del carrito. Un producto normal (o sin fecha elegida) usa solo su id.
-function buildProductCartItemId(productId: string, reservationDate?: string): string {
+function buildProductCartItemId(
+  productId: string,
+  reservationDate?: string,
+): string {
   return reservationDate ? `${productId}::${reservationDate}` : productId;
 }
 
-function loadCartFromStorage(): Cart {
+function loadCartFromStorage(userId: string): Cart {
   if (typeof window === "undefined") {
     return { items: [] };
   }
 
   try {
-    const stored = localStorage.getItem(CART_STORAGE_KEY);
+    const stored = localStorage.getItem(cartStorageKey(userId));
     if (stored) {
       const parsed = JSON.parse(stored) as { items?: unknown[] };
       const items = Array.isArray(parsed.items) ? parsed.items : [];
@@ -65,7 +78,7 @@ function loadCartFromStorage(): Cart {
                 ...legacyItem,
                 id: buildProductCartItemId(
                   legacyItem.product.id,
-                  legacyItem.reservationDate
+                  legacyItem.reservationDate,
                 ),
                 type: "product" as const,
               },
@@ -82,11 +95,11 @@ function loadCartFromStorage(): Cart {
   return { items: [] };
 }
 
-function saveCartToStorage(cart: Cart): void {
+function saveCartToStorage(userId: string, cart: Cart): void {
   if (typeof window === "undefined") return;
 
   try {
-    localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
+    localStorage.setItem(cartStorageKey(userId), JSON.stringify(cart));
   } catch (error) {
     console.error("Error saving cart to storage:", error);
   }
@@ -97,25 +110,55 @@ interface CartProviderProps {
 }
 
 export function CartProvider({ children }: CartProviderProps) {
-  const [cart, setCart] = useState<Cart>({ items: [] });
-  const [hasHydrated, setHasHydrated] = useState(false);
+  const { data: session, isPending } = authClient.useSession();
+  const userId = isPending ? undefined : session?.user.id;
+  const [storedCart, setStoredCart] = useState<Cart>(EMPTY_CART);
+  const [loadedForUserId, setLoadedForUserId] = useState<string | null>(null);
+  const cart = userId && loadedForUserId === userId ? storedCart : EMPTY_CART;
 
   useEffect(() => {
-    setCart(loadCartFromStorage());
-    setHasHydrated(true);
-  }, []);
+    // The old key has no owner, so its contents cannot safely be assigned to
+    // whichever account happens to sign in next.
+    try {
+      localStorage.removeItem(LEGACY_CART_STORAGE_KEY);
+    } catch (error) {
+      console.error("Error removing legacy cart from storage:", error);
+    }
+
+    if (!userId) {
+      setStoredCart(EMPTY_CART);
+      setLoadedForUserId(null);
+      return;
+    }
+
+    setStoredCart(loadCartFromStorage(userId));
+    setLoadedForUserId(userId);
+  }, [userId]);
 
   // Do not overwrite a persisted cart with the server-rendered empty state.
   useEffect(() => {
-    if (hasHydrated) {
-      saveCartToStorage(cart);
+    if (userId && loadedForUserId === userId) {
+      saveCartToStorage(userId, storedCart);
     }
-  }, [cart, hasHydrated]);
+  }, [storedCart, loadedForUserId, userId]);
+
+  const setCart = useCallback(
+    (update: (previousCart: Cart) => Cart) => {
+      if (!userId || loadedForUserId !== userId) return;
+
+      setStoredCart((previousCart) => update(previousCart));
+    },
+    [userId, loadedForUserId],
+  );
 
   const addItem = useCallback(
-    (product: ProductCartItem["product"],
+    (
+      product: ProductCartItem["product"],
       quantity: number,
-      reservationDate?: string): boolean => {
+      reservationDate?: string,
+    ): boolean => {
+      if (!userId || loadedForUserId !== userId) return false;
+
       if (product.isReservable && !reservationDate) {
         // No se puede agregar un producto reservable sin fecha.
         return false;
@@ -167,7 +210,7 @@ export function CartProvider({ children }: CartProviderProps) {
 
       return didAdd;
     },
-    [],
+    [userId, loadedForUserId, setCart],
   );
 
   const addBooking = useCallback(
@@ -179,14 +222,17 @@ export function CartProvider({ children }: CartProviderProps) {
         ],
       }));
     },
-    [],
+    [setCart],
   );
 
-  const removeItem = useCallback((itemId: string) => {
-    setCart((prevCart) => ({
-      items: prevCart.items.filter((item) => item.id !== itemId),
-    }));
-  }, []);
+  const removeItem = useCallback(
+    (itemId: string) => {
+      setCart((prevCart) => ({
+        items: prevCart.items.filter((item) => item.id !== itemId),
+      }));
+    },
+    [setCart],
+  );
 
   const updateQuantity = useCallback(
     (productId: string, quantity: number) => {
@@ -211,12 +257,12 @@ export function CartProvider({ children }: CartProviderProps) {
         return { items: newItems };
       });
     },
-    [removeItem],
+    [removeItem, setCart],
   );
 
   const clearCart = useCallback(() => {
-    setCart({ items: [] });
-  }, []);
+    setCart(() => EMPTY_CART);
+  }, [setCart]);
 
   const getTotalItems = useCallback(() => {
     return cart.items.reduce((total, item) => total + item.quantity, 0);
