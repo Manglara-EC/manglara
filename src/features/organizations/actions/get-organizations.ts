@@ -1,8 +1,6 @@
 "use server";
 
-import { headers } from "next/headers";
-
-import { auth } from "@/shared/lib/better-auth/server";
+import { getViewer } from "@/shared/lib/authz/server";
 import { db } from "@/shared/lib/drizzle/server";
 import { organization } from "@/shared/lib/drizzle/schema";
 import { tryCatch } from "@/shared/utils/try-catch";
@@ -15,11 +13,9 @@ type ErrorCode = "UNAUTHORIZED" | "FORBIDDEN" | "INTERNAL_SERVER_ERROR";
 export const getOrganizations = async (): Promise<
   ActionResponse<Organization[], ErrorCode>
 > => {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
+  const viewer = await getViewer();
 
-  if (!session) {
+  if (!viewer) {
     return {
       data: null,
       error: {
@@ -29,7 +25,7 @@ export const getOrganizations = async (): Promise<
     };
   }
 
-  if (session.user.role !== "admin") {
+  if (!viewer.access.isPlatformAdmin) {
     return {
       data: null,
       error: {

@@ -1,21 +1,38 @@
 /**
- * Configuración de estructura de menú basada en roles
- * Menú centralizado y type-safe
+ * Configuración del menú lateral según permisos (RBAC).
+ * Cada item declara la capacidad que exige; el menú se calcula a partir del
+ * acceso del usuario (rol global + roles por comuna).
  */
 
 import {
-  BarChart3Icon,
   BoxIcon,
-  PlusIcon,
   ShoppingBagIcon,
   SettingsIcon,
   LayoutDashboardIcon,
   BuildingIcon,
   ShoppingCartIcon,
   CalendarIcon,
+  ShieldCheckIcon,
+  StoreIcon,
+  BarChart3Icon,
 } from "lucide-react";
 
-import { UserRole } from "@/shared/constants/roles";
+import { GUEST_ACCESS, type Access } from "@/shared/lib/authz/access";
+
+/**
+ * Capacidad requerida para ver un item del menú.
+ * - guest: cualquiera, incluso sin sesión.
+ * - authenticated: cualquier usuario con sesión.
+ * - seller: vende en al menos una comuna (seller/admin/owner).
+ * - organizationManager: administra al menos una comuna (owner/admin).
+ * - platformAdmin: administrador global.
+ */
+export type MenuRequirement =
+  | "guest"
+  | "authenticated"
+  | "seller"
+  | "organizationManager"
+  | "platformAdmin";
 
 export interface MenuItem {
   /** ID único del item de menú */
@@ -26,213 +43,150 @@ export interface MenuItem {
   icon: React.ComponentType<{ className?: string }>;
   /** Ruta a la que navega */
   href: string;
-  /** Roles que tienen acceso a este item */
-  allowedRoles: UserRole[];
+  /** Capacidad que exige el item */
+  requires: MenuRequirement;
   /** Descripción tooltip (opcional) */
   description?: string;
-  /** Items de submenu (opcional) */
-  subItems?: MenuItem[];
-  /** Mostrar un badge de "nuevo" (opcional) */
-  isNew?: boolean;
 }
 
-/**
- * MENÚ PRINCIPAL - Configuración de estructura de menú por rol
- * Cualquier item aquí será visible solo si el usuario tiene un rol en allowedRoles
- */
 export const MENU_CONFIG: MenuItem[] = [
-  // ============================================================
-  // MENÚ UNIVERSAL (Todos los usuarios)
-  // ============================================================
+  // Navegación pública
   {
     id: "home",
     label: "Inicio",
     icon: LayoutDashboardIcon,
     href: "/home",
-    allowedRoles: [UserRole.USER, UserRole.SELLER, UserRole.ADMIN],
+    requires: "guest",
     description: "Vuelve al inicio",
   },
-
   {
     id: "explore",
     label: "Explorar",
     icon: ShoppingBagIcon,
     href: "/explore",
-    allowedRoles: [UserRole.USER, UserRole.SELLER, UserRole.ADMIN],
+    requires: "guest",
     description: "Explora productos y servicios",
   },
 
+  // Cliente
   {
     id: "reservations",
     label: "Mis actividades",
     icon: CalendarIcon,
     href: "/reservations",
-    allowedRoles: [UserRole.USER, UserRole.SELLER, UserRole.ADMIN],
+    requires: "authenticated",
     description: "Consulta tus reservas y compras",
   },
-
   {
     id: "cart",
     label: "Carrito",
     icon: ShoppingCartIcon,
     href: "/cart",
-    allowedRoles: [UserRole.USER, UserRole.SELLER, UserRole.ADMIN],
+    requires: "authenticated",
     description: "Revisa tu carrito de compras",
   },
 
-  // ============================================================
-  // MENÚ SELLER (Solo vendedores)
-  // ============================================================
+  // Vendedor
   {
     id: "seller-dashboard",
     label: "Dashboard",
     icon: BarChart3Icon,
     href: "/seller/dashboard",
-    allowedRoles: [UserRole.SELLER, UserRole.ADMIN],
+    requires: "seller",
     description: "Panel de control del vendedor",
-    isNew: false,
   },
-
   {
     id: "seller-products",
     label: "Mis Productos",
     icon: BoxIcon,
     href: "/seller/products",
-    allowedRoles: [UserRole.SELLER, UserRole.ADMIN],
+    requires: "seller",
     description: "Gestiona tus productos",
   },
-
   {
     id: "seller-services",
     label: "Mis Servicios",
-    icon: ShoppingBagIcon,
+    icon: StoreIcon,
     href: "/seller/services",
-    allowedRoles: [UserRole.SELLER, UserRole.ADMIN],
+    requires: "seller",
     description: "Gestiona tus servicios",
   },
 
-  {
-    id: "seller-create",
-    label: "Crear",
-    icon: PlusIcon,
-    href: "#",
-    allowedRoles: [UserRole.SELLER, UserRole.ADMIN],
-    description: "Crear nuevo producto o servicio",
-    subItems: [
-      {
-        id: "create-product",
-        label: "Crear Producto",
-        icon: PlusIcon,
-        href: "/seller/products/create",
-        allowedRoles: [UserRole.SELLER, UserRole.ADMIN],
-        description: "Crea un nuevo producto",
-        isNew: true,
-      },
-      {
-        id: "create-service",
-        label: "Crear Servicio",
-        icon: PlusIcon,
-        href: "/seller/services/create",
-        allowedRoles: [UserRole.SELLER, UserRole.ADMIN],
-        description: "Crea un nuevo servicio",
-        isNew: true,
-      },
-    ],
-  },
-
-  // ============================================================
-  // MENÚ ADMIN (Solo administradores)
-  // ============================================================
+  // Administración
   {
     id: "admin-dashboard",
     label: "Admin",
-    icon: LayoutDashboardIcon,
+    icon: ShieldCheckIcon,
     href: "/admin",
-    allowedRoles: [UserRole.ADMIN],
-    description: "Panel administrativo",
+    requires: "platformAdmin",
+    description: "Panel de administración de la plataforma",
   },
 
-  // ============================================================
-  // MENÚ UNIVERSAL (Bottom)
-  // ============================================================
+  // Comunas y cuenta
   {
     id: "organizations",
     label: "Comunas",
     icon: BuildingIcon,
     href: "/organizations",
-    allowedRoles: [UserRole.USER, UserRole.SELLER, UserRole.ADMIN],
-    description: "Comunidades",
+    requires: "authenticated",
+    description: "Comunas de Manglara",
   },
-
   {
     id: "settings",
     label: "Configuración",
     icon: SettingsIcon,
     href: "/settings",
-    allowedRoles: [UserRole.USER, UserRole.SELLER, UserRole.ADMIN],
+    requires: "authenticated",
     description: "Configuración de cuenta",
   },
 ];
 
-/**
- * Obtiene los items de menú que un usuario puede ver
- * Filtra basado en el rol del usuario
- */
-export const getMenuItemsForRole = (userRole: UserRole | null): MenuItem[] => {
-  if (!userRole) return [];
-
-  return MENU_CONFIG.filter((item) => item.allowedRoles.includes(userRole)).map(
-    (item) => ({
-      ...item,
-      // Recursivamente filtra subitems
-      subItems: item.subItems
-        ? item.subItems.filter((subItem) =>
-            subItem.allowedRoles.includes(userRole),
-          )
-        : undefined,
-    }),
-  );
+export const meetsMenuRequirement = (
+  access: Access,
+  requirement: MenuRequirement,
+): boolean => {
+  switch (requirement) {
+    case "guest":
+      return true;
+    case "authenticated":
+      return access.isAuthenticated;
+    case "seller":
+      return access.canSell;
+    case "organizationManager":
+      return access.canManageAnyOrganization;
+    case "platformAdmin":
+      return access.isPlatformAdmin;
+  }
 };
 
-/**
- * Items visibles para invitados (sin sesión): navegación de solo lectura
- */
-export const GUEST_MENU_ITEM_IDS = ["home", "explore"] as const;
+/** Items del menú visibles para un acceso dado. */
+export const getMenuItemsForAccess = (access: Access): MenuItem[] => {
+  const items = MENU_CONFIG.filter((item) =>
+    meetsMenuRequirement(access, item.requires),
+  );
+
+  // El administrador de comuna tiene un acceso directo a la comuna que gestiona.
+  const managed = access.managedOrganizations;
+  if (access.isAuthenticated && managed.length > 0) {
+    const index = items.findIndex((item) => item.id === "organizations");
+    items.splice(index, 0, {
+      id: "managed-organization",
+      label: managed.length === 1 ? "Mi comuna" : "Mis comunas",
+      icon: ShieldCheckIcon,
+      href:
+        managed.length === 1
+          ? `/organizations/${managed[0].organizationSlug}`
+          : "/organizations",
+      requires: "organizationManager",
+      description: "Administra tu comuna: miembros, ítems y aprobaciones",
+    });
+  }
+
+  return items;
+};
 
 export const getMenuItemsForGuest = (): MenuItem[] =>
-  MENU_CONFIG.filter((item) =>
-    (GUEST_MENU_ITEM_IDS as readonly string[]).includes(item.id),
-  );
+  getMenuItemsForAccess(GUEST_ACCESS);
 
-/**
- * Obtiene un item específico del menú
- */
-export const getMenuItemById = (id: string): MenuItem | undefined => {
-  const findItem = (items: MenuItem[]): MenuItem | undefined => {
-    for (const item of items) {
-      if (item.id === id) return item;
-      if (item.subItems) {
-        const found = findItem(item.subItems);
-        if (found) return found;
-      }
-    }
-    return undefined;
-  };
-
-  return findItem(MENU_CONFIG);
-};
-
-/**
- * Verifica si un item está visible para un rol específico
- */
-export const isMenuItemVisible = (
-  itemId: string,
-  userRole: UserRole | null,
-): boolean => {
-  if (!userRole) return false;
-
-  const item = getMenuItemById(itemId);
-  if (!item) return false;
-
-  return item.allowedRoles.includes(userRole);
-};
+export const getMenuItemById = (id: string): MenuItem | undefined =>
+  MENU_CONFIG.find((item) => item.id === id);

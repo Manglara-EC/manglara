@@ -1,5 +1,7 @@
 "use client";
 
+import { useMemo } from "react";
+
 import { flexRender } from "@tanstack/react-table";
 import { LoaderIcon } from "lucide-react";
 
@@ -17,19 +19,17 @@ import { ScrollArea, ScrollBar } from "@/shared/components/ui/scroll-area";
 
 import { MembersTablePagination } from "@/features/organizations/components/members-table-pagination";
 import { MembersTableToolbar } from "@/features/organizations/components/members-table-toolbar";
-import {
-  columns,
-  readOnlyColumns,
-} from "@/features/organizations/components/members-table-columns";
+import { getMembersColumns } from "@/features/organizations/components/members-table-columns";
 import { useMembersTable } from "@/features/organizations/hooks/use-members-table";
+import type { MembersTableViewer } from "@/features/organizations/types";
 
 interface Props {
   organizationId: string;
-  readOnly?: boolean;
+  viewer: MembersTableViewer;
 }
 
-export function MembersTable({ organizationId, readOnly = false }: Props) {
-  const tableColumns = readOnly ? readOnlyColumns : columns;
+export function MembersTable({ organizationId, viewer }: Props) {
+  const tableColumns = useMemo(() => getMembersColumns(viewer), [viewer]);
   const {
     table,
     isSuccess,

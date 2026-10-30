@@ -1,11 +1,13 @@
 "use server";
 
-import { headers } from "next/headers";
-import { eq, and } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 
-import { auth } from "@/shared/lib/better-auth/server";
 import { db } from "@/shared/lib/drizzle/server";
-import { product, organization, member } from "@/shared/lib/drizzle/schema";
+import { product, organization } from "@/shared/lib/drizzle/schema";
+import { getViewer } from "@/shared/lib/authz/server";
+import { canEditItem, canInOrganization } from "@/shared/lib/authz/access";
+import { notifyOwnerOfNewItem } from "@/shared/actions/send-item-notification";
+import { deleteReplacedImages } from "@/shared/lib/storage/delete-replaced-images";
 import { updateProductSchema } from "@/features/seller/schemas/update-product";
 import type {
   UpdateProductVariables,
@@ -21,9 +23,9 @@ export async function updateProduct(
 }> {
   try {
     // 1. Verificar autenticación
-    const session = await auth.api.getSession({ headers: await headers() });
+    const viewer = await getViewer();
 
-    if (!session?.user?.id) {
+    if (!viewer) {
       return {
         error: {
           code: "UNAUTHENTICATED",
@@ -32,40 +34,28 @@ export async function updateProduct(
       };
     }
 
-    const userId = session.user.id;
-    const userRole = session.user.role;
-
-    // 2. Verificar rol de seller o admin
-    if (userRole !== "seller" && userRole !== "admin") {
-      return {
-        error: {
-          code: "FORBIDDEN",
-          message: "Solo los vendedores pueden actualizar productos",
-        },
-      };
-    }
-
-    // 3. Verificar que el producto existe y pertenece al usuario
-    const existingProduct = await db
+    // 2. Verificar que el producto existe
+    const [existingProduct] = await db
       .select({
         id: product.id,
         organizationId: product.organizationId,
         sellerId: product.sellerId,
+        status: product.status,
+        deleted: product.deleted,
+        images: product.images,
       })
       .from(product)
       .where(eq(product.id, productId))
       .limit(1);
 
-    if (existingProduct.length === 0) {
+    if (!existingProduct || existingProduct.deleted) {
       return {
         error: { code: "NOT_FOUND", message: "Producto no encontrado" },
       };
     }
 
-    const productData = existingProduct[0];
-
-    // 4. Verificar que el usuario creó este producto o es admin
-    if (productData.sellerId !== userId && userRole !== "admin") {
+    // 3. Solo el vendedor dueño, con rol de venta vigente en la comuna
+    if (!canEditItem(viewer.access, existingProduct)) {
       return {
         error: {
           code: "FORBIDDEN",
@@ -74,62 +64,39 @@ export async function updateProduct(
       };
     }
 
-    // 5. Si se está cambiando la organización, verificar membresía
-    if (
-      data.organizationId &&
-      data.organizationId !== productData.organizationId
-    ) {
-      // Verificar que la organización existe
-      const org = await db
-        .select({ id: organization.id })
-        .from(organization)
-        .where(eq(organization.id, data.organizationId))
-        .limit(1);
-
-      if (org.length === 0) {
-        return {
-          error: { code: "NOT_FOUND", message: "Organización no encontrada" },
-        };
-      }
-
-      // Verificar membresía del usuario en la nueva organización
-      const memberRecord = await db
-        .select({ role: member.role })
-        .from(member)
-        .where(
-          and(
-            eq(member.organizationId, data.organizationId),
-            eq(member.userId, userId),
-          ),
-        )
-        .limit(1);
-
-      if (memberRecord.length === 0) {
-        return {
-          error: {
-            code: "FORBIDDEN",
-            message: "No eres miembro de esta organización",
-          },
-        };
-      }
-    }
-
-    // 6. Validar datos con Zod
+    // 4. Validar datos con Zod
     const validation = updateProductSchema.safeParse(data);
 
     if (!validation.success) {
-      const firstError = validation.error;
       return {
         error: {
           code: "VALIDATION_ERROR",
-          message: firstError?.message || "Datos inválidos",
+          message: validation.error.issues[0]?.message ?? "Datos inválidos",
         },
       };
     }
 
     const validatedData = validation.data;
 
-    // 7. Actualizar producto en la base de datos
+    // 5. Si cambia de comuna, debe poder vender también en la nueva
+    if (
+      validatedData.organizationId !== existingProduct.organizationId &&
+      !canInOrganization(
+        viewer.access,
+        validatedData.organizationId,
+        "item:create",
+      )
+    ) {
+      return {
+        error: {
+          code: "FORBIDDEN",
+          message:
+            "Necesitas ser vendedor de esa comuna para mover el producto",
+        },
+      };
+    }
+
+    // 6. Actualizar producto en la base de datos
     // Al editar, el producto vuelve a estado "pending" para revisión
     const [updatedProduct] = await db
       .update(product)
@@ -141,9 +108,13 @@ export async function updateProduct(
         images: validatedData.images,
         location: validatedData.location,
         latitude:
-          validatedData.latitude !== undefined ? validatedData.latitude.toString() : null,
+          validatedData.latitude !== undefined
+            ? validatedData.latitude.toString()
+            : null,
         longitude:
-          validatedData.longitude !== undefined ? validatedData.longitude.toString() : null,
+          validatedData.longitude !== undefined
+            ? validatedData.longitude.toString()
+            : null,
         organizationId: validatedData.organizationId,
         isReservable: validatedData.isReservable,
         status: "pending", // Vuelve a pendiente para revisión
@@ -155,7 +126,26 @@ export async function updateProduct(
       .where(eq(product.id, productId))
       .returning();
 
-    // 8. Obtener nombre de la organización
+    // 7. Liberar del almacenamiento las imágenes que se quitaron
+    if (validatedData.images) {
+      await deleteReplacedImages({
+        itemId: productId,
+        previous: existingProduct.images,
+        next: validatedData.images,
+      });
+    }
+
+    // 8. Avisar a los administradores de la comuna que debe revisarse de nuevo
+    await notifyOwnerOfNewItem({
+      organizationId: updatedProduct.organizationId,
+      itemName: updatedProduct.name,
+      itemId: updatedProduct.id,
+      type: "product",
+      sellerId: viewer.session.user.id,
+      reason: "updated",
+    });
+
+    // 9. Obtener nombre de la organización
     const orgData = await db
       .select({ name: organization.name })
       .from(organization)

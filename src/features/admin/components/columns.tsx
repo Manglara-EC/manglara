@@ -6,6 +6,11 @@ import { format, formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
 
 import { Badge } from "@/shared/components/ui/badge";
+import {
+  ROLE_DISPLAY_NAMES,
+  UserRole,
+  normalizeUserRole,
+} from "@/shared/constants/roles";
 import type { User } from "@/shared/types";
 
 import { DataTableColumnHeader } from "@/features/admin/components/data-table-column-header";
@@ -121,14 +126,14 @@ export const columns: ColumnDef<User>[] = [
       <DataTableColumnHeader column={column} title="Rol" />
     ),
     cell: ({ row }) => {
-      const role = row.getValue("role") as string;
-      const isAdmin = role === "admin";
+      const role = normalizeUserRole(row.getValue("role"));
+      const isAdmin = role === UserRole.ADMIN;
 
       return (
         <div className="ml-2.5 flex space-x-2">
           <Badge variant={isAdmin ? "default" : "secondary"}>
             {isAdmin ? <UserRoundCogIcon /> : <UserRoundIcon />}
-            {role}
+            {ROLE_DISPLAY_NAMES[role]}
           </Badge>
         </div>
       );

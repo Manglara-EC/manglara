@@ -348,11 +348,20 @@ export const getOccupiedDaysByMonth = async (
   const queryStart = addDays(monthStart, -1);
   const queryEnd = addDays(nextMonthStart, 1);
 
+  // Solo servicios públicos: uno pendiente o eliminado no revela su agenda
   const [foundService] = await tx
     .select({ availabilityRules: service.availabilityRules })
     .from(service)
-    .where(eq(service.id, input.serviceId))
+    .where(
+      and(
+        eq(service.id, input.serviceId),
+        eq(service.status, "approved"),
+        eq(service.deleted, false),
+      ),
+    )
     .limit(1);
+
+  if (!foundService) return [];
 
   const bookings = await tx
     .select({

@@ -11,25 +11,61 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/shared/components/ui/tooltip";
+import {
+  ASSIGNABLE_ORGANIZATION_ROLES,
+  ORGANIZATION_ROLE_DISPLAY_NAMES,
+  OrganizationRole,
+  canAssignOrganizationRole,
+  canManageAs,
+  normalizeOrganizationRole,
+} from "@/shared/constants/roles";
 
 import { MembersTableColumnHeader } from "@/features/organizations/components/members-table-column-header";
 import { MembersTableRowActions } from "@/features/organizations/components/members-table-row-actions";
-import type { OrganizationMember } from "@/features/organizations/types";
+import type {
+  MembersTableViewer,
+  OrganizationMember,
+} from "@/features/organizations/types";
 
-export const columns: ColumnDef<OrganizationMember>[] = [
-  // {
-  //   accessorKey: "id",
-  //   header: ({ column }) => (
-  //     <MembersTableColumnHeader column={column} title="Id" />
-  //   ),
-  //   cell: ({ row }) => (
-  //     <div className="ml-2.5 flex space-x-2">
-  //       <span className="w-fit font-medium">{row.getValue("id")}</span>
-  //     </div>
-  //   ),
-  // },
+const ALL_ROLES = Object.values(OrganizationRole);
+
+/** Roles que el usuario actual puede asignar a un miembro (vacío = ninguno). */
+const getAssignableRoles = (
+  viewer: MembersTableViewer,
+  member: OrganizationMember,
+): readonly OrganizationRole[] => {
+  if (!viewer.canManageMembers || member.userId === viewer.userId) return [];
+
+  const targetRole = normalizeOrganizationRole(member.role);
+
+  if (
+    !canAssignOrganizationRole(
+      viewer.viewerRole,
+      targetRole,
+      viewer.isPlatformAdmin,
+    )
+  ) {
+    return [];
+  }
+
+  if (viewer.isPlatformAdmin) return ALL_ROLES;
+
+  return viewer.viewerRole
+    ? ASSIGNABLE_ORGANIZATION_ROLES[viewer.viewerRole]
+    : [];
+};
+
+/**
+ * Columnas de la tabla de miembros según lo que puede ver/hacer el usuario:
+ * - correo: solo administradores de la comuna y admin global;
+ * - acciones: solo sobre miembros que puede gestionar.
+ */
+export const getMembersColumns = (
+  viewer: MembersTableViewer,
+): ColumnDef<OrganizationMember>[] => [
   {
-    accessorKey: "name",
+    id: "name",
+    accessorFn: (member) => member.user.name,
     header: ({ column }) => (
       <MembersTableColumnHeader column={column} title="Nombre" />
     ),
@@ -41,33 +77,44 @@ export const columns: ColumnDef<OrganizationMember>[] = [
       );
     },
   },
-  {
-    accessorKey: "email",
-    header: ({ column }) => (
-      <MembersTableColumnHeader column={column} title="Correo electrónico" />
-    ),
-    cell: ({ row }) => {
-      return (
-        <div className="ml-2.5 flex items-center gap-2">
-          <span className="w-max font-medium">{row.original.user.email}</span>
-        </div>
-      );
-    },
-  },
+  ...(viewer.canSeeEmails
+    ? [
+        {
+          id: "email",
+          accessorFn: (member: OrganizationMember) => member.user.email,
+          header: ({ column }) => (
+            <MembersTableColumnHeader
+              column={column}
+              title="Correo electrónico"
+            />
+          ),
+          cell: ({ row }) => {
+            return (
+              <div className="ml-2.5 flex items-center gap-2">
+                <span className="w-max font-medium">
+                  {row.original.user.email}
+                </span>
+              </div>
+            );
+          },
+        } as ColumnDef<OrganizationMember>,
+      ]
+    : []),
   {
     accessorKey: "role",
+    filterFn: (row, id, value: string[]) => value.includes(row.getValue(id)),
     header: ({ column }) => (
       <MembersTableColumnHeader column={column} title="Rol" />
     ),
     cell: ({ row }) => {
-      const role = row.original.role;
-      const isOwner = role === "owner";
+      const role = normalizeOrganizationRole(row.original.role);
+      const isManager = canManageAs(role);
 
       return (
         <div className="ml-2.5 flex space-x-2">
-          <Badge variant={isOwner ? "default" : "secondary"}>
-            {isOwner ? <UserRoundCogIcon /> : <UserRoundIcon />}
-            {role}
+          <Badge variant={isManager ? "default" : "secondary"}>
+            {isManager ? <UserRoundCogIcon /> : <UserRoundIcon />}
+            {ORGANIZATION_ROLE_DISPLAY_NAMES[role]}
           </Badge>
         </div>
       );
@@ -100,20 +147,21 @@ export const columns: ColumnDef<OrganizationMember>[] = [
       );
     },
   },
-  {
-    id: "actions",
-    cell: ({ row, table }) =>
-      row.original.role === "owner" ? null : (
-        <MembersTableRowActions
-          row={row}
-          pagination={table.getState().pagination}
-        />
-      ),
-  },
-];
+  ...(viewer.canManageMembers
+    ? [
+        {
+          id: "actions",
+          cell: ({ row }) => {
+            const assignableRoles = getAssignableRoles(viewer, row.original);
 
-// Columnas sin acciones para modo solo lectura
-export const readOnlyColumns: ColumnDef<OrganizationMember>[] = columns.slice(
-  0,
-  -1,
-);
+            return assignableRoles.length > 0 ? (
+              <MembersTableRowActions
+                row={row}
+                assignableRoles={assignableRoles}
+              />
+            ) : null;
+          },
+        } as ColumnDef<OrganizationMember>,
+      ]
+    : []),
+];

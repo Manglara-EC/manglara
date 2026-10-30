@@ -15,6 +15,13 @@
       "when": 1786147200001,
       "tag": "0001_add_transaction_line_status",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1786147200002,
+      "tag": "0002_add_invitation_created_at",
+      "breakpoints": true
     }
   ]
 }

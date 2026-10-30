@@ -1,16 +1,32 @@
+import { useState } from "react";
+
 import { useDeleteOrganizationMutation } from "@/features/organizations/hooks/use-delete-organization-mutation";
 
 interface Props {
   organizationId: string;
+  organizationName: string;
 }
 
-export const useDeleteOrganizationButton = ({ organizationId }: Props) => {
+export const useDeleteOrganizationButton = ({
+  organizationId,
+  organizationName,
+}: Props) => {
   const { mutate, isPending } = useDeleteOrganizationMutation();
+  const [confirmationName, setConfirmationName] = useState("");
 
-  const handleDeleteOrganization = () =>
-    mutate({
-      organizationId: organizationId,
-    });
+  const canConfirm = confirmationName.trim() === organizationName.trim();
 
-  return { isPending, handleDeleteOrganization };
+  const handleDeleteOrganization = () => {
+    if (!canConfirm) return;
+
+    mutate({ organizationId, confirmationName });
+  };
+
+  return {
+    isPending,
+    confirmationName,
+    setConfirmationName,
+    canConfirm,
+    handleDeleteOrganization,
+  };
 };

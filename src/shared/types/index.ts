@@ -32,6 +32,10 @@ export type ActionResponse<T, E extends string> =
 export type ItemType = "product" | "service";
 
 export type User = typeof user.$inferSelect;
+export type PublicUserProfile = Pick<
+  User,
+  "id" | "name" | "username" | "displayUsername" | "image"
+>;
 export type Product = typeof product.$inferSelect;
 export type Service = typeof service.$inferSelect;
 export type Request = typeof request.$inferSelect;

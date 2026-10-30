@@ -1,30 +1,29 @@
 "use server";
 
-import { headers } from "next/headers";
 import { eq } from "drizzle-orm";
 
-import { auth } from "@/shared/lib/better-auth/server";
 import { db } from "@/shared/lib/drizzle/server";
+import { getViewer } from "@/shared/lib/authz/server";
+import {
+  canDeleteItem,
+  canInOrganization,
+  isOwnItem,
+} from "@/shared/lib/authz/access";
 import { service } from "@/shared/lib/drizzle/schema";
 import { tryCatch } from "@/shared/utils/try-catch";
 import type { ActionResponse } from "@/shared/types";
+import { hasSalesOrBookings } from "@/features/seller/lib/item-history";
 
 type ErrorCode =
-  | "UNAUTHORIZED"
-  | "FORBIDDEN"
-  | "NOT_FOUND"
-  | "CANNOT_DELETE_APPROVED"
-  | "INTERNAL_SERVER_ERROR";
+  "UNAUTHORIZED" | "FORBIDDEN" | "NOT_FOUND" | "INTERNAL_SERVER_ERROR";
 
 export async function deleteService(
   serviceId: string,
 ): Promise<ActionResponse<{ id: string }, ErrorCode>> {
   // 1. Verificar autenticación
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
+  const viewer = await getViewer();
 
-  if (!session?.user?.id) {
+  if (!viewer) {
     return {
       data: null,
       error: {
@@ -34,28 +33,14 @@ export async function deleteService(
     };
   }
 
-  const userId = session.user.id;
-  const userRole = session.user.role;
-
-  // 2. Verificar rol de seller o admin
-  if (userRole !== "seller" && userRole !== "admin") {
-    return {
-      data: null,
-      error: {
-        code: "FORBIDDEN",
-        message: "Solo los vendedores pueden eliminar servicios",
-      },
-    };
-  }
-
-  // 3. Obtener el servicio
+  // 2. Obtener el servicio
   const { data: existingService, error: fetchError } = await tryCatch(
     db.query.service.findFirst({
       where: eq(service.id, serviceId),
     }),
   );
 
-  if (fetchError || !existingService) {
+  if (fetchError || !existingService || existingService.deleted) {
     return {
       data: null,
       error: {
@@ -65,30 +50,47 @@ export async function deleteService(
     };
   }
 
-  // 4. Verificar que el usuario es el dueño o admin
-  if (existingService.sellerId !== userId && userRole !== "admin") {
+  // 3. Vendedor dueño (pendiente o rechazado) o administración de la comuna
+  if (!canDeleteItem(viewer.access, existingService)) {
     return {
       data: null,
       error: {
         code: "FORBIDDEN",
-        message: "No tienes permiso para eliminar este servicio",
+        message: !isOwnItem(viewer.access, existingService)
+          ? "No tienes permiso para eliminar este servicio"
+          : canInOrganization(
+                viewer.access,
+                existingService.organizationId,
+                "item:delete_own",
+              )
+            ? "Solo puedes eliminar servicios pendientes o rechazados"
+            : "Ya no tienes rol de venta en la comuna de este servicio",
       },
     };
   }
 
-  // 5. Solo permitir eliminar servicios pendientes (a menos que sea admin)
-  if (existingService.status !== "pending" && userRole !== "admin") {
+  // Un vendedor no retira por su cuenta un servicio con ventas o reservas
+  // (por ejemplo, editándolo para que vuelva a pendiente): lo hace la
+  // administración de la comuna.
+  if (
+    !canInOrganization(
+      viewer.access,
+      existingService.organizationId,
+      "item:delete_any",
+    ) &&
+    (await hasSalesOrBookings("service", existingService.id))
+  ) {
     return {
       data: null,
       error: {
-        code: "CANNOT_DELETE_APPROVED",
+        code: "FORBIDDEN",
         message:
-          "Solo puedes eliminar servicios que estén pendientes de aprobación",
+          "Este servicio tiene ventas o reservas: pide a un administrador de la comuna que lo retire",
       },
     };
   }
 
-  // 6. Eliminar el servicio (soft delete)
+  // 4. Eliminar el servicio (soft delete)
   const { error: deleteError } = await tryCatch(
     db
       .update(service)

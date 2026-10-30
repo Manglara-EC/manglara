@@ -3,6 +3,7 @@
 import { eq, and, desc, gte, lte, ilike, getTableColumns } from "drizzle-orm";
 
 import { db } from "@/shared/lib/drizzle/server";
+import { HIDDEN_MODERATION_COLUMNS } from "@/shared/lib/drizzle/public-columns";
 import { product, organization, user } from "@/shared/lib/drizzle/schema";
 import { tryCatch } from "@/shared/utils/try-catch";
 import type { ActionResponse } from "@/shared/types";
@@ -51,6 +52,7 @@ export const searchProducts = async (
     db
       .select({
         ...getTableColumns(product),
+        ...HIDDEN_MODERATION_COLUMNS,
         organizationName: organization.name,
         sellerName: user.name,
       })

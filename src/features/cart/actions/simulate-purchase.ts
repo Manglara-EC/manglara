@@ -57,6 +57,7 @@ type ErrorCode =
   | "INVALID_DATES"
   | "UNAVAILABLE"
   | "CAPACITY_EXCEEDED"
+  | "OWN_ITEM"
   | "INTERNAL_SERVER_ERROR";
 
 class CheckoutError extends Error {
@@ -126,8 +127,24 @@ export const simulatePurchase = async (
 
   const items = parsedItems.data;
   const now = new Date();
+  // Fecha de hoy en la zona de las comunas (formato YYYY-MM-DD)
+  const today = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/Bogota",
+  }).format(now);
+
   for (const item of items) {
-    if (item.type !== "booking") continue;
+    if (item.type === "product") {
+      if (item.reservationDate && item.reservationDate < today) {
+        return {
+          data: null,
+          error: {
+            code: "INVALID_DATES",
+            message: "La fecha de reserva del producto no puede ser pasada.",
+          },
+        };
+      }
+      continue;
+    }
 
     const startDate = new Date(item.startDate);
     const endDate = new Date(item.endDate);
@@ -210,6 +227,14 @@ export const simulatePurchase = async (
           throw new CheckoutError(
             "PRODUCT_NOT_FOUND",
             "Un producto ya no está disponible.",
+          );
+        }
+
+        // Un vendedor no puede comprarse a sí mismo (evita ventas ficticias)
+        if (product.sellerId === session.user.id) {
+          throw new CheckoutError(
+            "OWN_ITEM",
+            `No puedes comprar tu propio producto: ${product.name}.`,
           );
         }
 
@@ -298,6 +323,13 @@ export const simulatePurchase = async (
         });
         if (!availability.available) {
           throw new CheckoutError(availability.code, availability.message);
+        }
+
+        if (availability.service.sellerId === session.user.id) {
+          throw new CheckoutError(
+            "OWN_ITEM",
+            "No puedes reservar tu propio servicio.",
+          );
         }
 
         const pendingQuantity = pendingBookings

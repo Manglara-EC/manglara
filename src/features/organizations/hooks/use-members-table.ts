@@ -14,20 +14,15 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 
-import { authClient } from "@/shared/lib/better-auth/client";
-
-import { columns as defaultColumns } from "@/features/organizations/components/members-table-columns";
+import { listOrganizationMembers } from "@/features/organizations/actions/list-organization-members";
 import type { OrganizationMember } from "@/features/organizations/types";
 
 interface Props {
   organizationId: string;
-  columns?: ColumnDef<OrganizationMember>[];
+  columns: ColumnDef<OrganizationMember>[];
 }
 
-export const useMembersTable = ({
-  organizationId,
-  columns = defaultColumns,
-}: Props) => {
+export const useMembersTable = ({ organizationId, columns }: Props) => {
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -39,16 +34,11 @@ export const useMembersTable = ({
   const { data, isSuccess, isLoading, isError, refetch, isRefetching } =
     useQuery({
       queryKey: ["organization", organizationId, "member", "list", pagination],
-      queryFn: async ({ signal }) => {
-        const { data, error } = await authClient.organization.listMembers({
-          query: {
-            organizationId,
-            limit: pagination.pageSize,
-            offset: pagination.pageIndex * pagination.pageSize,
-            sortBy: "createdAt",
-            sortDirection: "desc",
-          },
-          fetchOptions: { signal },
+      queryFn: async () => {
+        const { data, error } = await listOrganizationMembers({
+          organizationId,
+          limit: pagination.pageSize,
+          offset: pagination.pageIndex * pagination.pageSize,
         });
 
         if (error) return Promise.reject(error);

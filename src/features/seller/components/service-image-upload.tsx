@@ -14,12 +14,15 @@ interface Props {
   value: string[];
   onChange: (images: string[]) => void;
   onUploadingChange: (isUploading: boolean) => void;
+  /** Carpeta de destino en el almacenamiento (`services` o `products`). */
+  folder?: "services" | "products";
 }
 
 export function ServiceImageUpload({
   value,
   onChange,
   onUploadingChange,
+  folder = "services",
 }: Props) {
   const [isUploading, setIsUploading] = useState(false);
 
@@ -47,7 +50,7 @@ export function ServiceImageUpload({
         filesToUpload.map(async (file) => {
           const formData = new FormData();
           formData.append("file", file);
-          formData.append("folder", "services");
+          formData.append("folder", folder);
 
           const response = await fetch("/api/upload", {
             method: "POST",
@@ -111,7 +114,10 @@ export function ServiceImageUpload({
       {value.length > 0 && (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
           {value.map((url, index) => (
-            <div key={url} className="group relative aspect-square overflow-hidden rounded-md border bg-muted">
+            <div
+              key={url}
+              className="group relative aspect-square overflow-hidden rounded-md border bg-muted"
+            >
               <Image
                 src={url}
                 alt={`Imagen ${index + 1} del servicio`}
@@ -124,7 +130,9 @@ export function ServiceImageUpload({
                 variant="destructive"
                 size="icon"
                 className="absolute right-2 top-2 h-7 w-7 opacity-100 sm:opacity-0 sm:transition-opacity sm:group-hover:opacity-100"
-                onClick={() => onChange(value.filter((_, itemIndex) => itemIndex !== index))}
+                onClick={() =>
+                  onChange(value.filter((_, itemIndex) => itemIndex !== index))
+                }
                 aria-label={`Eliminar imagen ${index + 1}`}
               >
                 <XIcon className="h-4 w-4" />
@@ -140,7 +148,8 @@ export function ServiceImageUpload({
       )}
 
       <p className="text-xs text-muted-foreground">
-        {value.length}/{MAX_IMAGES} imágenes seleccionadas. La primera se mostrará como portada.
+        {value.length}/{MAX_IMAGES} imágenes seleccionadas. La primera se
+        mostrará como portada.
       </p>
     </div>
   );

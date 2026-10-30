@@ -6,7 +6,7 @@ import { eq, or } from "drizzle-orm";
 import { db } from "@/shared/lib/drizzle/server";
 import { user } from "@/shared/lib/drizzle/schema";
 import { tryCatch } from "@/shared/utils/try-catch";
-import type { ActionResponse, User } from "@/shared/types";
+import type { ActionResponse, PublicUserProfile } from "@/shared/types";
 import { auth } from "@/shared/lib/better-auth/server";
 
 interface Props {
@@ -23,7 +23,7 @@ type ErrorCode =
 export const getUser = async ({
   id,
   username,
-}: Props): Promise<ActionResponse<User, ErrorCode>> => {
+}: Props): Promise<ActionResponse<PublicUserProfile, ErrorCode>> => {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
@@ -48,8 +48,15 @@ export const getUser = async ({
     };
 
   const { data, error } = await tryCatch(
+    // Solo datos públicos del perfil: nunca correo, rol, baneo ni 2FA
     db
-      .select()
+      .select({
+        id: user.id,
+        name: user.name,
+        username: user.username,
+        displayUsername: user.displayUsername,
+        image: user.image,
+      })
       .from(user)
       .where(or(eq(user.id, id ?? ""), eq(user.username, username ?? "")))
       .limit(1),

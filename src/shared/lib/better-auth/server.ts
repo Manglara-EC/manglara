@@ -20,6 +20,12 @@ import MagicLink from "@/shared/lib/react-email/magic-link";
 import OrganizationInvitation from "@/shared/lib/react-email/organization-invitation";
 import { resend } from "@/shared/lib/resend/server";
 import { redis } from "@/shared/lib/upstash/redis";
+import {
+  organizationAc,
+  organizationRoles,
+} from "@/shared/lib/better-auth/organization-access";
+import { authorizationGuard } from "@/shared/lib/better-auth/authorization-guard";
+import { UserRole, normalizeUserRole } from "@/shared/constants/roles";
 
 export const auth = betterAuth({
   appName: "Manglara",
@@ -52,6 +58,9 @@ export const auth = betterAuth({
   advanced: {
     cookiePrefix: "manglara",
   },
+  hooks: {
+    before: authorizationGuard,
+  },
   plugins: [
     nextCookies(),
     username(),
@@ -78,6 +87,11 @@ export const auth = betterAuth({
     haveIBeenPwned(),
     admin(),
     organization({
+      ac: organizationAc,
+      roles: organizationRoles,
+      // Solo el administrador global crea comunas (el creador queda como owner)
+      allowUserToCreateOrganization: async (user) =>
+        normalizeUserRole(user.role) === UserRole.ADMIN,
       cancelPendingInvitationsOnReInvite: true,
       requireEmailVerificationOnInvitation: true,
       async sendInvitationEmail(data) {
@@ -96,13 +110,9 @@ export const auth = betterAuth({
           }),
         });
 
-        if (error) {
-          console.error(error);
-
-          throw new APIError("FAILED_DEPENDENCY", {
-            message: "Failed to send invitation email",
-          });
-        }
+        // La invitación ya quedó registrada y el invitado la ve en
+        // /organizations; un fallo del correo no debe anularla.
+        if (error) console.error("Failed to send invitation email", error);
       },
     }),
   ],

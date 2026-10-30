@@ -42,3 +42,6 @@ docs/
 .agents/skills/
 .herenow/
 .opencode/
+
+# RBAC test harness
+scripts/rbac/.cookies/

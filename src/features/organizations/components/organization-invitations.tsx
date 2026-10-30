@@ -9,12 +9,17 @@ import { Button } from "@/shared/components/ui/button";
 import { InvitationsTable } from "@/features/organizations/components/invitations-table";
 import { SendOrganizationInvitationDialog } from "@/features/organizations/components/send-organization-invitation-dialog";
 import { useOrganizationInvitations } from "@/features/organizations/hooks/use-organization-invitations";
+import type { OrganizationRole } from "@/shared/constants/roles";
 
 interface Props {
   organizationId: string;
+  assignableRoles: readonly OrganizationRole[];
 }
 
-export const OrganizationInvitations = ({ organizationId }: Props) => {
+export const OrganizationInvitations = ({
+  organizationId,
+  assignableRoles,
+}: Props) => {
   const { total, handleSendInvitation, dialogTriggerRef } =
     useOrganizationInvitations({
       organizationId,
@@ -36,6 +41,7 @@ export const OrganizationInvitations = ({ organizationId }: Props) => {
       <SendOrganizationInvitationDialog
         dialogTriggerRef={dialogTriggerRef}
         organizationId={organizationId}
+        assignableRoles={assignableRoles}
       />
     </div>
   );

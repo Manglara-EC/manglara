@@ -3,6 +3,7 @@
 import { eq, and, desc, getTableColumns, count } from "drizzle-orm";
 
 import { db } from "@/shared/lib/drizzle/server";
+import { HIDDEN_MODERATION_COLUMNS } from "@/shared/lib/drizzle/public-columns";
 import { service, organization, user } from "@/shared/lib/drizzle/schema";
 import { tryCatch } from "@/shared/utils/try-catch";
 import type { ActionResponse } from "@/shared/types";
@@ -64,6 +65,7 @@ export const getPublicServices = async (
       db
         .select({
           ...getTableColumns(service),
+          ...HIDDEN_MODERATION_COLUMNS,
           organizationName: organization.name,
           sellerName: user.name,
         })

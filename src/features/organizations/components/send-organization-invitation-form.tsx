@@ -12,6 +12,17 @@ import {
   FormMessage,
 } from "@/shared/components/ui/form";
 import { Input } from "@/shared/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/shared/components/ui/select";
+import {
+  ORGANIZATION_ROLE_DISPLAY_NAMES,
+  type OrganizationRole,
+} from "@/shared/constants/roles";
 import { cn } from "@/shared/utils/cn";
 import { Button } from "@/shared/components/ui/button";
 
@@ -19,11 +30,16 @@ import { useSendOrganizationInvitationForm } from "@/features/organizations/hook
 
 interface Props {
   organizationId: string;
+  /** Roles que el usuario actual puede asignar al invitar. */
+  assignableRoles: readonly OrganizationRole[];
 }
 
-export function SendOrganizationInvitationForm({ organizationId }: Props) {
+export function SendOrganizationInvitationForm({
+  organizationId,
+  assignableRoles,
+}: Props) {
   const { form, onSubmit, isPending, dialogCloseRef } =
-    useSendOrganizationInvitationForm({ organizationId });
+    useSendOrganizationInvitationForm({ organizationId, assignableRoles });
 
   return (
     <Form {...form}>
@@ -63,6 +79,37 @@ export function SendOrganizationInvitationForm({ organizationId }: Props) {
                   <MailIcon size={16} aria-hidden="true" />
                 </div>
               </div>
+
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="role"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Rol en la comuna</FormLabel>
+
+              <Select
+                disabled={isPending}
+                onValueChange={field.onChange}
+                value={field.value}
+              >
+                <FormControl>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Selecciona un rol" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {assignableRoles.map((role) => (
+                    <SelectItem key={role} value={role}>
+                      {ORGANIZATION_ROLE_DISPLAY_NAMES[role]}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
 
               <FormMessage />
             </FormItem>

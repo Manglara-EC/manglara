@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 
 import { getUser } from "@/shared/actions/get-user";
 import {
@@ -43,7 +43,10 @@ export default async function ProfilePage({
   const { data, error } = await getUser({ username });
 
   if (error) {
-    if (error.message === "User not found") return notFound();
+    // Cookie inválida o expirada: el middleware la dejó pasar, pero no hay sesión
+    if (error.code === "UNAUTHORIZED") return redirect("/sign-in");
+
+    if (error.code === "USER_NOT_FOUND") return notFound();
 
     throw new Error("Algo salió mal mientras se obtenía los datos del perfil");
   }

@@ -12,6 +12,7 @@ import {
 } from "drizzle-orm";
 
 import { db } from "@/shared/lib/drizzle/server";
+import { HIDDEN_MODERATION_COLUMNS } from "@/shared/lib/drizzle/public-columns";
 import {
   product,
   service,
@@ -102,6 +103,7 @@ export const getVisibleItems = async (
         db
           .select({
             ...getTableColumns(product),
+            ...HIDDEN_MODERATION_COLUMNS,
             organizationName: organization.name,
             sellerName: user.name,
           })
@@ -174,6 +176,7 @@ export const getVisibleItems = async (
         db
           .select({
             ...getTableColumns(service),
+            ...HIDDEN_MODERATION_COLUMNS,
             organizationName: organization.name,
             sellerName: user.name,
           })

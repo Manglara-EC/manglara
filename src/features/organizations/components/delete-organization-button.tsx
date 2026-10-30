@@ -3,6 +3,7 @@
 import { LoaderIcon } from "lucide-react";
 
 import { Button } from "@/shared/components/ui/button";
+import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
 import { TypographyH4 } from "@/shared/components/ui/typography";
 
@@ -10,36 +11,56 @@ import { useDeleteOrganizationButton } from "@/features/organizations/hooks/use-
 
 interface Props {
   organizationId: string;
+  organizationName: string;
 }
 
-export function DeleteOrganizationButton({ organizationId }: Props) {
-  const { isPending, handleDeleteOrganization } = useDeleteOrganizationButton({
-    organizationId,
-  });
+/** Zona de peligro: solo se muestra al administrador global. */
+export function DeleteOrganizationButton({
+  organizationId,
+  organizationName,
+}: Props) {
+  const {
+    isPending,
+    confirmationName,
+    setConfirmationName,
+    canConfirm,
+    handleDeleteOrganization,
+  } = useDeleteOrganizationButton({ organizationId, organizationName });
 
   return (
     <div className="bg-destructive/10 space-y-8 rounded-xl border p-4">
       <TypographyH4>Zona de peligro</TypographyH4>
 
-      <div className="grid gap-2">
+      <div className="grid gap-3">
+        <Label htmlFor="delete-organization-confirmation">
+          Escribe <strong>{organizationName}</strong> para eliminar la comuna
+        </Label>
+
         <div className="flex flex-wrap items-center justify-start gap-4">
-          <Label>Eliminar organización</Label>
+          <Input
+            id="delete-organization-confirmation"
+            className="max-w-xs"
+            value={confirmationName}
+            onChange={(event) => setConfirmationName(event.target.value)}
+            autoComplete="off"
+            disabled={isPending}
+          />
 
           <Button
-            disabled={isPending}
+            disabled={isPending || !canConfirm}
             type="button"
             size="sm"
             variant="destructive"
             onClick={handleDeleteOrganization}
           >
             {isPending && <LoaderIcon className="animate-spin" />}
-            Eliminar
+            Eliminar comuna
           </Button>
         </div>
 
         <p className="text-muted-foreground text-sm">
-          Ten cuidado, esta acción no puede ser deshecha. Toda la información de
-          la organización será eliminada.
+          Se eliminarán sus miembros, invitaciones, productos y servicios. No se
+          puede eliminar una comuna con ventas o reservas registradas.
         </p>
       </div>
     </div>

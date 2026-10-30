@@ -22,17 +22,24 @@ export const updateProductSchema = z.object({
     })
     .refine((val) => parseFloat(val) > 0, {
       message: "El precio debe ser mayor a 0",
+    })
+    .refine((val) => parseFloat(val) <= 1_000_000, {
+      message: "El precio no puede superar 1.000.000",
     }),
 
   stock: z.coerce
     .number()
     .int()
     .min(0, { message: "El stock no puede ser negativo" })
+    .max(1_000_000, { message: "El stock no puede superar 1.000.000" })
     .refine((val) => Number.isFinite(val), {
       message: "El stock debe ser un número",
     }),
 
-  images: z.array(z.string()).optional(),
+  images: z
+    .array(z.url({ message: "Imagen inválida" }))
+    .max(10, { message: "Máximo 10 imágenes" })
+    .optional(),
 
   location: z
     .string()
@@ -43,7 +50,9 @@ export const updateProductSchema = z.object({
   longitude: z.coerce.number().min(-180).max(180).optional(),
   isReservable: z.boolean().optional(),
 
-  organizationId: z.string().min(1, { message: "Organization ID es requerido" }),
+  organizationId: z
+    .string()
+    .min(1, { message: "Organization ID es requerido" }),
 });
 
 export type UpdateProductInput = z.infer<typeof updateProductSchema>;

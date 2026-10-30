@@ -7,6 +7,10 @@ import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 
 import { MembersTableFacetedFilter } from "@/features/organizations/components/members-table-faceted-filter";
+import {
+  ORGANIZATION_ROLE_DISPLAY_NAMES,
+  OrganizationRole,
+} from "@/shared/constants/roles";
 import { MembersTableViewOptions } from "@/features/organizations/components/members-table-view-options";
 
 interface MembersTableToolbarProps<TData> {
@@ -33,10 +37,10 @@ export function MembersTableToolbar<TData>({
           <MembersTableFacetedFilter
             column={table.getColumn("role")}
             title="Rol"
-            options={[
-              { label: "Dueño", value: "owner" },
-              { label: "Miembro", value: "member" },
-            ]}
+            options={Object.values(OrganizationRole).map((role) => ({
+              label: ORGANIZATION_ROLE_DISPLAY_NAMES[role],
+              value: role,
+            }))}
           />
         )}
         {isFiltered && (

@@ -104,6 +104,8 @@ export const invitation = pgTable("invitation", {
   inviterId: text("inviter_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
+  // Requerido por el plugin de organizaciones de better-auth (>= 1.4)
+  createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
 export const product = pgTable("product", {
@@ -119,9 +121,7 @@ export const product = pgTable("product", {
   location: text("location"),
   latitude: decimal("latitude", { precision: 10, scale: 7 }),
   longitude: decimal("longitude", { precision: 10, scale: 7 }),
-  isReservable: boolean("is_reservable")
-    .default(false)
-    .notNull(),
+  isReservable: boolean("is_reservable").default(false).notNull(),
   sellerId: text("seller_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),

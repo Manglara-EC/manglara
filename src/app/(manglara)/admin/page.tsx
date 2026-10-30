@@ -1,13 +1,12 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { headers } from "next/headers";
 
 import {
   TypographyH1,
   TypographyMuted,
 } from "@/shared/components/ui/typography";
 import { ScrollArea } from "@/shared/components/ui/scroll-area";
-import { auth } from "@/shared/lib/better-auth/server";
+import { getViewer } from "@/shared/lib/authz/server";
 
 import { DataTable } from "@/features/admin/components/data-table";
 
@@ -16,13 +15,12 @@ export const metadata: Metadata = {
 };
 
 export default async function AdminPage() {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
+  // Rol leído de la BD: un admin degradado pierde el acceso de inmediato
+  const viewer = await getViewer();
 
-  if (!session) return redirect("/sign-in");
+  if (!viewer) return redirect("/sign-in");
 
-  if (session.user.role !== "admin") return redirect("/home");
+  if (!viewer.access.isPlatformAdmin) return redirect("/home");
 
   return (
     <ScrollArea className="h-full w-full">
@@ -31,7 +29,9 @@ export default async function AdminPage() {
           <TypographyH1>Administrador</TypographyH1>
 
           <TypographyMuted>
-            Gestiona usuarios, roles y permisos en toda tu aplicación. 🌴
+            Gestiona las cuentas de la plataforma: rol global, bloqueo y
+            eliminación. Los roles dentro de cada comuna se gestionan desde la
+            comuna. 🌴
           </TypographyMuted>
         </div>
 

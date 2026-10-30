@@ -14,19 +14,14 @@ import {
   TypographyMuted,
 } from "@/shared/components/ui/typography";
 
-interface PublicOrganizationInfo {
-  id: string;
-  name: string;
-  slug: string;
-  logo: string | null;
-  createdAt: Date;
-  memberCount: number;
-  isMember: boolean;
-  userRole: string | null;
-}
+import { OrganizationStore } from "@/features/items/components/organization-store";
+import type { OrganizationOverview } from "@/features/organizations/types";
 
 interface Props {
-  organization: PublicOrganizationInfo;
+  organization: Pick<
+    OrganizationOverview,
+    "id" | "name" | "slug" | "logo" | "createdAt" | "memberCount"
+  >;
 }
 
 export function OrganizationPublicView({ organization }: Props) {
@@ -101,6 +96,8 @@ export function OrganizationPublicView({ organization }: Props) {
           </div>
         </CardContent>
       </Card>
+
+      <OrganizationStore organizationId={organization.id} />
     </div>
   );
 }
