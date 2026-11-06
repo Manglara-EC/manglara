@@ -5,18 +5,11 @@ import { usePathname } from "next/navigation";
 import { LogInIcon, UserPlusIcon } from "lucide-react";
 
 import { Button } from "@/shared/components/ui/button";
+import { ThemeSwitch } from "@/shared/components/theme-switch";
 import { buildAuthURL } from "@/shared/utils/redirect";
-
-import { MoonIcon, SunIcon } from "lucide-react";
-import { useTheme } from "next-themes";
 
 export const NavGuest = () => {
   const pathname = usePathname();
-  const { resolvedTheme, setTheme } = useTheme();
-
-  const handleThemeChange = () => {
-    setTheme(resolvedTheme === "dark" ? "light" : "dark");
-  };
 
   return (
     <div className="flex flex-col gap-2">
@@ -39,16 +32,12 @@ export const NavGuest = () => {
         </Link>
       </Button>
 
-      <Button
-        type="button"
-        variant="ghost"
-        title="Cambiar tema"
-        onClick={handleThemeChange}
-        className="w-full justify-start"
-      >
-        {resolvedTheme === "dark" ? <MoonIcon /> : <SunIcon />}
-        <span className="hidden md:inline">Cambiar tema</span>
-      </Button>
+      <div className="flex items-center justify-start">
+        <ThemeSwitch />
+        <span className="hidden md:inline text-sm text-muted-foreground">
+          Apariencia
+        </span>
+      </div>
     </div>
   );
 };

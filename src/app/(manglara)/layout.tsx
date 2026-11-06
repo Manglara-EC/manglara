@@ -30,7 +30,9 @@ export default async function StoriesLayout({
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
       <div className="flex h-svh gap-6 overflow-hidden px-2 py-4 sm:px-6 sm:py-8 md:p-10">
-        <AppSidebar />
+        <aside className="manglara-sidebar flex shrink-0">
+          <AppSidebar />
+        </aside>
 
         <div className="min-w-0 flex-1 flex flex-col overflow-hidden">
           <div className="mb-6 flex justify-end px-1 pt-1 sm:px-2">

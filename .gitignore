@@ -42,3 +42,6 @@ docs/
 .agents/skills/
 .herenow/
 .opencode/
+
+# Claude Code (configuración personal)
+.claude/settings.local.json

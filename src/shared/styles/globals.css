@@ -109,11 +109,118 @@
   --sidebar-ring: oklch(0.553 0.013 58.071);
 }
 
+
+/* ============================================
+   MANGLARA TROPICAL THEME
+   Identidad turística: mar, naturaleza y arena
+   ============================================ */
+
+.tropical {
+  --background: #f8f7f1;
+  --foreground: #173b4d;
+
+  --card: #ffffff;
+  --card-foreground: #173b4d;
+
+  --popover: #ffffff;
+  --popover-foreground: #173b4d;
+
+  /* Azul marino: acciones principales */
+  --primary: #123c53;
+  --primary-foreground: #ffffff;
+
+  /* Verde palmera: elementos secundarios */
+  --secondary: #e4f0e8;
+  --secondary-foreground: #245b43;
+
+  /* Superficies suaves */
+  --muted: #eeede5;
+  --muted-foreground: #53656b;
+
+  /* Arena dorada: elementos destacados */
+  --accent: #f5e5b7;
+  --accent-foreground: #473414;
+
+  /* Errores y acciones destructivas */
+  --destructive: #b42332;
+
+  /* Bordes y formularios */
+  --border: #d7dfd9;
+  --input: #c4d2cc;
+  --ring: #34785b;
+
+  /* Gráficos */
+  --chart-1: #123c53;
+  --chart-2: #34785b;
+  --chart-3: #b78627;
+  --chart-4: #916b4b;
+  --chart-5: #438c9e;
+
+  /* Sidebar */
+  --sidebar: #367c98;
+  --sidebar-foreground: #ffffff;
+
+  --sidebar-primary: #f2cf80;
+  --sidebar-primary-foreground: #173b4d;
+
+  --sidebar-accent: #286782;
+  --sidebar-accent-foreground: #ffffff;
+
+  --sidebar-border: #80adc0;
+  --sidebar-ring: #f2cf80;
+}
+
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
   }
+}
+
+
+
+/* ============================================
+   SIDEBAR - MANGLARA TROPICAL
+   ============================================ */
+
+/* Contenedor principal del sidebar */
+.tropical .manglara-sidebar {
+  background-color: var(--sidebar);
+  color: var(--sidebar-foreground);
+  border-radius: 1rem;
+  padding: 1.5rem 1rem;
+}
+
+/* Contenido del sidebar */
+.tropical .tropical-sidebar {
+  color: var(--sidebar-foreground);
+}
+
+/* Enlaces de navegación */
+.tropical .tropical-sidebar nav a {
+  color: var(--sidebar-foreground);
+}
+
+/* Elementos al pasar el cursor */
+.tropical .tropical-sidebar nav a:hover {
+  background-color: var(--sidebar-accent);
+  color: var(--sidebar-accent-foreground);
+}
+
+/* Enlace seleccionado */
+.tropical .tropical-sidebar nav a[aria-current="page"],
+.tropical .tropical-sidebar nav a[data-active="true"] {
+  background-color: var(--sidebar-primary);
+  color: var(--sidebar-primary-foreground);
+}
+
+/* Mantener el color del enlace activo al pasar el cursor */
+.tropical .tropical-sidebar nav a:is([aria-current="page"],
+  [data-active="true"]) {
+  background-color: var(--sidebar-primary);
+  color: var(--sidebar-primary-foreground);
 }

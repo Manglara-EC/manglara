@@ -23,7 +23,7 @@ export const AppSidebar = () => {
   } = useAppSidebar();
 
   return (
-    <div className="flex flex-col items-center gap-4 md:items-stretch">
+    <div className="tropical-sidebar flex h-full flex-col items-center gap-4 md:items-stretch">
       <TypographyLarge className="pl-2 text-center text-4xl font-extrabold">
         <TreePalmIcon className="size-10" />
       </TypographyLarge>
