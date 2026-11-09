@@ -79,13 +79,13 @@ export function ItemCard({ item }: Props) {
     const maxCapacity = serviceItem.maxCapacity;
 
     return (
-      <Card className="flex h-full flex-col transition-all hover:shadow-md">
+      <Card className="flex h-full flex-col overflow-hidden rounded-[22px] border-border bg-card py-0 gap-0 transition-all hover:shadow-md">
         <Link
           href={`/${item.type}s/${item.id}`}
           className="flex min-w-0 flex-1 flex-col"
         >
-          <CardHeader className="pb-2">
-            <div className="relative aspect-video w-full overflow-hidden rounded-lg bg-muted">
+          <CardHeader className="p-0">
+            <div className="relative aspect-video w-full overflow-hidden bg-muted tropical:bg-[#DCE7E1]">
               {imageUrl ? (
                 <Image
                   src={imageUrl}
@@ -114,7 +114,13 @@ export function ItemCard({ item }: Props) {
             </div>
           </CardHeader>
           <CardContent className="flex flex-1 flex-col gap-2">
-            <CardTitle className="line-clamp-2 text-lg">{item.name}</CardTitle>
+            <span className="text-xs font-bold uppercase tracking-wider text-[var(--spondylus)]">
+              {item.organizationName}
+            </span>
+
+            <CardTitle className="line-clamp-2 text-lg tropical:font-[family-name:var(--font-instrument-serif)] tropical:text-2xl tropical:font-normal">
+              {item.name}
+            </CardTitle>
 
             {item.description && (
               <CardDescription className="line-clamp-2">
@@ -155,19 +161,18 @@ export function ItemCard({ item }: Props) {
 
             <div className="mt-auto flex items-center justify-between pt-2 border-t">
               <div>
-                <span className="text-lg font-semibold">{price}</span>
+                <span className="text-xl font-bold tracking-tight text-primary">
+                  {price}
+                </span>
                 <span className="text-sm text-muted-foreground">
                   {PRICE_UNIT_LABELS[priceUnit]}
                 </span>
               </div>
-              <span className="text-xs text-muted-foreground line-clamp-1 max-w-[100px]">
-                {item.organizationName}
-              </span>
             </div>
           </CardContent>
         </Link>
-        <div className="px-6 pb-6">
-          <Button asChild className="w-full" size="sm">
+        <div className="px-6 pt-4 pb-6">
+          <Button asChild className="w-full tropical:rounded-full" size="sm">
             <Link href={`/${item.type}s/${item.id}`}>
               Ver detalles
               <ArrowRightIcon className="ml-2 h-4 w-4" />
@@ -215,13 +220,13 @@ export function ItemCard({ item }: Props) {
   };
 
   return (
-    <Card className="flex h-full flex-col transition-all hover:shadow-md">
+    <Card className="flex h-full flex-col overflow-hidden rounded-[22px] border-border bg-card py-0 gap-0 transition-all hover:shadow-md">
       <Link
         href={`/products/${item.id}`}
         className="flex min-w-0 flex-1 flex-col"
       >
-        <CardHeader>
-          <div className="relative aspect-video w-full overflow-hidden rounded-lg bg-muted">
+        <CardHeader className="p-0">
+          <div className="relative aspect-video w-full overflow-hidden bg-muted tropical:bg-[#DCE7E1]">
             {imageUrl ? (
               <Image
                 src={imageUrl}
@@ -234,29 +239,40 @@ export function ItemCard({ item }: Props) {
                 <Package className="h-12 w-12 text-muted-foreground" />
               </div>
             )}
+            <Badge
+              variant="secondary"
+              className="absolute left-2 top-2 z-10 rounded-full bg-background/90 px-3 py-1 text-xs font-medium"
+            >
+              Producto
+            </Badge>
           </div>
         </CardHeader>
         <CardContent className="flex flex-1 flex-col gap-2">
-          <div className="flex items-start justify-between gap-2">
-            <CardTitle className="line-clamp-2 text-lg">{item.name}</CardTitle>
-            <Badge>Producto</Badge>
+          <div className="flex flex-col gap-2">
+            <span className="text-xs font-bold uppercase tracking-wider text-[var(--spondylus)]">
+              {item.organizationName}
+            </span>
+
+            <CardTitle className="line-clamp-2 text-lg tropical:font-[family-name:var(--font-instrument-serif)] tropical:text-2xl tropical:font-normal">
+              {item.name}
+            </CardTitle>
           </div>
+
           {item.description && (
             <CardDescription className="line-clamp-2">
               {item.description}
             </CardDescription>
           )}
           <div className="mt-auto flex items-center justify-between border-t pt-2">
-            <span className="text-lg font-semibold">{price}</span>
-            <span className="text-sm text-muted-foreground">
-              {item.organizationName}
+            <span className="text-xl font-bold tracking-tight text-primary">
+              {price}
             </span>
           </div>
         </CardContent>
       </Link>
-      <div className="px-6 pb-6" onClick={(e) => e.stopPropagation()}>
+      <div className="px-6 pt-4 pb-6" onClick={(e) => e.stopPropagation()}>
         {product.isReservable ? (
-          <Button asChild className="w-full" size="sm">
+          <Button asChild className="w-full tropical:rounded-full" size="sm">
             <Link href={`/products/${product.id}`}>
               Ver detalles
               <ArrowRightIcon className="ml-2 h-4 w-4" />
@@ -337,7 +353,7 @@ export function ItemCard({ item }: Props) {
             </DialogContent>
           </Dialog>*/
 
-          <Button asChild className="w-full" size="sm">
+          <Button asChild className="w-full tropical:rounded-full" size="sm">
             <Link href={`/products/${product.id}`}>
               Ver detalles
               <ArrowRightIcon className="ml-2 h-4 w-4" />

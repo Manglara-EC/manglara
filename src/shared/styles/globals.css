@@ -116,58 +116,68 @@
    ============================================ */
 
 .tropical {
-  --background: #f8f7f1;
-  --foreground: #173b4d;
+  /* Fondo arena */
+  --background: #F6F1E7;
+  --foreground: #13302E;
 
-  --card: #ffffff;
-  --card-foreground: #173b4d;
+  /* Tarjetas color concha */
+  --card: #FFFDF8;
+  --card-foreground: #13302E;
 
-  --popover: #ffffff;
-  --popover-foreground: #173b4d;
+  /* Menús y ventanas emergentes */
+  --popover: #FFFDF8;
+  --popover-foreground: #13302E;
 
-  /* Azul marino: acciones principales */
-  --primary: #123c53;
-  --primary-foreground: #ffffff;
+  /* Manglar noche: acciones principales */
+  --primary: #13302E;
+  --primary-foreground: #FFFDF8;
 
-  /* Verde palmera: elementos secundarios */
-  --secondary: #e4f0e8;
-  --secondary-foreground: #245b43;
+  /* Estero y espuma: elementos secundarios */
+  --secondary: #DCE7E1;
+  --secondary-foreground: #1F5F5B;
 
   /* Superficies suaves */
-  --muted: #eeede5;
-  --muted-foreground: #53656b;
+  --muted: #ECE9DF;
+  --muted-foreground: #526760;
 
-  /* Arena dorada: elementos destacados */
-  --accent: #f5e5b7;
-  --accent-foreground: #473414;
 
-  /* Errores y acciones destructivas */
-  --destructive: #b42332;
+  /* Elementos secundarios e interactivos */
+  --accent: #DCE7E1;
+  --accent-foreground: #13302E;
+
+  /* Color distintivo de la identidad turística */
+  --spondylus: #B4472F;
+
+
+  /* Errores */
+  --destructive: #B42332;
 
   /* Bordes y formularios */
-  --border: #d7dfd9;
-  --input: #c4d2cc;
-  --ring: #34785b;
+  --border: #DEDCD2;
+  --input: #DEDCD2;
+  --ring: #1F5F5B;
 
   /* Gráficos */
-  --chart-1: #123c53;
-  --chart-2: #34785b;
-  --chart-3: #b78627;
-  --chart-4: #916b4b;
-  --chart-5: #438c9e;
+  --chart-1: #13302E;
+  --chart-2: #1F5F5B;
+  --chart-3: #B4472F;
+  --chart-4: #8E765C;
+  --chart-5: #84A99C;
 
-  /* Sidebar */
-  --sidebar: #367c98;
-  --sidebar-foreground: #ffffff;
+  /* Sidebar: manglar */
+  --sidebar: #13302E;
+  --sidebar-foreground: #FFFDF8;
 
-  --sidebar-primary: #f2cf80;
-  --sidebar-primary-foreground: #173b4d;
+  /* Navegación seleccionada */
+  --sidebar-primary: #1F5F5B;
+  --sidebar-primary-foreground: #FFFFFF;
 
-  --sidebar-accent: #286782;
-  --sidebar-accent-foreground: #ffffff;
+  /* Hover en navegación */
+  --sidebar-accent: #1A4A46;
+  --sidebar-accent-foreground: #FFFFFF;
 
-  --sidebar-border: #80adc0;
-  --sidebar-ring: #f2cf80;
+  --sidebar-border: #31544D;
+  --sidebar-ring: #DCE7E1;
 }
 
 
@@ -182,12 +192,11 @@
 }
 
 
-
 /* ============================================
    SIDEBAR - MANGLARA TROPICAL
    ============================================ */
 
-/* Contenedor principal del sidebar */
+/* Contenedor principal */
 .tropical .manglara-sidebar {
   background-color: var(--sidebar);
   color: var(--sidebar-foreground);
@@ -200,27 +209,43 @@
   color: var(--sidebar-foreground);
 }
 
-/* Enlaces de navegación */
+/* Enlaces normales */
 .tropical .tropical-sidebar nav a {
   color: var(--sidebar-foreground);
 }
 
-/* Elementos al pasar el cursor */
+/* Hover de enlaces normales */
 .tropical .tropical-sidebar nav a:hover {
   background-color: var(--sidebar-accent);
   color: var(--sidebar-accent-foreground);
 }
 
-/* Enlace seleccionado */
-.tropical .tropical-sidebar nav a[aria-current="page"],
-.tropical .tropical-sidebar nav a[data-active="true"] {
+/* Página seleccionada */
+.tropical .tropical-sidebar nav a.bg-accent {
   background-color: var(--sidebar-primary);
   color: var(--sidebar-primary-foreground);
 }
 
-/* Mantener el color del enlace activo al pasar el cursor */
-.tropical .tropical-sidebar nav a:is([aria-current="page"],
-  [data-active="true"]) {
-  background-color: var(--sidebar-primary);
-  color: var(--sidebar-primary-foreground);
+/* Hover de la página seleccionada */
+.tropical .tropical-sidebar nav a.bg-accent:hover {
+  background-color: #256D66;
+  color: #FFFFFF;
 }
+
+/* ============================================
+   TIPOGRAFÍA - TEMA COSTERO
+   ============================================ */
+
+/* Tipografía general */
+.tropical {
+  font-family: var(--font-manrope), sans-serif;
+}
+
+/* Títulos destacados */
+.tropical h1,
+.tropical h2,
+.tropical h3 {
+  font-family: var(--font-instrument-serif), serif;
+  font-weight: 400;
+}
+

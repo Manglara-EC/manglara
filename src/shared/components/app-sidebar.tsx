@@ -28,7 +28,7 @@ export const AppSidebar = () => {
         <TreePalmIcon className="size-10" />
       </TypographyLarge>
 
-      <nav className="flex flex-col items-start gap-2 md:items-stretch">
+      <nav className="flex flex-col items-start gap-2 whitespace-nowrap md:items-stretch">
         {links.map((link) => (
           <NavLink
             key={link.href}
