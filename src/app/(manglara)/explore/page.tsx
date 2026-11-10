@@ -1,23 +1,33 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
+import { asc } from "drizzle-orm";
 
 import {
   TypographyH1,
   TypographyMuted,
 } from "@/shared/components/ui/typography";
-import {
-  Tabs,
-  TabsList,
-  TabsTrigger,
-  TabsContent,
-} from "@/shared/components/ui/tabs";
-
-import { ItemsGrid } from "@/features/items/components/items-grid";
+import { auth } from "@/shared/lib/better-auth/server";
+import { db } from "@/shared/lib/drizzle/server";
+import { organization } from "@/shared/lib/drizzle/schema";
+import { canAccessOrganizations } from "@/features/organizations/actions/can-access-organizations";
+import { ExploreCatalog } from "@/features/items/components/explore-catalog";
 
 export const metadata: Metadata = {
   title: "Manglara | Explore",
 };
 
-export default function ExplorePage() {
+export default async function ExplorePage() {
+  const session = await auth.api.getSession({ headers: await headers() });
+  const showCommuneFilter =
+    !session ||
+    (session.user.role === "user" && !(await canAccessOrganizations()));
+  const communes = showCommuneFilter
+    ? await db
+        .select({ id: organization.id, name: organization.name })
+        .from(organization)
+        .orderBy(asc(organization.name))
+    : null;
+
   return (
     <main className="flex flex-col gap-6">
       <div className="space-y-2">
@@ -26,25 +36,7 @@ export default function ExplorePage() {
         <TypographyMuted>Explora el mundo de Manglara. 🌴</TypographyMuted>
       </div>
 
-      <Tabs defaultValue="all" className="w-full">
-        <TabsList>
-          <TabsTrigger value="all">Todos</TabsTrigger>
-          <TabsTrigger value="products">Productos</TabsTrigger>
-          <TabsTrigger value="services">Servicios</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="all" className="mt-4">
-          <ItemsGrid />
-        </TabsContent>
-
-        <TabsContent value="products" className="mt-4">
-          <ItemsGrid params={{ itemType: "product" }} />
-        </TabsContent>
-
-        <TabsContent value="services" className="mt-4">
-          <ItemsGrid params={{ itemType: "service" }} />
-        </TabsContent>
-      </Tabs>
+      <ExploreCatalog communes={communes} />
     </main>
   );
 }

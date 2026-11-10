@@ -1,4 +1,5 @@
 import { Metadata } from "next";
+import { redirect } from "next/navigation";
 import {
   QueryClient,
   HydrationBoundary,
@@ -16,6 +17,7 @@ import { MobileWrapper } from "@/shared/components/mobile-wrapper";
 import { Card } from "@/shared/components/ui/card";
 
 import { getAllOrganizations } from "@/features/organizations/actions/get-all-organizations";
+import { canAccessOrganizations } from "@/features/organizations/actions/can-access-organizations";
 import { OrganizationsSidebar } from "@/features/organizations/components/organizations-sidebar";
 import { CreateOrganizationButton } from "@/features/organizations/components/create-organization-button";
 
@@ -28,6 +30,8 @@ export default async function OrganizationsLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  if (!(await canAccessOrganizations())) redirect("/explore");
+
   let organizationsCount = 0;
 
   const queryClient = new QueryClient();

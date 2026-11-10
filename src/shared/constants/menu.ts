@@ -160,7 +160,7 @@ export const MENU_CONFIG: MenuItem[] = [
     label: "Comunas",
     icon: BuildingIcon,
     href: "/organizations",
-    allowedRoles: [UserRole.USER, UserRole.SELLER, UserRole.ADMIN],
+    allowedRoles: [UserRole.SELLER, UserRole.ADMIN],
     description: "Comunidades",
   },
 
