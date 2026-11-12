@@ -9,6 +9,7 @@ import {
 import type { MenuItem } from "@/shared/constants/menu";
 
 interface NavLink {
+  id: string;
   href: string;
   label: string;
   icon: React.ReactNode;
@@ -16,6 +17,7 @@ interface NavLink {
 }
 
 const convertMenuItemToNavLink = (item: MenuItem): NavLink => ({
+  id: item.id,
   href: item.href,
   label: item.label,
   icon: <item.icon />,

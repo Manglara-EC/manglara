@@ -31,7 +31,7 @@ export const AppSidebar = () => {
       <nav className="flex flex-col items-start gap-2 whitespace-nowrap md:items-stretch">
         {links.map((link) => (
           <NavLink
-            key={link.href}
+            key={link.id}
             href={link.href}
             label={link.label}
             icon={link.icon}
