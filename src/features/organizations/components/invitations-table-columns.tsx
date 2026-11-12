@@ -14,6 +14,11 @@ import type { Invitation } from "better-auth/plugins";
 
 import { Badge } from "@/shared/components/ui/badge";
 import {
+  ORGANIZATION_ROLE_DISPLAY_NAMES,
+  canManageAs,
+  normalizeOrganizationRole,
+} from "@/shared/constants/roles";
+import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
@@ -56,14 +61,14 @@ export const columns: ColumnDef<Invitation>[] = [
       <InvitationsTableColumnHeader column={column} title="Rol" />
     ),
     cell: ({ row }) => {
-      const role = row.original.role;
-      const isOwner = role === "owner";
+      const role = normalizeOrganizationRole(row.original.role);
+      const isManager = canManageAs(role);
 
       return (
         <div className="ml-2.5 flex space-x-2">
-          <Badge variant={isOwner ? "default" : "secondary"}>
-            {isOwner ? <UserRoundCogIcon /> : <UserRoundIcon />}
-            {role}
+          <Badge variant={isManager ? "default" : "secondary"}>
+            {isManager ? <UserRoundCogIcon /> : <UserRoundIcon />}
+            {ORGANIZATION_ROLE_DISPLAY_NAMES[role]}
           </Badge>
         </div>
       );

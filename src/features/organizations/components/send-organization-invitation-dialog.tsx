@@ -10,15 +10,18 @@ import {
 } from "@/shared/components/ui/dialog";
 
 import { SendOrganizationInvitationForm } from "@/features/organizations/components/send-organization-invitation-form";
+import type { OrganizationRole } from "@/shared/constants/roles";
 
 interface Props {
   dialogTriggerRef: React.RefObject<HTMLButtonElement | null>;
   organizationId: string;
+  assignableRoles: readonly OrganizationRole[];
 }
 
 export function SendOrganizationInvitationDialog({
   dialogTriggerRef,
   organizationId,
+  assignableRoles,
 }: Props) {
   return (
     <Dialog>
@@ -29,12 +32,15 @@ export function SendOrganizationInvitationDialog({
           <DialogTitle>Enviar invitación</DialogTitle>
 
           <DialogDescription>
-            Envía una invitación a un usuario de Manglara para que se una a la
-            organización.
+            Invita a una cuenta de Manglara a unirse a la comuna con el rol que
+            elijas. Verá la invitación en la sección Comunas.
           </DialogDescription>
         </DialogHeader>
 
-        <SendOrganizationInvitationForm organizationId={organizationId} />
+        <SendOrganizationInvitationForm
+          organizationId={organizationId}
+          assignableRoles={assignableRoles}
+        />
       </DialogContent>
     </Dialog>
   );

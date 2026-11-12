@@ -92,90 +92,103 @@ const availabilityRulesSchema = z
 // Schema principal de creación de servicio
 // ============================================================
 
-export const createServiceSchema = z.object({
-  // Campos básicos
-  name: z
-    .string()
-    .trim()
-    .min(3, { message: "El nombre debe tener al menos 3 caracteres" })
-    .max(200, { message: "El nombre debe tener menos de 200 caracteres" }),
+export const createServiceSchema = z
+  .object({
+    // Campos básicos
+    name: z
+      .string()
+      .trim()
+      .min(3, { message: "El nombre debe tener al menos 3 caracteres" })
+      .max(200, { message: "El nombre debe tener menos de 200 caracteres" }),
 
-  description: z
-    .string()
-    .trim()
-    .max(2000, {
-      message: "La descripción debe tener menos de 2000 caracteres",
-    })
-    .optional(),
+    description: z
+      .string()
+      .trim()
+      .max(2000, {
+        message: "La descripción debe tener menos de 2000 caracteres",
+      })
+      .optional(),
 
-  // Tipo de servicio
-  serviceType: z
-    .enum(["accommodation", "activity", "rental", "parking"])
-    .default("activity"),
+    // Tipo de servicio
+    serviceType: z
+      .enum(["accommodation", "activity", "rental", "parking"])
+      .default("activity"),
 
-  // Precio base
-  price: z
-    .string()
-    .regex(/^\d+\.?\d{0,2}$/, {
-      message: "El precio debe ser un número válido",
-    })
-    .refine((val) => parseFloat(val) > 0, {
-      message: "El precio debe ser mayor a 0",
-    }),
+    // Precio base
+    price: z
+      .string()
+      .regex(/^\d+\.?\d{0,2}$/, {
+        message: "El precio debe ser un número válido",
+      })
+      .refine((val) => parseFloat(val) > 0, {
+        message: "El precio debe ser mayor a 0",
+      })
+      .refine((val) => parseFloat(val) <= 1_000_000, {
+        message: "El precio no puede superar 1.000.000",
+      }),
 
-  // Unidad de precio
-  priceUnit: z
-    .enum(["night", "person", "day", "hour", "flat_rate"])
-    .default("person"),
+    // Unidad de precio
+    priceUnit: z
+      .enum(["night", "person", "day", "hour", "flat_rate"])
+      .default("person"),
 
-  // Duración base (minutos)
-  durationMinutes: z.coerce.number().int().min(1).optional(),
+    // Duración base (minutos)
+    durationMinutes: z.coerce.number().int().min(1).max(10_080).optional(),
 
-  // Capacidad máxima
-  maxCapacity: z.coerce.number().int().min(1).default(1),
+    // Capacidad máxima
+    maxCapacity: z.coerce.number().int().min(1).max(10_000).default(1),
 
-  // Ubicación (texto + coordenadas elegidas en el mapa)
-  location: z.string().trim().max(500).optional(),
-  latitude: z.coerce
-    .number()
-    .min(-90)
-    .max(90)
-    .transform((val) => val.toString())
-    .optional(),
-  longitude: z.coerce
-    .number()
-    .min(-180)
-    .max(180)
-    .transform((val) => val.toString())
-    .optional(),
+    // Ubicación (texto + coordenadas elegidas en el mapa)
+    location: z.string().trim().max(500).optional(),
+    latitude: z.coerce
+      .number()
+      .min(-90)
+      .max(90)
+      .transform((val) => val.toString())
+      .optional(),
+    longitude: z.coerce
+      .number()
+      .min(-180)
+      .max(180)
+      .transform((val) => val.toString())
+      .optional(),
 
-  // Configuración específica del tipo de servicio
-  serviceConfig: serviceConfigSchema,
+    // Configuración específica del tipo de servicio
+    serviceConfig: serviceConfigSchema,
 
-  // Reglas de disponibilidad
-  availabilityRules: availabilityRulesSchema,
+    // Reglas de disponibilidad
+    availabilityRules: availabilityRulesSchema,
 
-  // Política de cancelación
-  cancellationPolicy: z
-    .enum(["flexible", "moderate", "strict"])
-    .default("flexible"),
-  cancellationWindowHours: z.coerce.number().int().min(0).default(24),
+    // Política de cancelación
+    cancellationPolicy: z
+      .enum(["flexible", "moderate", "strict"])
+      .default("flexible"),
+    cancellationWindowHours: z.coerce
+      .number()
+      .int()
+      .min(0)
+      .max(8_760)
+      .default(24),
 
-  // Imágenes
-  images: z.array(z.string().url()).optional(),
+    // Imágenes
+    images: z
+      .array(z.url({ message: "Imagen inválida" }))
+      .max(10, { message: "Máximo 10 imágenes" })
+      .optional(),
 
-  // Relaciones (requeridos)
-  sellerId: z.string().min(1, { message: "Seller ID es requerido" }),
-  organizationId: z
-    .string()
-    .min(1, { message: "Organization ID es requerido" }),
-}).refine(
-  (data) => (data.latitude === undefined) === (data.longitude === undefined),
-  {
-    message: "Debes elegir la ubicación completa en el mapa",
-    path: ["latitude"],
-  },
-);
+    // Relaciones (requeridos)
+    sellerId: z.string().min(1, { message: "Seller ID es requerido" }),
+    organizationId: z
+      .string()
+      .min(1, { message: "Organization ID es requerido" }),
+  })
+  .refine(
+    (data) => (data.latitude === undefined) === (data.longitude === undefined),
+    {
+      message: "Debes elegir la ubicación completa en el mapa",
+      path: ["latitude"],
+    },
+  );
 
 // Schema para validaciones específicas por tipo de servicio
 export const validateServiceByType = (

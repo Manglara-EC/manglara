@@ -18,9 +18,7 @@ export const metadata: Metadata = {
 
 export default async function ExplorePage() {
   const session = await auth.api.getSession({ headers: await headers() });
-  const showCommuneFilter =
-    !session ||
-    (session.user.role === "user" && !(await canAccessOrganizations()));
+  const showCommuneFilter = !session || !(await canAccessOrganizations());
   const communes = showCommuneFilter
     ? await db
         .select({ id: organization.id, name: organization.name })

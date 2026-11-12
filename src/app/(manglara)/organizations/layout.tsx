@@ -20,6 +20,9 @@ import { getAllOrganizations } from "@/features/organizations/actions/get-all-or
 import { canAccessOrganizations } from "@/features/organizations/actions/can-access-organizations";
 import { OrganizationsSidebar } from "@/features/organizations/components/organizations-sidebar";
 import { CreateOrganizationButton } from "@/features/organizations/components/create-organization-button";
+import { PendingInvitations } from "@/features/organizations/components/pending-invitations";
+import { getAccess } from "@/shared/lib/authz/server";
+import { can } from "@/shared/lib/authz/access";
 
 export const metadata: Metadata = {
   title: "Manglara | Organizaciones",
@@ -33,6 +36,9 @@ export default async function OrganizationsLayout({
   if (!(await canAccessOrganizations())) redirect("/explore");
 
   let organizationsCount = 0;
+
+  // Solo el administrador global crea comunas
+  const canCreateOrganization = can(await getAccess(), "organization:create");
 
   const queryClient = new QueryClient();
 
@@ -51,9 +57,10 @@ export default async function OrganizationsLayout({
   if (organizationsCount === 0)
     return (
       <div className="flex h-full flex-col space-y-8">
-        <Header />
+        <Header canCreateOrganization={canCreateOrganization} />
 
         <div className="flex w-full flex-1 items-center justify-center">
+          <PendingInvitations />
           <Card className="-mt-12 flex flex-col items-center justify-center rounded-4xl p-8">
             <TypographyLarge className="text-center text-xl font-medium">
               No hay organizaciones disponibles
@@ -66,7 +73,7 @@ export default async function OrganizationsLayout({
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
       <div className="flex h-full flex-col space-y-8">
-        <Header />
+        <Header canCreateOrganization={canCreateOrganization} />
 
         <div className="flex min-h-0 flex-1 gap-6">
           <OrganizationsSidebar />
@@ -82,7 +89,7 @@ export default async function OrganizationsLayout({
   );
 }
 
-function Header() {
+function Header({ canCreateOrganization }: { canCreateOrganization: boolean }) {
   return (
     <MobileWrapper wrapperPage="/organizations">
       <div className="flex w-full items-center justify-between">
@@ -90,11 +97,11 @@ function Header() {
           <TypographyH1>Organizaciones</TypographyH1>
 
           <TypographyMuted>
-            Aquí podrás administrar todas las organizaciones de Manglara. 🌴
+            Comunas de Manglara: explora sus tiendas y gestiona las tuyas. 🌴
           </TypographyMuted>
         </div>
 
-        <CreateOrganizationButton />
+        {canCreateOrganization && <CreateOrganizationButton />}
       </div>
     </MobileWrapper>
   );

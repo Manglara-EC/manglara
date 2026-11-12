@@ -46,3 +46,6 @@ docs/
 
 # Claude Code (configuración personal)
 .claude/settings.local.json
+
+# RBAC test harness
+scripts/rbac/.cookies/

@@ -17,7 +17,9 @@ export const metadata: Metadata = {
 
 export default async function CreateProductPage() {
   // Obtener las organizaciones del usuario
-  const { data: organizations, error } = await getUserOrganizations();
+  const { data: organizations, error } = await getUserOrganizations({
+    sellingOnly: true,
+  });
 
   if (error || !organizations || organizations.length === 0) {
     return (
@@ -38,10 +40,11 @@ export default async function CreateProductPage() {
 
         <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-6 text-center">
           <p className="text-destructive font-medium mb-2">
-            No tienes organizaciones disponibles
+            No eres vendedor de ninguna comuna
           </p>
           <p className="text-muted-foreground text-sm mb-4">
-            Para crear productos, primero debes pertenecer a una organización.
+            Para crear productos, un administrador de comuna debe darte el rol
+            de vendedor.
           </p>
           <Button asChild variant="outline">
             <Link href="/organizations">Ver organizaciones</Link>

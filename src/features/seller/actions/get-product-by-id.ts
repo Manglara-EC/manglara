@@ -1,31 +1,27 @@
 "use server";
 
-import { headers } from "next/headers";
-import { eq, and } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 
-import { auth } from "@/shared/lib/better-auth/server";
+import { getViewer } from "@/shared/lib/authz/server";
 import { db } from "@/shared/lib/drizzle/server";
-import { product, organization, member } from "@/shared/lib/drizzle/schema";
+import { product, organization } from "@/shared/lib/drizzle/schema";
 import type { ProductWithOrg } from "@/features/seller/types";
 
-export async function getProductById(
-  productId: string,
-): Promise<{
+export async function getProductById(productId: string): Promise<{
   data?: ProductWithOrg;
   error?: { code: string; message: string };
 }> {
   try {
     // 1. Verificar autenticación
-    const session = await auth.api.getSession({ headers: await headers() });
+    const viewer = await getViewer();
 
-    if (!session?.user?.id) {
+    if (!viewer) {
       return {
         error: { code: "UNAUTHENTICATED", message: "Debes iniciar sesión" },
       };
     }
 
-    const userId = session.user.id;
-    const userRole = session.user.role;
+    const userId = viewer.session.user.id;
 
     // 2. Obtener producto con nombre de organización
     const productData = await db
@@ -64,32 +60,15 @@ export async function getProductById(
 
     const foundProduct = productData[0];
 
-    // 3. Verificar que el usuario puede ver este producto
-    // Admin puede ver todos, seller solo los suyos o de sus organizaciones
-    if (userRole !== "admin") {
-      // Verificar si es el creador (sellerId)
-      if (foundProduct.sellerId !== userId) {
-        // Verificar si es miembro de la organización
-        const memberRecord = await db
-          .select({ role: member.role })
-          .from(member)
-          .where(
-            and(
-              eq(member.organizationId, foundProduct.organizationId),
-              eq(member.userId, userId),
-            ),
-          )
-          .limit(1);
-
-        if (memberRecord.length === 0) {
-          return {
-            error: {
-              code: "FORBIDDEN",
-              message: "No tienes permiso para ver este producto",
-            },
-          };
-        }
-      }
+    // 3. El panel del vendedor solo muestra ítems propios. Los administradores
+    // de la comuna y el admin global revisan ítems ajenos en /review.
+    if (foundProduct.sellerId !== userId || foundProduct.deleted) {
+      return {
+        error: {
+          code: "FORBIDDEN",
+          message: "No tienes permiso para ver este producto",
+        },
+      };
     }
 
     const result: ProductWithOrg = {

@@ -1,70 +1,39 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { PaginationState } from "@tanstack/react-table";
 import { toast } from "sonner";
 
-import { authClient } from "@/shared/lib/better-auth/client";
-
-import type {
-  ListMembers,
-  RemoveMemberVariables,
-} from "@/features/organizations/types";
+import { removeOrganizationMember } from "@/features/organizations/actions/manage-members";
+import type { RemoveMemberVariables } from "@/features/organizations/types";
 
 interface Props {
-  pagination: PaginationState;
   organizationId: string;
 }
 
-export const useRemoveMemberMutation = ({
-  pagination,
-  organizationId,
-}: Props) => {
+export const useRemoveMemberMutation = ({ organizationId }: Props) => {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (variables: RemoveMemberVariables) => {
-      const { error } = await authClient.organization.removeMember({
-        memberIdOrEmail: variables.memberId,
+      const { data, error } = await removeOrganizationMember({
         organizationId,
+        memberId: variables.memberId,
       });
 
       if (error) return Promise.reject(error);
+
+      return data;
     },
-    onError: () => {
-      toast.error("No se pudo eliminar al miembro 😢", {
-        description: "Por favor, inténtelo de nuevo más tarde.",
+    onError: (error: { message?: string }) => {
+      toast.error("No se pudo quitar al miembro", {
+        description:
+          error.message ?? "Por favor, inténtelo de nuevo más tarde.",
       });
     },
-    onSuccess: (_data, variables) => {
-      queryClient.setQueryData(
-        ["organization", organizationId, "member", "list", pagination],
-        (old: ListMembers) => ({
-          ...old,
-          members: old.members.filter(
-            (member) => member.id !== variables.memberId,
-          ),
-          total: old.total - 1,
-        }),
-      );
-
-      queryClient.setQueryData(
-        ["organization", organizationId, "member", "total"],
-        (old: number) => old - 1,
-      );
-
-      toast.success("Miembro eliminado exitosamente 🎉");
+    onSuccess: () => {
+      toast.success("Miembro quitado de la comuna");
     },
     onSettled: () => {
       queryClient.invalidateQueries({
-        queryKey: [
-          "organization",
-          organizationId,
-          "member",
-          "list",
-          pagination,
-        ],
-      });
-      queryClient.invalidateQueries({
-        queryKey: ["organization", organizationId, "member", "total"],
+        queryKey: ["organization", organizationId, "member"],
       });
     },
   });

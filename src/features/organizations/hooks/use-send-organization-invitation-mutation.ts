@@ -28,7 +28,7 @@ export const useSendOrganizationInvitationMutation = ({
         organizationId,
         email: variables.email,
         resend: true,
-        role: "member",
+        role: variables.role,
       });
 
       if (error) return Promise.reject(error);
@@ -68,6 +68,12 @@ export const useSendOrganizationInvitationMutation = ({
         case "USER_IS_ALREADY_A_MEMBER_OF_THIS_ORGANIZATION":
           form.setError("email", {
             message: "El usuario ya es miembro de esta organización",
+          });
+          return;
+
+        case "FORBIDDEN":
+          form.setError("role", {
+            message: error.message ?? "No puedes asignar ese rol",
           });
           return;
 

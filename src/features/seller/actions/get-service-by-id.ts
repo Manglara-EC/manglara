@@ -1,32 +1,28 @@
 "use server";
 
-import { headers } from "next/headers";
-import { eq, and } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 
-import { auth } from "@/shared/lib/better-auth/server";
+import { getViewer } from "@/shared/lib/authz/server";
 import { db } from "@/shared/lib/drizzle/server";
-import { service, organization, member } from "@/shared/lib/drizzle/schema";
+import { service, organization } from "@/shared/lib/drizzle/schema";
 import { tryCatch } from "@/shared/utils/try-catch";
 import type { ServiceWithOrg } from "@/features/seller/types";
 
-export async function getServiceById(
-  serviceId: string,
-): Promise<{
+export async function getServiceById(serviceId: string): Promise<{
   data?: ServiceWithOrg;
   error?: { code: string; message: string };
 }> {
   try {
     // 1. Verificar autenticación
-    const session = await auth.api.getSession({ headers: await headers() });
+    const viewer = await getViewer();
 
-    if (!session?.user?.id) {
+    if (!viewer) {
       return {
         error: { code: "UNAUTHENTICATED", message: "Debes iniciar sesión" },
       };
     }
 
-    const userId = session.user.id;
-    const userRole = session.user.role;
+    const userId = viewer.session.user.id;
 
     // 2. Obtener servicio con nombre de organización
     const serviceData = await db
@@ -71,32 +67,15 @@ export async function getServiceById(
 
     const foundService = serviceData[0];
 
-    // 3. Verificar que el usuario puede ver este servicio
-    // Admin puede ver todos, seller solo los suyos o de sus organizaciones
-    if (userRole !== "admin") {
-      // Verificar si es el creador (sellerId)
-      if (foundService.sellerId !== userId) {
-        // Verificar si es miembro de la organización
-        const memberRecord = await db
-          .select({ role: member.role })
-          .from(member)
-          .where(
-            and(
-              eq(member.organizationId, foundService.organizationId),
-              eq(member.userId, userId),
-            ),
-          )
-          .limit(1);
-
-        if (memberRecord.length === 0) {
-          return {
-            error: {
-              code: "FORBIDDEN",
-              message: "No tienes permiso para ver este servicio",
-            },
-          };
-        }
-      }
+    // 3. El panel del vendedor solo muestra ítems propios. Los administradores
+    // de la comuna y el admin global revisan ítems ajenos en /review.
+    if (foundService.sellerId !== userId || foundService.deleted) {
+      return {
+        error: {
+          code: "FORBIDDEN",
+          message: "No tienes permiso para ver este servicio",
+        },
+      };
     }
 
     const result: ServiceWithOrg = {

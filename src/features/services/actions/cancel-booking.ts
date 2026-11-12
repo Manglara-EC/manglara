@@ -43,6 +43,8 @@ export const cancelBooking = async (
         id: bookingLine.transactionLineId,
         userId: bookingLine.userId,
         startDate: bookingLine.startDate,
+        endDate: bookingLine.endDate,
+        productId: bookingLine.productId,
         transactionId: transactionLine.transactionId,
         lineStatus: transactionLine.status,
         parentOrderId: transactionHeader.parentOrderId,
@@ -83,6 +85,22 @@ export const cancelBooking = async (
       error: {
         code: "CANNOT_CANCEL",
         message: "La reserva ya se encuentra cancelada.",
+      },
+    };
+  }
+
+  // Igual que en "Mis actividades": una reserva que ya pasó no se cancela.
+  // Las reservas de producto valen todo el día reservado.
+  const lastMoment = booking.productId
+    ? new Date(booking.startDate.getTime() + 24 * 60 * 60 * 1000)
+    : booking.endDate;
+
+  if (lastMoment < new Date()) {
+    return {
+      data: null,
+      error: {
+        code: "CANNOT_CANCEL",
+        message: "No se puede cancelar una reserva que ya pasó.",
       },
     };
   }

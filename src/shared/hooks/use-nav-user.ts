@@ -3,6 +3,7 @@ import { useCallback, useState } from "react";
 import { useTheme } from "next-themes";
 import { toast } from "sonner";
 import { useHotkeys } from "react-hotkeys-hook";
+import { useQueryClient } from "@tanstack/react-query";
 
 import { useIsMobile } from "@/shared/hooks/use-mobile";
 import { authClient } from "@/shared/lib/better-auth/client";
@@ -10,6 +11,7 @@ import { authClient } from "@/shared/lib/better-auth/client";
 export const useNavUser = () => {
   const isMobile = useIsMobile();
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { theme, setTheme } = useTheme();
 
   const [isSigningOut, setIsSigningOut] = useState(false);
@@ -30,9 +32,11 @@ export const useNavUser = () => {
         return;
       }
 
+      // Evita que la siguiente cuenta vea datos o permisos de la anterior
+      queryClient.clear();
       router.push("/sign-in");
     },
-    [isSigningOut, router],
+    [isSigningOut, queryClient, router],
   );
 
   const handleThemeChange = useCallback(

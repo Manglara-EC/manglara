@@ -9,7 +9,11 @@ import {
 } from "better-auth/client/plugins";
 import { toast } from "sonner";
 
-import { auth } from "@/shared/lib/better-auth/server";
+import type { auth } from "@/shared/lib/better-auth/server";
+import {
+  organizationAc,
+  organizationRoles,
+} from "@/shared/lib/better-auth/organization-access";
 
 export const authClient = createAuthClient({
   plugins: [
@@ -18,7 +22,10 @@ export const authClient = createAuthClient({
     twoFactorClient(),
     inferAdditionalFields<typeof auth>(),
     adminClient(),
-    organizationClient(),
+    organizationClient({
+      ac: organizationAc,
+      roles: organizationRoles,
+    }),
   ],
   fetchOptions: {
     onError: async (context) => {

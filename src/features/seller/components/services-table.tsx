@@ -117,7 +117,9 @@ function ServiceRow({ service }: { service: ServiceWithOrg }) {
   const serviceTypeLabel =
     SERVICE_TYPE_LABELS[service.serviceType as ServiceType] ||
     service.serviceType;
-  const canDelete = service.status === "pending";
+  // El vendedor puede retirar sus ítems pendientes o rechazados
+  const canDelete =
+    service.status === "pending" || service.status === "rejected";
 
   const handleDelete = () => {
     deleteService(service.id);
@@ -200,7 +202,7 @@ function ServiceRow({ service }: { service: ServiceWithOrg }) {
             <AlertDialogTitle>¿Eliminar servicio?</AlertDialogTitle>
             <AlertDialogDescription>
               ¿Estás seguro de que deseas eliminar &quot;{service.name}&quot;?
-              Esta acción no se puede deshacer.
+              Dejará de mostrarse en tu panel y no podrá publicarse.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

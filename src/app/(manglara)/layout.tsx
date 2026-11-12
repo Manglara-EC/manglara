@@ -8,6 +8,8 @@ import {
 import { AppSidebar } from "@/shared/components/app-sidebar";
 import { CartButton } from "@/features/cart/components/cart-button";
 import { auth } from "@/shared/lib/better-auth/server";
+import { getAccess } from "@/shared/lib/authz/server";
+import { ACCESS_QUERY_KEY } from "@/shared/lib/authz/access";
 
 export default async function StoriesLayout({
   children,
@@ -25,6 +27,11 @@ export default async function StoriesLayout({
 
       return session;
     },
+  });
+
+  await queryClient.prefetchQuery({
+    queryKey: ACCESS_QUERY_KEY,
+    queryFn: () => getAccess(),
   });
 
   return (

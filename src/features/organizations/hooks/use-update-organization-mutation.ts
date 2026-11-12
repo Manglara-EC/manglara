@@ -1,12 +1,9 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { UseFormReturn } from "react-hook-form";
 import { toast } from "sonner";
-import slugify from "slugify";
 import { useRouter } from "next/navigation";
 
-import { authClient } from "@/shared/lib/better-auth/client";
-import { RATE_LIMIT_ERROR_CODE } from "@/shared/constants";
-import type { AuthClientError } from "@/shared/types";
+import { updateOrganization } from "@/features/organizations/actions/update-organization";
 
 import type {
   Organization,
@@ -30,28 +27,9 @@ export const useUpdateOrganizationMutation = ({
 
   return useMutation({
     mutationFn: async (variables: UpdateOrganizationVariables) => {
-      let slug: string | undefined = undefined;
-
-      if (variables.slug !== organization.slug) {
-        slug = slugify(variables.slug, {
-          lower: true,
-          strict: true,
-          trim: true,
-        });
-
-        const { error: slugError } = await authClient.organization.checkSlug({
-          slug,
-        });
-
-        if (slugError) return Promise.reject(slugError);
-      }
-
-      const { data, error } = await authClient.organization.update({
+      const { data, error } = await updateOrganization({
         organizationId: organization.id,
-        data: {
-          name: variables.name,
-          slug,
-        },
+        ...variables,
       });
 
       if (error) return Promise.reject(error);
@@ -64,11 +42,12 @@ export const useUpdateOrganizationMutation = ({
 
       if (data.slug !== organization.slug)
         router.push(`/organizations/${data.slug}`);
+      else router.refresh();
 
       queryClient.setQueryData(
         ["organization", "list"],
-        (old: Organization[]) =>
-          old.map((organization) =>
+        (old: Organization[] | undefined) =>
+          old?.map((organization) =>
             organization.id === data.id
               ? {
                   ...organization,
@@ -78,19 +57,8 @@ export const useUpdateOrganizationMutation = ({
               : organization,
           ),
       );
-
-      queryClient.setQueryData(
-        ["organization", data.id, "detail"],
-        (old: Organization) => ({
-          ...old,
-          name: data.name,
-          slug: data.slug,
-        }),
-      );
     },
-    onError: (error: AuthClientError) => {
-      if (error.status === RATE_LIMIT_ERROR_CODE) return;
-
+    onError: (error: { code?: string; message?: string }) => {
       switch (error.code) {
         case "SLUG_IS_TAKEN":
           form.setError("slug", {
@@ -99,17 +67,15 @@ export const useUpdateOrganizationMutation = ({
           return;
 
         default:
-          toast.error("No se pudo actualizar la organización 😢", {
-            description: "Por favor, inténtelo de nuevo más tarde.",
+          toast.error("No se pudo actualizar la comuna", {
+            description:
+              error.message ?? "Por favor, inténtelo de nuevo más tarde.",
           });
           return;
       }
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["organization", "list"] });
-      queryClient.invalidateQueries({
-        queryKey: ["organization", organization.id, "detail"],
-      });
     },
   });
 };

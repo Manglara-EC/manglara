@@ -1,13 +1,11 @@
 "use server";
 
-import { headers } from "next/headers";
-import { eq, and } from "drizzle-orm";
-
-import { auth } from "@/shared/lib/better-auth/server";
 import { db } from "@/shared/lib/drizzle/server";
-import { product, member } from "@/shared/lib/drizzle/schema";
+import { product } from "@/shared/lib/drizzle/schema";
 import { tryCatch } from "@/shared/utils/try-catch";
 import type { ActionResponse } from "@/shared/types";
+import { getViewer } from "@/shared/lib/authz/server";
+import { canInOrganization } from "@/shared/lib/authz/access";
 
 import { createProductSchema } from "@/features/seller/schemas/create-product";
 import type { CreateProductVariables } from "@/features/seller/types";
@@ -15,19 +13,14 @@ import type { Product } from "@/shared/types";
 import { notifyOwnerOfNewItem } from "@/shared/actions/send-item-notification";
 
 type ErrorCode =
-  | "UNAUTHORIZED"
-  | "FORBIDDEN"
-  | "VALIDATION_ERROR"
-  | "INTERNAL_SERVER_ERROR";
+  "UNAUTHORIZED" | "FORBIDDEN" | "VALIDATION_ERROR" | "INTERNAL_SERVER_ERROR";
 
 export const createProduct = async (
   variables: CreateProductVariables,
 ): Promise<ActionResponse<Product, ErrorCode>> => {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
+  const viewer = await getViewer();
 
-  if (!session) {
+  if (!viewer) {
     return {
       data: null,
       error: {
@@ -44,36 +37,24 @@ export const createProduct = async (
       data: null,
       error: {
         code: "VALIDATION_ERROR",
-        message: validation.error.message,
+        message: validation.error.issues[0]?.message ?? "Datos inválidos",
       },
     };
   }
 
-  const { data: membership, error: membershipError } = await tryCatch(
-    db.query.member.findFirst({
-      where: and(
-        eq(member.userId, session.user.id),
-        eq(member.organizationId, variables.organizationId),
-      ),
-    }),
-  );
-
-  if (membershipError || !membership) {
+  // Solo vendedores (seller/admin/owner) de ESA comuna pueden publicar en ella
+  if (
+    !canInOrganization(
+      viewer.access,
+      validation.data.organizationId,
+      "item:create",
+    )
+  ) {
     return {
       data: null,
       error: {
         code: "FORBIDDEN",
-        message: "No tienes permiso para publicar en esta organización",
-      },
-    };
-  }
-
-  if (membership.role !== "seller" && membership.role !== "owner") {
-    return {
-      data: null,
-      error: {
-        code: "FORBIDDEN",
-        message: "Necesitas el rol de seller u owner",
+        message: "Necesitas ser vendedor de esta comuna para publicar en ella",
       },
     };
   }
@@ -82,12 +63,16 @@ export const createProduct = async (
     db
       .insert(product)
       .values({
+        ...validation.data,
         id: crypto.randomUUID(),
         status: "pending",
+        deleted: false,
+        approvedBy: null,
+        approvedAt: null,
+        rejectionReason: null,
         createdAt: new Date(),
         updatedAt: new Date(),
-        ...validation.data,
-        sellerId: session.user.id,
+        sellerId: viewer.session.user.id,
       })
       .returning(),
   );
@@ -103,10 +88,11 @@ export const createProduct = async (
   }
 
   await notifyOwnerOfNewItem({
-    organizationId: variables.organizationId,
+    organizationId: newProduct[0].organizationId,
     itemName: newProduct[0].name,
     itemId: newProduct[0].id,
     type: "product",
+    sellerId: viewer.session.user.id,
   });
 
   return {

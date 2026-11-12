@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ArrowLeftIcon, EditIcon, ExternalLinkIcon } from "lucide-react";
-import { headers } from "next/headers";
 import { eq } from "drizzle-orm";
 
 import {
@@ -21,9 +20,9 @@ import {
 import { Badge } from "@/shared/components/ui/badge";
 import { Separator } from "@/shared/components/ui/separator";
 
-import { auth } from "@/shared/lib/better-auth/server";
+import { getViewer } from "@/shared/lib/authz/server";
 import { db } from "@/shared/lib/drizzle/server";
-import { service, organization, member } from "@/shared/lib/drizzle/schema";
+import { service, organization } from "@/shared/lib/drizzle/schema";
 import {
   SERVICE_TYPE_LABELS,
   PRICE_UNIT_LABELS,
@@ -59,14 +58,13 @@ export default async function ServiceDetailPage({ params }: Props) {
   const { id } = await params;
 
   // Verificar autenticación
-  const session = await auth.api.getSession({ headers: await headers() });
+  const viewer = await getViewer();
 
-  if (!session?.user?.id) {
+  if (!viewer) {
     redirect("/sign-in");
   }
 
-  const userId = session.user.id;
-  const userRole = session.user.role;
+  const userId = viewer.session.user.id;
 
   // Obtener el servicio
   const serviceData = await db
@@ -86,6 +84,7 @@ export default async function ServiceDetailPage({ params }: Props) {
       cancellationPolicy: service.cancellationPolicy,
       sellerId: service.sellerId,
       status: service.status,
+      deleted: service.deleted,
       createdAt: service.createdAt,
       updatedAt: service.updatedAt,
       organizationName: organization.name,
@@ -96,8 +95,13 @@ export default async function ServiceDetailPage({ params }: Props) {
     .where(eq(service.id, id))
     .limit(1);
 
-  console.log("serviceData:", serviceData);
-  if (serviceData.length === 0) {
+  // El panel del vendedor solo muestra servicios propios (y no eliminados).
+  // Para un servicio ajeno se responde igual que si no existiera.
+  if (
+    serviceData.length === 0 ||
+    serviceData[0].sellerId !== userId ||
+    serviceData[0].deleted
+  ) {
     return (
       <div className="space-y-4">
         <div className="flex items-center gap-4">
@@ -123,22 +127,6 @@ export default async function ServiceDetailPage({ params }: Props) {
   }
 
   const foundService = serviceData[0];
-
-  // Verificar permisos
-  const canView = userRole === "admin" || foundService.sellerId === userId;
-
-  if (!canView) {
-    // Verificar si es miembro de la organización
-    const memberRecord = await db
-      .select({ role: member.role })
-      .from(member)
-      .where(eq(member.organizationId, foundService.organizationId))
-      .limit(1);
-
-    if (memberRecord.length === 0) {
-      redirect("/seller/services");
-    }
-  }
 
   interface ServiceConfigProps {
     pricingMode?: string;
@@ -169,7 +157,7 @@ export default async function ServiceDetailPage({ params }: Props) {
     durationMinutes?: number;
   }
 
-  const canEdit = userRole === "admin" || foundService.sellerId === userId;
+  const canEdit = foundService.sellerId === userId;
   const statusInfo = STATUS_LABELS[foundService.status || "pending"];
   const config = ((foundService.serviceConfig as Record<string, unknown>) ??
     {}) as ServiceConfigProps;
@@ -183,7 +171,9 @@ export default async function ServiceDetailPage({ params }: Props) {
       { start: string; end: string }[] | undefined
     >;
     const activeDays = Object.keys(schedule).filter(
-      (day) => Array.isArray(schedule[day as keyof typeof schedule]) && (schedule[day as keyof typeof schedule]?.length ?? 0) > 0,
+      (day) =>
+        Array.isArray(schedule[day as keyof typeof schedule]) &&
+        (schedule[day as keyof typeof schedule]?.length ?? 0) > 0,
     );
     if (activeDays.length === 0) return "";
 

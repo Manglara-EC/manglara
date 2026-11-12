@@ -13,8 +13,6 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 
-import { useSession } from "@/shared/hooks/use-session";
-
 import { getOrganizationItems } from "@/features/organizations/actions/get-organization-items";
 import { getOrganizationItemsColumns } from "@/features/organizations/components/organization-items-table-columns";
 import type { OrganizationItem } from "@/features/organizations/types";
@@ -24,7 +22,6 @@ interface Props {
 }
 
 export const useOrganizationItemsTable = ({ organizationId }: Props) => {
-  const { data: session } = useSession();
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -36,31 +33,30 @@ export const useOrganizationItemsTable = ({ organizationId }: Props) => {
   const { data, isSuccess, isLoading, isError, refetch, isRefetching } =
     useQuery({
       queryKey: ["organization", organizationId, "items", pagination],
-      queryFn: async ({ signal }) => {
+      queryFn: async () => {
         const { data, error } = await getOrganizationItems(organizationId);
 
         if (error) return Promise.reject(error);
 
-        return data ?? [];
+        return data;
       },
     });
 
   const defaultData = useMemo(() => [], []);
 
-  // Determine if user is admin
-  const isAdmin = session?.user.role === "admin";
-  // Determine if user is seller (not admin) - sellers see statistics
-  const isSeller =
-    !isAdmin && data && data.length > 0 && "sales" in (data[0] ?? {});
+  // El servidor decide el alcance: `all` (administración) u `own` (vendedor)
+  const isSellerView = data?.scope === "own";
+  const canModerate = data?.canModerate ?? false;
+
   const columns = useMemo(
-    () => getOrganizationItemsColumns(isSeller ?? false, isAdmin),
-    [isSeller, isAdmin],
+    () => getOrganizationItemsColumns(isSellerView, canModerate),
+    [isSellerView, canModerate],
   );
 
   const table = useReactTable({
-    data: (data as OrganizationItem[]) ?? defaultData,
+    data: (data?.items as OrganizationItem[]) ?? defaultData,
     columns,
-    rowCount: data?.length ?? 0,
+    rowCount: data?.items.length ?? 0,
     state: {
       sorting,
       columnVisibility,

@@ -2,12 +2,10 @@
 
 "use server";
 
-import { headers } from "next/headers";
-import { eq, and } from "drizzle-orm";
-
-import { auth } from "@/shared/lib/better-auth/server";
 import { db } from "@/shared/lib/drizzle/server";
-import { service, member } from "@/shared/lib/drizzle/schema";
+import { service } from "@/shared/lib/drizzle/schema";
+import { getViewer } from "@/shared/lib/authz/server";
+import { canInOrganization } from "@/shared/lib/authz/access";
 import { tryCatch } from "@/shared/utils/try-catch";
 import type { ActionResponse } from "@/shared/types";
 import type { Service } from "@/shared/types";
@@ -22,7 +20,6 @@ import { notifyOwnerOfNewItem } from "@/shared/actions/send-item-notification";
 type ErrorCode =
   | "UNAUTHORIZED"
   | "FORBIDDEN"
-  | "NOT_SELLER"
   | "VALIDATION_ERROR"
   | "SERVICE_TYPE_VALIDATION_ERROR"
   | "INTERNAL_SERVER_ERROR";
@@ -31,11 +28,9 @@ export const createService = async (
   variables: CreateServiceVariables,
 ): Promise<ActionResponse<Service, ErrorCode>> => {
   // 1. Verificar autenticación
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
+  const viewer = await getViewer();
 
-  if (!session) {
+  if (!viewer) {
     return {
       data: null,
       error: {
@@ -44,17 +39,9 @@ export const createService = async (
       },
     };
   }
+  const session = viewer.session;
 
-  // 2. Verificar que el usuario es seller en el sistema
-  if (session.user.role !== "seller" && session.user.role !== "admin") {
-    return {
-      data: null,
-      error: {
-        code: "NOT_SELLER",
-        message: "Necesitas ser vendedor para crear servicios",
-      },
-    };
-  }
+  // 2. El permiso de venta depende del rol en la comuna (se verifica en el paso 5)
 
   // 3. Validar datos con Zod
   const validation = createServiceSchema.safeParse(variables);
@@ -83,22 +70,19 @@ export const createService = async (
     };
   }
 
-  // 5. Verificar membresía en la organización
-  const { data: membership, error: membershipError } = await tryCatch(
-    db.query.member.findFirst({
-      where: and(
-        eq(member.userId, session.user.id),
-        eq(member.organizationId, variables.organizationId),
-      ),
-    }),
-  );
-
-  if (membershipError || !membership) {
+  // 5. Solo vendedores (seller/admin/owner) de ESA comuna pueden publicar en ella
+  if (
+    !canInOrganization(
+      viewer.access,
+      validation.data.organizationId,
+      "item:create",
+    )
+  ) {
     return {
       data: null,
       error: {
         code: "FORBIDDEN",
-        message: "No tienes permiso para publicar en esta organización",
+        message: "Necesitas ser vendedor de esta comuna para publicar en ella",
       },
     };
   }
@@ -147,10 +131,11 @@ export const createService = async (
 
   // 8. Notificar al owner de la organización
   await notifyOwnerOfNewItem({
-    organizationId: variables.organizationId,
+    organizationId: newService[0].organizationId,
     itemName: newService[0].name,
     itemId: newService[0].id,
     type: "service",
+    sellerId: session.user.id,
   });
 
   return {

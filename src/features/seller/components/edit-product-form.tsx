@@ -10,11 +10,11 @@ import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
 import { Textarea } from "@/shared/components/ui/textarea";
 import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
 } from "@/shared/components/ui/card";
 import { Checkbox } from "@/shared/components/ui/checkbox";
 import { Badge } from "@/shared/components/ui/badge";
@@ -22,6 +22,7 @@ import { LocationPicker } from "@/shared/components/location-picker";
 import type { LatLng } from "@/shared/components/leaflet-map";
 
 import { useUpdateProductMutation } from "@/features/seller/hooks/use-update-product-mutation";
+import { ServiceImageUpload } from "@/features/seller/components/service-image-upload";
 import type {
   ProductWithOrg,
   UpdateProductVariables,
@@ -33,27 +34,31 @@ interface Props {
 }
 
 export function EditProductForm({ productId, product }: Props) {
-    const router = useRouter();
+  const router = useRouter();
 
-    const [formData, setFormData] = useState({
-        name: product.name,
-        description: product.description || "",
-        price: String(product.price),
-        stock: product.stock,
-        location: product.location || "",
-        isReservable: product.isReservable ?? false,
-        organizationId: product.organizationId,
-    });
-    const [coords, setCoords] = useState<LatLng | null>(
-        product.latitude !== null && product.latitude !== undefined &&
-            product.longitude !== null && product.longitude !== undefined
-            ? { lat: Number(product.latitude), lng: Number(product.longitude) }
-            : null,
-    );
+  const [formData, setFormData] = useState({
+    name: product.name,
+    description: product.description || "",
+    price: String(product.price),
+    stock: product.stock,
+    location: product.location || "",
+    isReservable: product.isReservable ?? false,
+    organizationId: product.organizationId,
+  });
+  const [images, setImages] = useState<string[]>(product.images ?? []);
+  const [isUploadingImages, setIsUploadingImages] = useState(false);
+  const [coords, setCoords] = useState<LatLng | null>(
+    product.latitude !== null &&
+      product.latitude !== undefined &&
+      product.longitude !== null &&
+      product.longitude !== undefined
+      ? { lat: Number(product.latitude), lng: Number(product.longitude) }
+      : null,
+  );
 
-    const updateMutation = useUpdateProductMutation({
-        productId,
-    });
+  const updateMutation = useUpdateProductMutation({
+    productId,
+  });
 
   const handleChange =
     (field: keyof typeof formData) =>
@@ -74,6 +79,7 @@ export function EditProductForm({ productId, product }: Props) {
       location: formData.location || undefined,
       latitude: coords?.lat,
       longitude: coords?.lng,
+      images,
       organizationId: formData.organizationId,
     };
 
@@ -116,8 +122,9 @@ export function EditProductForm({ productId, product }: Props) {
         <CardHeader>
           <CardTitle>Información del producto</CardTitle>
           <CardDescription>
-            Modifica los detalles de tu producto. Al guardar, volverá a estado
-            pendiente para revisión.
+            Modifica los detalles de tu producto. Al guardar volverá a estado
+            pendiente: dejará de mostrarse en la tienda hasta que un
+            administrador de la comuna lo apruebe (se le notifica).
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -198,6 +205,25 @@ export function EditProductForm({ productId, product }: Props) {
         </CardContent>
       </Card>
 
+      {/* Imágenes */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Imágenes</CardTitle>
+          <CardDescription>
+            Agrega o quita fotos del producto. Los cambios también pasan por
+            revisión.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ServiceImageUpload
+            folder="products"
+            value={images}
+            onChange={setImages}
+            onUploadingChange={setIsUploadingImages}
+          />
+        </CardContent>
+      </Card>
+
       {/* Botones de acción */}
       <div className="flex justify-between">
         <Button type="button" variant="outline" asChild>
@@ -206,7 +232,10 @@ export function EditProductForm({ productId, product }: Props) {
             Cancelar
           </Link>
         </Button>
-        <Button type="submit" disabled={updateMutation.isPending}>
+        <Button
+          type="submit"
+          disabled={updateMutation.isPending || isUploadingImages}
+        >
           {updateMutation.isPending && (
             <LoaderIcon className="mr-2 h-4 w-4 animate-spin" />
           )}

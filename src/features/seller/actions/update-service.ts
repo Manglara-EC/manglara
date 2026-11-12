@@ -1,11 +1,13 @@
 "use server";
 
-import { headers } from "next/headers";
-import { eq, and } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 
-import { auth } from "@/shared/lib/better-auth/server";
 import { db } from "@/shared/lib/drizzle/server";
-import { service, organization, member } from "@/shared/lib/drizzle/schema";
+import { service, organization } from "@/shared/lib/drizzle/schema";
+import { getViewer } from "@/shared/lib/authz/server";
+import { canEditItem, canInOrganization } from "@/shared/lib/authz/access";
+import { notifyOwnerOfNewItem } from "@/shared/actions/send-item-notification";
+import { deleteReplacedImages } from "@/shared/lib/storage/delete-replaced-images";
 import {
   createServiceSchema,
   validateServiceByType,
@@ -24,9 +26,9 @@ export async function updateService(
 }> {
   try {
     // 1. Verificar autenticación
-    const session = await auth.api.getSession({ headers: await headers() });
+    const viewer = await getViewer();
 
-    if (!session?.user?.id) {
+    if (!viewer) {
       return {
         error: {
           code: "UNAUTHENTICATED",
@@ -35,40 +37,28 @@ export async function updateService(
       };
     }
 
-    const userId = session.user.id;
-    const userRole = session.user.role;
-
-    // 2. Verificar rol de seller o admin
-    if (userRole !== "seller" && userRole !== "admin") {
-      return {
-        error: {
-          code: "FORBIDDEN",
-          message: "Solo los vendedores pueden actualizar servicios",
-        },
-      };
-    }
-
-    // 3. Verificar que el servicio existe y pertenece al usuario
-    const existingService = await db
+    // 2. Verificar que el servicio existe
+    const [serviceData] = await db
       .select({
         id: service.id,
         organizationId: service.organizationId,
         sellerId: service.sellerId,
+        status: service.status,
+        deleted: service.deleted,
+        images: service.images,
       })
       .from(service)
       .where(eq(service.id, serviceId))
       .limit(1);
 
-    if (existingService.length === 0) {
+    if (!serviceData || serviceData.deleted) {
       return {
         error: { code: "NOT_FOUND", message: "Servicio no encontrado" },
       };
     }
 
-    const serviceData = existingService[0];
-
-    // 4. Verificar que el usuario creó este servicio o es admin
-    if (serviceData.sellerId !== userId && userRole !== "admin") {
+    // 3. Solo el vendedor dueño, con rol de venta vigente en la comuna
+    if (!canEditItem(viewer.access, serviceData)) {
       return {
         error: {
           code: "FORBIDDEN",
@@ -77,47 +67,7 @@ export async function updateService(
       };
     }
 
-    // 5. Si se está cambiando la organización, verificar membresía
-    if (
-      data.organizationId &&
-      data.organizationId !== serviceData.organizationId
-    ) {
-      // Verificar que la organización existe y tiene rol de vendedor
-      const org = await db
-        .select({ id: organization.id, slug: organization.slug })
-        .from(organization)
-        .where(eq(organization.id, data.organizationId))
-        .limit(1);
-
-      if (org.length === 0) {
-        return {
-          error: { code: "NOT_FOUND", message: "Organización no encontrada" },
-        };
-      }
-
-      // Verificar membresía del usuario en la nueva organización
-      const memberRecord = await db
-        .select({ role: member.role })
-        .from(member)
-        .where(
-          and(
-            eq(member.organizationId, data.organizationId),
-            eq(member.userId, userId),
-          ),
-        )
-        .limit(1);
-
-      if (memberRecord.length === 0) {
-        return {
-          error: {
-            code: "FORBIDDEN",
-            message: "No eres miembro de esta organización",
-          },
-        };
-      }
-    }
-
-    // 6. Validar datos con Zod
+    // 4. Validar datos con Zod
     const validation = createServiceSchema.safeParse(data);
 
     if (!validation.success) {
@@ -132,7 +82,25 @@ export async function updateService(
 
     const validatedData = validation.data;
 
-    // 7. Validar campos específicos según tipo de servicio
+    // 5. Si cambia de comuna, debe poder vender también en la nueva
+    if (
+      validatedData.organizationId !== serviceData.organizationId &&
+      !canInOrganization(
+        viewer.access,
+        validatedData.organizationId,
+        "item:create",
+      )
+    ) {
+      return {
+        error: {
+          code: "FORBIDDEN",
+          message:
+            "Necesitas ser vendedor de esa comuna para mover el servicio",
+        },
+      };
+    }
+
+    // 6. Validar campos específicos según tipo de servicio
     const typeErrors = validateServiceByType(validatedData);
     if (typeErrors.length > 0) {
       return {
@@ -143,7 +111,7 @@ export async function updateService(
       };
     }
 
-    // 8. Actualizar servicio en la base de datos
+    // 7. Actualizar servicio en la base de datos
     // Al editar, el servicio vuelve a estado "pending" para revisión del admin
     const [updatedService] = await db
       .update(service)
@@ -172,7 +140,26 @@ export async function updateService(
       .where(eq(service.id, serviceId))
       .returning();
 
-    // 9. Obtener nombre de la organización
+    // 8. Liberar del almacenamiento las imágenes que se quitaron
+    if (validatedData.images) {
+      await deleteReplacedImages({
+        itemId: serviceId,
+        previous: serviceData.images,
+        next: validatedData.images,
+      });
+    }
+
+    // 9. Avisar a los administradores de la comuna que debe revisarse de nuevo
+    await notifyOwnerOfNewItem({
+      organizationId: updatedService.organizationId,
+      itemName: updatedService.name,
+      itemId: updatedService.id,
+      type: "service",
+      sellerId: viewer.session.user.id,
+      reason: "updated",
+    });
+
+    // 10. Obtener nombre de la organización
     const orgData = await db
       .select({ name: organization.name })
       .from(organization)

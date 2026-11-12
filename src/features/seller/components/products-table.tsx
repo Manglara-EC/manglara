@@ -113,7 +113,9 @@ function ProductRow({ product }: { product: ProductWithOrg }) {
     useDeleteProductMutation();
 
   const statusInfo = STATUS_LABELS[product.status] || STATUS_LABELS.pending;
-  const canDelete = product.status === "pending";
+  // El vendedor puede retirar sus ítems pendientes o rechazados
+  const canDelete =
+    product.status === "pending" || product.status === "rejected";
 
   const handleDelete = () => {
     deleteProduct(product.id);
@@ -193,7 +195,7 @@ function ProductRow({ product }: { product: ProductWithOrg }) {
             <AlertDialogTitle>¿Eliminar producto?</AlertDialogTitle>
             <AlertDialogDescription>
               ¿Estás seguro de que deseas eliminar &quot;{product.name}&quot;?
-              Esta acción no se puede deshacer.
+              Dejará de mostrarse en tu panel y no podrá publicarse.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

@@ -1,29 +1,34 @@
 "use server";
 
-import { headers } from "next/headers";
-import { eq, and } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 
-import { auth } from "@/shared/lib/better-auth/server";
 import { db } from "@/shared/lib/drizzle/server";
-import { product, member } from "@/shared/lib/drizzle/schema";
+import { product } from "@/shared/lib/drizzle/schema";
 import { tryCatch } from "@/shared/utils/try-catch";
+import { getViewer } from "@/shared/lib/authz/server";
+import {
+  canDeleteItem,
+  canInOrganization,
+  isOwnItem,
+} from "@/shared/lib/authz/access";
 import type { ActionResponse } from "@/shared/types";
+import { hasSalesOrBookings } from "@/features/seller/lib/item-history";
 import type { Product } from "@/shared/types";
 
 type ErrorCode =
-  | "UNAUTHORIZED"
-  | "FORBIDDEN"
-  | "NOT_FOUND"
-  | "INTERNAL_SERVER_ERROR";
+  "UNAUTHORIZED" | "FORBIDDEN" | "NOT_FOUND" | "INTERNAL_SERVER_ERROR";
 
+/**
+ * Borrado lógico de un producto.
+ * - El vendedor dueño: solo si está pendiente o rechazado.
+ * - Administradores de la comuna y el administrador global: cualquiera de la comuna.
+ */
 export const deleteProduct = async (
   productId: string,
 ): Promise<ActionResponse<Product, ErrorCode>> => {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
+  const viewer = await getViewer();
 
-  if (!session) {
+  if (!viewer) {
     return {
       data: null,
       error: {
@@ -33,14 +38,13 @@ export const deleteProduct = async (
     };
   }
 
-  // Obtener el producto
   const { data: existingProduct, error: productError } = await tryCatch(
     db.query.product.findFirst({
       where: eq(product.id, productId),
     }),
   );
 
-  if (productError || !existingProduct) {
+  if (productError || !existingProduct || existingProduct.deleted) {
     return {
       data: null,
       error: {
@@ -50,31 +54,43 @@ export const deleteProduct = async (
     };
   }
 
-  // Verificar que el usuario es el seller o es miembro seller/owner de la org
-  const isProductOwner = existingProduct.sellerId === session.user.id;
-  const isAdmin = session.user.role === "admin";
+  if (!canDeleteItem(viewer.access, existingProduct)) {
+    return {
+      data: null,
+      error: {
+        code: "FORBIDDEN",
+        message: !isOwnItem(viewer.access, existingProduct)
+          ? "No tienes permiso para eliminar este producto"
+          : canInOrganization(
+                viewer.access,
+                existingProduct.organizationId,
+                "item:delete_own",
+              )
+            ? "Solo puedes eliminar productos pendientes o rechazados"
+            : "Ya no tienes rol de venta en la comuna de este producto",
+      },
+    };
+  }
 
-  if (!isProductOwner && !isAdmin) {
-    // Verificar si es owner de la organización
-    const { data: membership } = await tryCatch(
-      db.query.member.findFirst({
-        where: and(
-          eq(member.userId, session.user.id),
-          eq(member.organizationId, existingProduct.organizationId),
-          eq(member.role, "owner"),
-        ),
-      }),
-    );
-
-    if (!membership) {
-      return {
-        data: null,
-        error: {
-          code: "FORBIDDEN",
-          message: "No tienes permiso para eliminar este producto",
-        },
-      };
-    }
+  // Un vendedor no retira por su cuenta un producto con ventas o reservas
+  // (por ejemplo, editándolo para que vuelva a pendiente): lo hace la
+  // administración de la comuna.
+  if (
+    !canInOrganization(
+      viewer.access,
+      existingProduct.organizationId,
+      "item:delete_any",
+    ) &&
+    (await hasSalesOrBookings("product", existingProduct.id))
+  ) {
+    return {
+      data: null,
+      error: {
+        code: "FORBIDDEN",
+        message:
+          "Este producto tiene ventas o reservas: pide a un administrador de la comuna que lo retire",
+      },
+    };
   }
 
   // Soft delete

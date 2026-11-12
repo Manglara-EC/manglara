@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { headers } from "next/headers";
 
-import { auth } from "@/shared/lib/better-auth/server";
+import { getViewer } from "@/shared/lib/authz/server";
 
 export const metadata: Metadata = {
   title: "Manglara | Panel del Vendedor",
@@ -13,19 +12,12 @@ export default async function SellerLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
+  const viewer = await getViewer();
 
-  // Verificar que el usuario sea seller o admin
-  if (
-    !session ||
-    (session.user.role !== "seller" && session.user.role !== "admin")
-  ) {
-    redirect("/home");
-  }
+  if (!viewer) redirect("/sign-in");
 
-  return (
-    <div className="container mx-auto py-6">{children}</div>
-  );
+  // El panel es para quien vende en al menos una comuna (seller/admin/owner)
+  if (!viewer.access.canSell) redirect("/home");
+
+  return <div className="container mx-auto py-6">{children}</div>;
 }

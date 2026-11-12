@@ -8,13 +8,22 @@ import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
 
 import { OrganizationItemsTableColumnHeader } from "@/features/organizations/components/organization-items-table-column-header";
-import { ItemApprovalActions } from "@/features/admin/components/item-approval-actions";
+import { ItemApprovalActions } from "@/features/moderation/components/item-approval-actions";
 import { formatCurrency } from "@/shared/utils/currency";
 import type { OrganizationItem } from "@/features/organizations/types";
 
+const getItemHref = (item: OrganizationItem, isSellerView: boolean) => {
+  // El vendedor gestiona sus ítems desde su panel; la administración revisa
+  if (!isSellerView) return `/review/${item.type}/${item.id}`;
+
+  return item.type === "product"
+    ? `/seller/products/${item.id}/edit`
+    : `/seller/services/${item.id}`;
+};
+
 export const getOrganizationItemsColumns = (
   isSeller: boolean = false,
-  isAdmin: boolean = false,
+  canModerate: boolean = false,
 ): ColumnDef<OrganizationItem>[] => [
   {
     accessorKey: "name",
@@ -25,10 +34,7 @@ export const getOrganizationItemsColumns = (
       const item = row.original;
       const isProduct = item.type === "product";
 
-      // Para admin, enlazar a la página de detalle de admin
-      const href = isAdmin
-        ? `/admin/items/${item.type}/${item.id}`
-        : `/${item.type}s/${item.id}`;
+      const href = getItemHref(item, isSeller);
 
       return (
         <div className="ml-2.5 flex items-center gap-2">
@@ -132,8 +138,8 @@ export const getOrganizationItemsColumns = (
         } as ColumnDef<OrganizationItem>,
       ]
     : []),
-  // Columna de acciones para admin
-  ...(isAdmin
+  // Columna de acciones para quien modera la comuna
+  ...(canModerate
     ? [
         {
           id: "actions",
@@ -142,14 +148,16 @@ export const getOrganizationItemsColumns = (
             const item = row.original;
             return (
               <div className="flex items-center justify-center gap-2">
-                <ItemApprovalActions
-                  itemId={item.id}
-                  itemType={item.type}
-                  itemName={item.name}
-                  currentStatus={item.status}
-                />
+                {item.canModerate && (
+                  <ItemApprovalActions
+                    itemId={item.id}
+                    itemType={item.type}
+                    itemName={item.name}
+                    currentStatus={item.status}
+                  />
+                )}
                 <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
-                  <Link href={`/admin/items/${item.type}/${item.id}`}>
+                  <Link href={`/review/${item.type}/${item.id}`}>
                     <EyeIcon className="h-4 w-4" />
                   </Link>
                 </Button>

@@ -1,16 +1,13 @@
 "use server";
 
-import { headers } from "next/headers";
-import { eq, and, desc, getTableColumns, sql, inArray, sum } from "drizzle-orm";
+import { eq, and, desc, getTableColumns, sql, inArray } from "drizzle-orm";
 
-import { auth } from "@/shared/lib/better-auth/server";
 import { db } from "@/shared/lib/drizzle/server";
 import {
   product,
   service,
   organization,
   user,
-  member,
 } from "@/shared/lib/drizzle/schema";
 import {
   transactionHeader,
@@ -18,26 +15,29 @@ import {
   productLine,
 } from "@/shared/lib/drizzle/transactions";
 import { tryCatch } from "@/shared/utils/try-catch";
+import { getViewer } from "@/shared/lib/authz/server";
+import { canInOrganization, canModerateItem } from "@/shared/lib/authz/access";
 import type { ActionResponse } from "@/shared/types";
-
-import type { PublicItem } from "@/features/items/types";
+import type {
+  OrganizationItem,
+  OrganizationItemsResult,
+} from "@/features/organizations/types";
 
 type ErrorCode = "UNAUTHORIZED" | "FORBIDDEN" | "INTERNAL_SERVER_ERROR";
 
-type OrganizationItem = PublicItem & {
-  // For seller view: statistics
-  sales?: number;
-  views?: number; // Placeholder for future implementation
-};
-
+/**
+ * Ítems de una comuna para el panel de gestión.
+ * - Admin global y administradores de la comuna: todos los ítems (cualquier
+ *   estado) con acciones de moderación.
+ * - Vendedores de la comuna: solo sus propios ítems, con estadísticas.
+ * - Miembros sin rol de venta y no miembros: sin acceso (ven la tienda pública).
+ */
 export const getOrganizationItems = async (
   organizationId: string,
-): Promise<ActionResponse<OrganizationItem[], ErrorCode>> => {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
+): Promise<ActionResponse<OrganizationItemsResult, ErrorCode>> => {
+  const viewer = await getViewer();
 
-  if (!session) {
+  if (!viewer) {
     return {
       data: null,
       error: {
@@ -47,35 +47,11 @@ export const getOrganizationItems = async (
     };
   }
 
-  // Check user role in organization
-  const { data: membership, error: membershipError } = await tryCatch(
-    db.query.member.findFirst({
-      where: and(
-        eq(member.userId, session.user.id),
-        eq(member.organizationId, organizationId),
-      ),
-    }),
-  );
+  const { access } = viewer;
+  const canViewAll = canInOrganization(access, organizationId, "item:view_all");
+  const canSellHere = canInOrganization(access, organizationId, "item:create");
 
-  // Check if user is admin (global admin role)
-  const isSystemAdmin = session.user.role === "admin";
-  const isSystemSeller = session.user.role === "seller";
-
-  // Organization roles: owner, admin, member
-  const isOrgOwner = membership?.role === "owner";
-  const isOrgAdmin = membership?.role === "admin";
-  const isOrgMember = membership?.role === "member";
-  const isMemberOfOrg = !!membership;
-
-  // Permissions:
-  // - System admins: See all items
-  // - Org owners/admins: See all items of the organization
-  // - Org members who are system sellers: See only their own items
-  // - Org members who are regular users: Cannot see items (no permission)
-  const canSeeAllOrgItems = isSystemAdmin || isOrgOwner || isOrgAdmin;
-  const canSeeOwnItems = isMemberOfOrg && isSystemSeller;
-
-  if (!canSeeAllOrgItems && !canSeeOwnItems) {
+  if (!canViewAll && !canSellHere) {
     return {
       data: null,
       error: {
@@ -85,11 +61,22 @@ export const getOrganizationItems = async (
     };
   }
 
-  const items: OrganizationItem[] = [];
+  const productConditions = [
+    eq(product.organizationId, organizationId),
+    eq(product.deleted, false),
+  ];
+  const serviceConditions = [
+    eq(service.organizationId, organizationId),
+    eq(service.deleted, false),
+  ];
 
-  if (canSeeAllOrgItems) {
-    // Admin/Owner/OrgAdmin: Get all products and services of the organization
-    const { data: products, error: productsError } = await tryCatch(
+  if (!canViewAll) {
+    productConditions.push(eq(product.sellerId, viewer.session.user.id));
+    serviceConditions.push(eq(service.sellerId, viewer.session.user.id));
+  }
+
+  const { data: results, error } = await tryCatch(
+    Promise.all([
       db
         .select({
           ...getTableColumns(product),
@@ -99,35 +86,8 @@ export const getOrganizationItems = async (
         .from(product)
         .innerJoin(organization, eq(product.organizationId, organization.id))
         .innerJoin(user, eq(product.sellerId, user.id))
-        .where(
-          and(
-            eq(product.organizationId, organizationId),
-            eq(product.deleted, false),
-          ),
-        )
+        .where(and(...productConditions))
         .orderBy(desc(product.createdAt)),
-    );
-
-    if (productsError) {
-      return {
-        data: null,
-        error: {
-          code: "INTERNAL_SERVER_ERROR",
-          message: "Error al obtener productos",
-        },
-      };
-    }
-
-    if (products) {
-      items.push(
-        ...products.map((p) => ({
-          ...p,
-          type: "product" as const,
-        })),
-      );
-    }
-
-    const { data: services, error: servicesError } = await tryCatch(
       db
         .select({
           ...getTableColumns(service),
@@ -137,134 +97,82 @@ export const getOrganizationItems = async (
         .from(service)
         .innerJoin(organization, eq(service.organizationId, organization.id))
         .innerJoin(user, eq(service.sellerId, user.id))
-        .where(
-          and(
-            eq(service.organizationId, organizationId),
-            eq(service.deleted, false),
-          ),
-        )
+        .where(and(...serviceConditions))
         .orderBy(desc(service.createdAt)),
-    );
+    ]),
+  );
 
-    if (servicesError) {
-      return {
-        data: null,
-        error: {
-          code: "INTERNAL_SERVER_ERROR",
-          message: "Error al obtener servicios",
-        },
-      };
-    }
-
-    if (services) {
-      items.push(
-        ...services.map((s) => ({
-          ...s,
-          type: "service" as const,
-        })),
-      );
-    }
-  } else if (canSeeOwnItems) {
-    // System seller member: Get only their products with statistics
-    const { data: products, error: productsError } = await tryCatch(
-      db
-        .select({
-          ...getTableColumns(product),
-          organizationName: organization.name,
-          sellerName: user.name,
-        })
-        .from(product)
-        .innerJoin(organization, eq(product.organizationId, organization.id))
-        .innerJoin(user, eq(product.sellerId, user.id))
-        .where(
-          and(
-            eq(product.organizationId, organizationId),
-            eq(product.sellerId, session.user.id),
-            eq(product.deleted, false),
-          ),
-        )
-        .orderBy(desc(product.createdAt)),
-    );
-
-    if (productsError) {
-      return {
-        data: null,
-        error: {
-          code: "INTERNAL_SERVER_ERROR",
-          message: "Error al obtener productos",
-        },
-      };
-    }
-
-    if (products) {
-      // Get sales statistics for each product
-      const productIds = products.map((p) => p.id);
-
-      if (productIds.length > 0) {
-        const { data: salesData, error: salesError } = await tryCatch(
-          db
-            .select({
-              itemId: productLine.productId,
-              totalSales:
-                sql<number>`COALESCE(SUM(${transactionLine.quantity}), 0)`.as(
-                  "total_sales",
-                ),
-            })
-            .from(productLine)
-            .innerJoin(
-              transactionLine,
-              eq(productLine.transactionLineId, transactionLine.id),
-            )
-            .innerJoin(
-              transactionHeader,
-              eq(transactionLine.transactionId, transactionHeader.id),
-            )
-            .where(
-              and(
-                inArray(productLine.productId, productIds),
-                eq(transactionHeader.status, "completed"),
-              ),
-            )
-            .groupBy(productLine.productId),
-        );
-
-        const salesMap = new Map<string, number>();
-        if (salesData && !salesError) {
-          salesData.forEach((sale) => {
-            salesMap.set(sale.itemId, Number(sale.totalSales));
-          });
-        }
-
-        items.push(
-          ...products.map((p) => ({
-            ...p,
-            type: "product" as const,
-            sales: salesMap.get(p.id) ?? 0,
-            views: 0, // Placeholder for future implementation
-          })),
-        );
-      } else {
-        items.push(
-          ...products.map((p) => ({
-            ...p,
-            type: "product" as const,
-            sales: 0,
-            views: 0,
-          })),
-        );
-      }
-    }
+  if (error || !results) {
+    return {
+      data: null,
+      error: {
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Error al obtener los ítems de la comuna",
+      },
+    };
   }
 
-  // Sort by createdAt
-  items.sort((a, b) => {
-    const aDate = new Date(a.createdAt).getTime();
-    const bDate = new Date(b.createdAt).getTime();
-    return bDate - aDate;
-  });
+  const [products, services] = results;
+
+  // Ventas completadas por producto
+  const salesMap = new Map<string, number>();
+  const productIds = products.map((p) => p.id);
+
+  if (productIds.length > 0) {
+    const { data: salesData } = await tryCatch(
+      db
+        .select({
+          itemId: productLine.productId,
+          totalSales:
+            sql<number>`COALESCE(SUM(${transactionLine.quantity}), 0)`.as(
+              "total_sales",
+            ),
+        })
+        .from(productLine)
+        .innerJoin(
+          transactionLine,
+          eq(productLine.transactionLineId, transactionLine.id),
+        )
+        .innerJoin(
+          transactionHeader,
+          eq(transactionLine.transactionId, transactionHeader.id),
+        )
+        .where(
+          and(
+            inArray(productLine.productId, productIds),
+            eq(transactionHeader.status, "completed"),
+          ),
+        )
+        .groupBy(productLine.productId),
+    );
+
+    salesData?.forEach((sale) =>
+      salesMap.set(sale.itemId, Number(sale.totalSales)),
+    );
+  }
+
+  const items: OrganizationItem[] = [
+    ...products.map((p) => ({
+      ...p,
+      type: "product" as const,
+      sales: salesMap.get(p.id) ?? 0,
+      canModerate: canModerateItem(access, p),
+    })),
+    ...services.map((s) => ({
+      ...s,
+      type: "service" as const,
+      canModerate: canModerateItem(access, s),
+    })),
+  ].sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+  );
 
   return {
-    data: items,
+    data: {
+      items,
+      scope: canViewAll ? "all" : "own",
+      canModerate: canInOrganization(access, organizationId, "item:moderate"),
+    },
     error: null,
   };
 };
