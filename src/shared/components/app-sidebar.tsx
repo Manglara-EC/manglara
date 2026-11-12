@@ -5,6 +5,7 @@ import { LoaderIcon, RotateCcwIcon, TreePalmIcon } from "lucide-react";
 import { TypographyLarge } from "@/shared/components/ui/typography";
 import { NavLink } from "@/shared/components/nav-link";
 import { NavUser } from "@/shared/components/nav-user";
+import { NavGuest } from "@/shared/components/nav-guest";
 import { useAppSidebar } from "@/shared/hooks/use-app-sidebar";
 import { NavUserSkeleton } from "@/shared/components/nav-user-skeleton";
 import { Button } from "@/shared/components/ui/button";
@@ -13,6 +14,7 @@ export const AppSidebar = () => {
   const {
     links,
     session,
+    isGuest,
     isSessionSuccess,
     isSessionLoading,
     isSessionError,
@@ -21,12 +23,12 @@ export const AppSidebar = () => {
   } = useAppSidebar();
 
   return (
-    <div className="flex flex-col items-center gap-4 md:items-stretch">
+    <div className="tropical-sidebar flex h-full flex-col items-center gap-4 md:items-stretch">
       <TypographyLarge className="pl-2 text-center text-4xl font-extrabold">
         <TreePalmIcon className="size-10" />
       </TypographyLarge>
 
-      <nav className="flex flex-col items-start gap-2 md:items-stretch">
+      <nav className="flex flex-col items-start gap-2 whitespace-nowrap md:items-stretch">
         {links.map((link) => (
           <NavLink
             key={link.href}
@@ -56,6 +58,8 @@ export const AppSidebar = () => {
         )}
 
         {isSessionSuccess && session && <NavUser user={session.user} />}
+
+        {isGuest && <NavGuest />}
       </div>
     </div>
   );

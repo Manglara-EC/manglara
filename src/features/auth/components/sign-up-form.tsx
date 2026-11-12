@@ -3,6 +3,7 @@
 import Link from "next/link";
 import {
   AtSignIcon,
+  CompassIcon,
   LoaderIcon,
   LockIcon,
   MailIcon,
@@ -28,6 +29,8 @@ import {
 import { Input } from "@/shared/components/ui/input";
 import { TypographyH1, TypographyP } from "@/shared/components/ui/typography";
 import { cn } from "@/shared/utils/cn";
+import { buildAuthURL } from "@/shared/utils/redirect";
+import { useRedirectTo } from "@/shared/hooks/use-redirect-to";
 
 import { useSignUpForm } from "@/features/auth/hooks/use-sign-up-form";
 import { PasswordStrengthIndicator } from "@/shared/components/password-strength-indicator";
@@ -37,6 +40,7 @@ export function SignUpForm({
   ...props
 }: React.ComponentProps<"div">) {
   const { form, onSubmit, isPending, handleSignUpWithGoogle } = useSignUpForm();
+  const redirectTo = useRedirectTo();
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
@@ -247,12 +251,25 @@ export function SignUpForm({
           <div className="text-center text-sm">
             ¿Ya tienes una cuenta?{" "}
             <Link
-              href="/sign-in"
+              href={buildAuthURL("/sign-in", redirectTo)}
               className="font-bold hover:underline hover:underline-offset-4"
             >
               Iniciar sesión
             </Link>
           </div>
+
+          <div className="after:border-border relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t">
+            <span className="bg-background text-muted-foreground relative z-10 px-2">
+              o
+            </span>
+          </div>
+
+          <Button asChild variant="ghost">
+            <Link href="/explore">
+              <CompassIcon />
+              Continuar como invitado
+            </Link>
+          </Button>
         </CardContent>
       </Card>
     </div>

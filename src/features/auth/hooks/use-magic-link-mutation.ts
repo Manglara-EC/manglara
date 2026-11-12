@@ -4,6 +4,7 @@ import { toast } from "sonner";
 
 import { RATE_LIMIT_ERROR_CODE } from "@/shared/constants";
 import { authClient } from "@/shared/lib/better-auth/client";
+import { getPostAuthRedirect } from "@/shared/utils/redirect";
 import type { AuthClientError } from "@/shared/types";
 
 import type { MagicLinkVariables } from "@/features/auth/types";
@@ -17,7 +18,7 @@ export const useMagicLinkMutation = ({ form }: Props) => {
     mutationFn: async (variables: MagicLinkVariables) => {
       const { error } = await authClient.signIn.magicLink({
         email: variables.email,
-        callbackURL: "/home",
+        callbackURL: getPostAuthRedirect(),
       });
 
       if (error) return Promise.reject(error);

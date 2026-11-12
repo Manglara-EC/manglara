@@ -5,6 +5,7 @@ import { toast } from "sonner";
 
 import { RATE_LIMIT_ERROR_CODE } from "@/shared/constants";
 import { authClient } from "@/shared/lib/better-auth/client";
+import { getPostAuthRedirect } from "@/shared/utils/redirect";
 import type { AuthClientError } from "@/shared/types";
 
 import type { RecoveryVariables } from "@/features/auth/types";
@@ -38,7 +39,7 @@ export const useRecoveryMutation = ({ form }: Props) => {
         },
       );
 
-      router.push("/home");
+      router.push(getPostAuthRedirect());
     },
     onError: (error: AuthClientError) => {
       if (error.status === RATE_LIMIT_ERROR_CODE) return;

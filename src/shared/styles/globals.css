@@ -109,11 +109,143 @@
   --sidebar-ring: oklch(0.553 0.013 58.071);
 }
 
+
+/* ============================================
+   MANGLARA TROPICAL THEME
+   Identidad turística: mar, naturaleza y arena
+   ============================================ */
+
+.tropical {
+  /* Fondo arena */
+  --background: #F6F1E7;
+  --foreground: #13302E;
+
+  /* Tarjetas color concha */
+  --card: #FFFDF8;
+  --card-foreground: #13302E;
+
+  /* Menús y ventanas emergentes */
+  --popover: #FFFDF8;
+  --popover-foreground: #13302E;
+
+  /* Manglar noche: acciones principales */
+  --primary: #13302E;
+  --primary-foreground: #FFFDF8;
+
+  /* Estero y espuma: elementos secundarios */
+  --secondary: #DCE7E1;
+  --secondary-foreground: #1F5F5B;
+
+  /* Superficies suaves */
+  --muted: #ECE9DF;
+  --muted-foreground: #526760;
+
+
+  /* Elementos secundarios e interactivos */
+  --accent: #DCE7E1;
+  --accent-foreground: #13302E;
+
+  /* Color distintivo de la identidad turística */
+  --spondylus: #B4472F;
+
+
+  /* Errores */
+  --destructive: #B42332;
+
+  /* Bordes y formularios */
+  --border: #DEDCD2;
+  --input: #DEDCD2;
+  --ring: #1F5F5B;
+
+  /* Gráficos */
+  --chart-1: #13302E;
+  --chart-2: #1F5F5B;
+  --chart-3: #B4472F;
+  --chart-4: #8E765C;
+  --chart-5: #84A99C;
+
+  /* Sidebar: manglar */
+  --sidebar: #13302E;
+  --sidebar-foreground: #FFFDF8;
+
+  /* Navegación seleccionada */
+  --sidebar-primary: #1F5F5B;
+  --sidebar-primary-foreground: #FFFFFF;
+
+  /* Hover en navegación */
+  --sidebar-accent: #1A4A46;
+  --sidebar-accent-foreground: #FFFFFF;
+
+  --sidebar-border: #31544D;
+  --sidebar-ring: #DCE7E1;
+}
+
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
   }
 }
+
+
+/* ============================================
+   SIDEBAR - MANGLARA TROPICAL
+   ============================================ */
+
+/* Contenedor principal */
+.tropical .manglara-sidebar {
+  background-color: var(--sidebar);
+  color: var(--sidebar-foreground);
+  border-radius: 1rem;
+  padding: 1.5rem 1rem;
+}
+
+/* Contenido del sidebar */
+.tropical .tropical-sidebar {
+  color: var(--sidebar-foreground);
+}
+
+/* Enlaces normales */
+.tropical .tropical-sidebar nav a {
+  color: var(--sidebar-foreground);
+}
+
+/* Hover de enlaces normales */
+.tropical .tropical-sidebar nav a:hover {
+  background-color: var(--sidebar-accent);
+  color: var(--sidebar-accent-foreground);
+}
+
+/* Página seleccionada */
+.tropical .tropical-sidebar nav a.bg-accent {
+  background-color: var(--sidebar-primary);
+  color: var(--sidebar-primary-foreground);
+}
+
+/* Hover de la página seleccionada */
+.tropical .tropical-sidebar nav a.bg-accent:hover {
+  background-color: #256D66;
+  color: #FFFFFF;
+}
+
+/* ============================================
+   TIPOGRAFÍA - TEMA COSTERO
+   ============================================ */
+
+/* Tipografía general */
+.tropical {
+  font-family: var(--font-manrope), sans-serif;
+}
+
+/* Títulos destacados */
+.tropical h1,
+.tropical h2,
+.tropical h3 {
+  font-family: var(--font-instrument-serif), serif;
+  font-weight: 400;
+}
+

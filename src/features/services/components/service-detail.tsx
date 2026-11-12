@@ -31,6 +31,7 @@ import {
   TypographyMuted,
   TypographyP,
 } from "@/shared/components/ui/typography";
+import { useAuthGuard } from "@/shared/hooks/use-auth-guard";
 import { ServiceBookingDialog } from "@/features/services/components/service-booking-dialog";
 import { formatCurrency } from "@/shared/utils/currency";
 import { getValidImageSources } from "@/shared/utils/image-src";
@@ -155,6 +156,7 @@ const getScheduleText = (
 
 export function ServiceDetail({ service }: Props) {
   const [isBookingOpen, setIsBookingOpen] = useState(false);
+  const { requireAuth } = useAuthGuard();
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
   const price = formatCurrency(service.price);
@@ -463,7 +465,10 @@ export function ServiceDetail({ service }: Props) {
             <Button
               className="w-full"
               size="lg"
-              onClick={() => setIsBookingOpen(true)}
+              onClick={() => {
+                if (!requireAuth("Inicia sesión para reservar")) return;
+                setIsBookingOpen(true);
+              }}
             >
               {serviceType === "rental"
                 ? "Alquilar ahora"

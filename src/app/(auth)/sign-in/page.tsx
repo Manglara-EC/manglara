@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 
 export default function SignInPage() {
   return (
-    <div className="flex w-full max-w-sm flex-col gap-6">
+    <div className="flex w-full max-w-xl flex-col gap-6 rounded-2xl border border-foreground px-10 py-8 sm:px-16 sm:py-10">
       <Link
         href="/"
         className="flex items-center gap-2 self-center font-medium"

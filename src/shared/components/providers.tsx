@@ -10,17 +10,14 @@ import { getQueryClient } from "@/shared/lib/react-query/get-query-client";
 import { CartProvider } from "@/features/cart/context/cart-context";
 
 export const Providers: FC<PropsWithChildren> = ({ children }) => {
-  // NOTE: Avoid useState when initializing the query client if you don't
-  //       have a suspense boundary between this and the code that may
-  //       suspend because React will throw away the client on the initial
-  //       render if it suspends and there is no boundary
   const queryClient = getQueryClient();
 
   return (
     <ThemeProvider
       attribute="class"
-      defaultTheme="system"
-      enableSystem
+      defaultTheme="tropical"
+      themes={["tropical", "light", "dark"]}
+      enableSystem={false}
       disableTransitionOnChange
     >
       <QueryClientProvider client={queryClient}>

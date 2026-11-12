@@ -1,12 +1,15 @@
 "use client";
 
 import {
+  CheckIcon,
   EllipsisIcon,
   LoaderIcon,
   LogOutIcon,
   MoonIcon,
   SunIcon,
+  TreePalmIcon,
 } from "lucide-react";
+import { useTheme } from "next-themes";
 
 import {
   Avatar,
@@ -39,8 +42,8 @@ interface Props {
 }
 
 export const NavUser = ({ user }: Props) => {
-  const { isMobile, handleSignOut, handleThemeChange, isSigningOut, theme } =
-    useNavUser();
+  const { isMobile, handleSignOut, isSigningOut } = useNavUser();
+  const { theme, setTheme } = useTheme();
 
   if (isMobile) {
     return (
@@ -74,16 +77,41 @@ export const NavUser = ({ user }: Props) => {
           </DrawerHeader>
 
           <div className="flex flex-col gap-2 px-4">
-            <Button
-              title="Cambiar tema"
-              aria-label="Cambiar tema"
-              variant="ghost"
-              className="w-full justify-start !p-0"
-              onClick={() => handleThemeChange()}
-            >
-              {theme === "dark" ? <MoonIcon /> : <SunIcon />}
-              Cambiar tema
-            </Button>
+            <div className="flex flex-col gap-2">
+              <span className="text-sm font-medium">Apariencia</span>
+
+              <Button
+                variant="ghost"
+                className="w-full justify-start gap-2"
+                onClick={() => setTheme("tropical")}
+              >
+                <TreePalmIcon className="h-4 w-4" />
+                Playa / Tropical
+                {theme === "tropical" && (
+                  <CheckIcon className="ml-auto h-4 w-4" />
+                )}
+              </Button>
+
+              <Button
+                variant="ghost"
+                className="w-full justify-start gap-2"
+                onClick={() => setTheme("light")}
+              >
+                <SunIcon className="h-4 w-4" />
+                Claro
+                {theme === "light" && <CheckIcon className="ml-auto h-4 w-4" />}
+              </Button>
+
+              <Button
+                variant="ghost"
+                className="w-full justify-start gap-2"
+                onClick={() => setTheme("dark")}
+              >
+                <MoonIcon className="h-4 w-4" />
+                Oscuro
+                {theme === "dark" && <CheckIcon className="ml-auto h-4 w-4" />}
+              </Button>
+            </div>
 
             <Button
               variant="ghost"
@@ -141,10 +169,24 @@ export const NavUser = ({ user }: Props) => {
           <DropdownMenuLabel>Mi cuenta</DropdownMenuLabel>
           <DropdownMenuSeparator />
 
-          <DropdownMenuItem onSelect={handleThemeChange}>
-            {theme === "dark" ? <MoonIcon /> : <SunIcon />}
-            Cambiar tema
-            <DropdownMenuShortcut>⌘⇧T</DropdownMenuShortcut>
+          <DropdownMenuLabel>Apariencia</DropdownMenuLabel>
+
+          <DropdownMenuItem onSelect={() => setTheme("tropical")}>
+            <TreePalmIcon className="h-4 w-4" />
+            Playa / Tropical
+            {theme === "tropical" && <CheckIcon className="ml-auto h-4 w-4" />}
+          </DropdownMenuItem>
+
+          <DropdownMenuItem onSelect={() => setTheme("light")}>
+            <SunIcon className="h-4 w-4" />
+            Claro
+            {theme === "light" && <CheckIcon className="ml-auto h-4 w-4" />}
+          </DropdownMenuItem>
+
+          <DropdownMenuItem onSelect={() => setTheme("dark")}>
+            <MoonIcon className="h-4 w-4" />
+            Oscuro
+            {theme === "dark" && <CheckIcon className="ml-auto h-4 w-4" />}
           </DropdownMenuItem>
 
           <DropdownMenuItem variant="destructive" onSelect={handleSignOut}>

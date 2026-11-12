@@ -27,6 +27,7 @@ import {
 import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
 
+import { useAuthGuard } from "@/shared/hooks/use-auth-guard";
 import { useCart } from "@/features/cart/context/cart-context";
 import type { PublicItem } from "@/features/items/types";
 
@@ -43,6 +44,7 @@ export function ItemCardWithCart({ item }: Props) {
   }).format(Number(item.price));
 
   const { addItem, cart } = useCart();
+  const { requireAuth } = useAuthGuard();
   const [quantity, setQuantity] = useState(1);
   const [open, setOpen] = useState(false);
 
@@ -177,7 +179,12 @@ export function ItemCardWithCart({ item }: Props) {
               <Button
                 className="w-full"
                 size="sm"
-                onClick={(e) => e.stopPropagation()}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (!requireAuth("Inicia sesión para agregar al carrito")) {
+                    e.preventDefault();
+                  }
+                }}
               >
                 <ShoppingCart className="mr-2 h-4 w-4" />
                 Agregar al carrito

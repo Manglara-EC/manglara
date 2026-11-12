@@ -4,17 +4,22 @@ import { useRouter } from "next/navigation";
 import { ShoppingCart } from "lucide-react";
 
 import { Button } from "@/shared/components/ui/button";
+import { useAuthGuard } from "@/shared/hooks/use-auth-guard";
 import { useCart } from "@/features/cart/context/cart-context";
 import { CartItemCount } from "@/features/cart/components/cart-button/cart-item-count";
 
 export function CartButton() {
   const router = useRouter();
   const { getTotalItems } = useCart();
+  const { isGuest } = useAuthGuard();
   const totalItems = getTotalItems();
 
   const handleClick = () => {
     router.push("/cart");
   };
+
+  // El carrito es una vista privada: los invitados no lo ven en la navegación
+  if (isGuest) return null;
 
   return (
     <Button

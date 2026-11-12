@@ -5,6 +5,11 @@ import { toast } from "sonner";
 
 import { RATE_LIMIT_ERROR_CODE } from "@/shared/constants";
 import { authClient } from "@/shared/lib/better-auth/client";
+import {
+  buildAuthURL,
+  getPostAuthRedirect,
+  getRedirectFromLocation,
+} from "@/shared/utils/redirect";
 import type { AuthClientError } from "@/shared/types";
 
 import type { CredentialsVariables } from "@/features/auth/types";
@@ -26,10 +31,12 @@ export const useCredentialsMutation = ({ form }: Props) => {
         {
           async onSuccess(context) {
             if (context.data.twoFactorRedirect) {
-              return router.push("/2fa");
+              return router.push(
+                buildAuthURL("/2fa", getRedirectFromLocation()),
+              );
             }
 
-            return router.push("/home");
+            return router.push(getPostAuthRedirect());
           },
         },
       );
